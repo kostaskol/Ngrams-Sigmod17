@@ -1,5 +1,5 @@
-#ifndef JMS_MY_VECTOR_H
-#define JMS_MY_VECTOR_H
+#ifndef MY_VECTOR_H
+#define MY_VECTOR_H
 
 #include <iostream>
 #include <cstdlib>
@@ -7,6 +7,9 @@
 // Simple resizable array template class
 // that includes some of std::vector's basic operations
 
+
+// NOTE: mstd::vector<T*> takes ownership of the passed pointers instead of copying them
+// That means that if the pointers are deleted elsewhere, the program will *hopefully* crash
 namespace mstd {
     template <typename T>
     class vector {
@@ -76,11 +79,12 @@ namespace mstd {
         }
 
         void push(T ent) {
-            if (++_size >= (size_t) _capacity) {
+            if (_size + 1>= (size_t) _capacity) {
                 _enlarge();
             }
 
             _entries[_last++] = ent;
+            _size++;
         }
 
         void add(T ent) {
@@ -88,7 +92,7 @@ namespace mstd {
         }
 
         void insert_at(int index, T ent) {
-            if (++_size >= (size_t) _capacity) {
+            if (_size + 1>= (size_t) _capacity) {
                 _enlarge();
             }
 
@@ -102,6 +106,7 @@ namespace mstd {
             }
 
             _entries[index] = ent;
+            _size++;
         }
 
         bool in(T ent) {
@@ -251,13 +256,11 @@ namespace mstd {
         T **_entries;
 
         void _enlarge() {
-            std::cout << "Enlarging" << std::endl;
             T **tmp = new T*[_capacity * 2];
-            for (size_t i = 0; i < _capacity; i++) {
-                tmp[i] = _entries[i];
+            for (size_t i = 0; i < _size; i++) {
+                tmp[i] = new T(*_entries[i]);
             }
 
-            std::cout << "Size = " << _size << std::endl;
             for (int i = 0; i < _size; i++) {
                 delete _entries[i];
             }
@@ -271,7 +274,6 @@ namespace mstd {
     public:
         explicit vector(size_t capacity = 1)
                 : _size(0), _capacity(capacity), _last(0) {
-            std::cout << "Initialised" << std::endl;
             _entries = new T*[_capacity];
         }
 
@@ -298,6 +300,22 @@ namespace mstd {
             }
         }
 
+        ~vector() {
+            for (int i = 0; i < _size; i++) {
+                delete _entries[i];
+            }
+            delete[] _entries;
+        }
+
+        void push(T *ent) {
+            if (_size + 1 >= (size_t) _capacity) {
+                _enlarge();
+            }
+
+            _entries[_last++] = ent;
+            _size++;
+        }
+
         vector sublist(int start, int length) {
             if (start + length > (int) _size) {
                 throw std::runtime_error("Bad indices");
@@ -311,34 +329,18 @@ namespace mstd {
             return tmp;
         }
 
-        ~vector() {
-            std::cout << "Destructor called" << std::endl;
-            for (int i = 0; i < _capacity; i++) {
-                delete _entries[i];
-            }
-            delete[] _entries;
-        }
-
-        void push(T *ent) {
-            if (++_size >= (size_t) _capacity) {
-                _enlarge();
-            }
-
-            _entries[_last++] = ent;
-        }
-
         void add(T *ent) {
             push(ent);
         }
 
         void insert_at(int index, T *ent) {
-            if (++_size >= (size_t) _capacity) {
+            if (_size + 1>= (size_t) _capacity) {
                 _enlarge();
             }
 
             if (index == 0) {
                 push(ent);
-                return;
+
             }
 
             for (size_t i = _size - 1; i >= index; i--) {
@@ -346,11 +348,12 @@ namespace mstd {
             }
 
             _entries[index] = ent;
+            _size++;
         }
 
         bool in(T *ent) {
             for (size_t i = 0; i < _size; i++) {
-                if (_entries[i] == ent) {
+                if (*_entries[i] == *ent) {
                     return true;
                 }
             }
@@ -372,37 +375,43 @@ namespace mstd {
 
         int get_index(T ent) {
             for (size_t i = 0; i < _size; i++) {
-                if (_entries[i] == ent) return (int) i;
+                if (*_entries[i] == *ent) return (int) i;
             }
             return -1;
         }
 
         void clear() {
-            if (_size != 0) delete[] _entries;
+            if (_size != 0) {
+                for (int i = 0; i < _size; i++) {
+                    delete _entries[i];
+                }
+                delete[] _entries;
+            }
 
             _size = 0;
 
             _last = 0;
 
             _capacity = 1;
-            _entries = new T[_capacity];
+            _entries = new T*[_capacity];
         }
 
-        void set_at(int index, T ent) {
+        void set_at(int index, T *ent) {
             if (index < 0 || index > (int) _size) {
                 throw std::runtime_error("Bad index: " + index);
             }
 
-            _entries[index] = ent;
+            _entries[index] = new T(*ent);
         }
 
-
-        bool remove(T ent) {
-            T *tmp = new T[_capacity];
+        //
+        bool remove(T *ent) {
+            T **tmp = new T*[_capacity];
             int j = 0;
             bool found = false;
             for (size_t i = 0; i < _size; i++) {
-                if (_entries[i] == ent) {
+                if (*_entries[i] == *ent) {
+                    delete _entries[i];
                     found = true;
                     continue;
                 }
@@ -410,6 +419,7 @@ namespace mstd {
                 tmp[j++] = _entries[i];
             }
 
+            // TODO: Not tested!
             if (found) {
                 delete[] _entries;
                 _entries = tmp;
@@ -446,23 +456,25 @@ namespace mstd {
 
         size_t size() { return _size; }
 
-        vector operator=(const vector &other) {
+        vector<T*> &operator=(const vector<T*> &other) {
+            if (_entries != other._entries) {
+                return *this;
+            }
+            for (int i = 0; i < _size; i++) {
+                delete _entries[i];
+            }
             delete[] _entries;
             _size = other._size;
             _capacity = other._capacity;
             _entries = new T[_capacity];
             for (size_t i = 0; i < _capacity; i++) {
-                _entries[i] = other._entries[i];
+                _entries[i] = new T(*other._entries[i]);
             }
 
             return *this;
         }
 
-        bool operator==(const vector &other) {
-            return true;
-        }
-
-        friend std::ostream &operator<<(std::ostream &out, vector vec) {
+        friend std::ostream &operator<<(std::ostream &out, vector<T*> vec) {
             out << vec._size;
             return out;
         }
@@ -470,4 +482,4 @@ namespace mstd {
 }
 
 
-#endif //JMS_MY_VECTOR_H
+#endif //MY_VECTOR_H

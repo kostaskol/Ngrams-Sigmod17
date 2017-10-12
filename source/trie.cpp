@@ -29,7 +29,6 @@ void trie::print() {
 
 void trie::add(mstd::string ngram) {
     trie_node *current = _root;
-
     mstd::vector<mstd::string> grams = ngram.split(' ');
     for (int i = 0; i < grams.size() - 1; i++) {
         // TODO: Binary search here
@@ -47,10 +46,10 @@ void trie::add(mstd::string ngram) {
     mstd::string last_word = grams.get((int) grams.size() - 1);
 
     if (current->has_child(last_word)) {
-        if (!current->is_end_of_word()) {
-            current->set_end_of_word();
-        }
+        cout << "Last word " << last_word << " existed in the tree" << endl;
+        current->set_end_of_word();
     } else {
+        cout << "Adding last child: " << last_word << endl;
         current->add_child(last_word, true);
     }
 
@@ -63,5 +62,10 @@ bool trie::search(mstd::string ngram) {
         if (!current->has_child(grams.get(i))) {
             return false;
         }
+        current = current->get_child(grams.get(i));
+    }
+
+    if ((current = current->get_child(grams.get((int) grams.size() - 1))) != nullptr) {
+        return current->is_end_of_word();
     }
 }
