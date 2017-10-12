@@ -1,0 +1,21 @@
+1. Άλλαξα το my_vector.h/.cpp και το my_string.h/.cpp σε mvector.h (χωρίς .cpp αρχείο) και mstring.h/.cpp αντίστοιχα.
+2. Άλλαξα τα ονόματα και των 2 (my_vector -> vector | my_string -> string) και τα έβαλα σε νέο namespace (mstd)
+	2.1. Οπότε τα χρησιμοποιείτε ως εξής:
+		#include "mstring.h"
+		#include "mvector.h"
+		
+		int main(void) {
+			mstd::vector<mstd::string> v;
+			v.push(mstd::string("Hello World"));
+			...
+		}
+
+	2.2. Για να μην γράφετε το mstd συνέχεια: 
+		using namespace mstd;
+
+	2.3. Για να μην χρειάζεται να γράφετε το std::cout κλπ, χρησιμοποιείτε τα:
+		using namespace std; // Δεν χρειάζεται το (std::)cout
+		using mstd::vector;  // Δεν χρειάζεται το (mstd::)string και (mstd::)vector
+		using mstd::string;  
+
+		

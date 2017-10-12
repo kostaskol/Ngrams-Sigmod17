@@ -15,4 +15,6 @@ int main() {
     cout << s << endl;
     s = t.search("Hello") ? "The N-Gram exists" : "The N-Gram does not exist";
     cout << s << endl;
+    s = t.search("hi") ? "The N-Gram exists" : "The N-Gram does not exist";
+    cout << s << endl;
 }

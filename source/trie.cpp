@@ -65,7 +65,5 @@ bool trie::search(mstd::string ngram) {
         current = current->get_child(grams.get(i));
     }
 
-    if ((current = current->get_child(grams.get((int) grams.size() - 1))) != nullptr) {
-        return current->is_end_of_word();
-    }
+    return ((current = current->get_child(grams.get((int) grams.size() - 1))) != nullptr && current->is_end_of_word());
 }
