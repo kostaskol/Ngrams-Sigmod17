@@ -65,13 +65,6 @@ private:
             return nullptr;
         }
 
-        bool has_child(mstd::string &word) {
-            for (int i = 0; i < _children.size(); i++) {
-                if (_children.at(i)->get_word() == word) return true;
-            }
-            return false;
-        }
-
         void push_child(trie_node *node) {
             _children.push(node);
         }
