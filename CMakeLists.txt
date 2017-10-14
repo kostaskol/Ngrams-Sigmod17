@@ -14,6 +14,8 @@ set(SOURCE_FILES
         source/mstring.cpp
         include/mstring.h
         include/mvector.h
-        include/logger.h)
+        include/logger.h
+        include/cmd_parser.h
+        include/hash_table.h)
 
-add_executable(tries ${SOURCE_FILES})
+add_executable(ngrams ${SOURCE_FILES})

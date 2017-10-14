@@ -17,5 +17,12 @@
 		using namespace std; // Δεν χρειάζεται το (std::)cout
 		using mstd::vector;  // Δεν χρειάζεται το (mstd::)string και (mstd::)vector
 		using mstd::string;  
-
-		
+3. Για να λύσω το πρόβλημα του memory leak όταν φτιάχνεις mstd::vector<T*>, έφτιαξα ένα "άλλο" template class που το αναλαμβάνει.
+	Όμως όταν βάζεις έναν pointer σε αυτό το class, η κλάση παίρνει το ownership του δείκτη και δεν δημιουργεί νέο αντικείμενο.
+	Αυτό σημαίνει πως:
+	mstd::vector<int *> v;
+	int *p = new int(3);
+	v.add(p);
+	// delete p; -> Μόλις διαγράφηκε το αντικείμενο που κρατούσε το v, οπότε segfault
+	// Τα αντικείμενα τα διαγράφει ο destructor του vector μόνος του.
+	// Με απλά test δεν βρήκα memory leaks. Αν βρείτε κανένα, μου το λέτε και το κοιτάζω
