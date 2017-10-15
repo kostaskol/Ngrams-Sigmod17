@@ -16,6 +16,10 @@ set(SOURCE_FILES
         include/mvector.h
         include/logger.h
         include/cmd_parser.h
-        include/hash_table.h)
+        include/hash_table.h
+        include/file_reader.h
+        source/file_reader.cpp
+        include/parser.h
+        source/parser.cpp)
 
 add_executable(ngrams ${SOURCE_FILES})

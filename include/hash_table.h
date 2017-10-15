@@ -54,16 +54,15 @@ namespace mstd {
             _entries[index].add(tmp);
         }
 
-        bool get(mstd::string key, B *val) {
+        B get(mstd::string key) {
             size_t index = _hash_function(key) % _size;
             mstd::vector<hash_entry<B>> v = _entries[index];
             for (int i = 0; i < v.size(); i++) {
                 if (v.get(i)._key == key) {
-                    *val = v.get(i)._value;
-                    return true;
+                    return v.get(i)._value;
                 }
             }
-            return false;
+            throw std::runtime_error("Unknown key");
         }
 
         void set(mstd::string key, B val) {

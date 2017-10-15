@@ -1,19 +1,22 @@
 #include <iostream>
 #include <cmd_parser.h>
+#include <parser.h>
 #include "trie.h"
 #include "mstring.h"
+#include "mvector.h"
 #include "hash_table.h"
 
 using std::cout;
 using std::endl;
 using mstd::string;
+using mstd::vector;
 
 int main(int argc, char **argv) {
 //    if (argc < 3) {
 //        cout << "Invalid number of arguments. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
 //        return 1;
 //    }
-//    mstd::hash_table<string> ht;
+//    mstd::hash_table<string> ht(5);
 //    ht.put("-i", "<s>");
 //    ht.put("-q", "<s>");
 //    ht.put("--debug", "<none>");
@@ -30,30 +33,85 @@ int main(int argc, char **argv) {
 //            std::cerr << "Our input was wrong" << endl;
 //            return 1;
 //    }
-//    string init_file;
-//    if (!parser.get_string("-i", &init_file)) {
-//        std::cerr << "Something went wrong with the init file" << endl;
-//    } else {
-//        cout << "Init-File = " << init_file << endl;
+//
+//    try {
+//        string init_file = parser.get_string("-i");
+//        string query_file = parser.get_string("-q");
+//    } catch (std::runtime_error &e) {
+//        mstd::logger::error("main", "User has not provided both -i and -q. Exiting..");
+//        return 1;
 //    }
 //
-//    string query_file;
-//    if (!parser.get_string("-q", &query_file)) {
-//        std::cerr << "Something went wrong with the query file" << endl;
-//    } else {
-//        cout << "Query-File = " << query_file << endl;
+//
+//
+    vector<string> v;
+    v.add("Hello");
+    v.add("World");
+    v.add("What's");
+    cout << v.capacity() << endl;
+    v.add("up");
+    cout << v.capacity() << endl;
+    v.shrink_to_size();
+    cout << v.capacity() << endl;
+    v.add("?");
+    cout << v.capacity() << endl;
+    v.shrink_to_size();
+    cout << v.capacity() << endl;
+    v.add("??");
+    cout << v.capacity() << endl;
+//    trie t;
+//    t.add("Hello World this is an N-Gram");
+//    t.add("Hello World");
+//    t.add("Hello");
+//    string s = t.search("Hello World this is an N-Gram") ? "The N-Gram exists" : "The N-Gram does not exist";
+//    cout << s << endl;
+//    s = t.search("Hello") ? "The N-Gram exists" : "The N-Gram does not exist";
+//    cout << s << endl;
+//    s = t.search("hi") ? "The N-Gram exists" : "The N-Gram does not exist";
+//    cout << s << endl;
+
+//    parser init_parser("../file.init");
+//    if (!init_parser.is_open()) {
+//        mstd::logger::error("main", "file has not been opened");
+//        return 1;
 //    }
 //
-//    bool debug = parser.is_set("--debug");
-//    cout << debug << endl;
-    trie t;
-    t.add("Hello World this is an N-Gram");
-    t.add("Hello World");
-    t.add("Hello");
-    string s = t.search("Hello World this is an N-Gram") ? "The N-Gram exists" : "The N-Gram does not exist";
-    cout << s << endl;
-    s = t.search("Hello") ? "The N-Gram exists" : "The N-Gram does not exist";
-    cout << s << endl;
-    s = t.search("hi") ? "The N-Gram exists" : "The N-Gram does not exist";
-    cout << s << endl;
+//    vector<string> v;
+//
+//    while (!init_parser.next_init(&v)) {
+//        for (int i = 0; i < v.size(); i++) {
+//            cout << v[i] << endl;
+//        }
+//        cout << endl;
+//    }
+//
+//    parser query_parser("../file.query");
+//    if (!query_parser.is_open()) {
+//        mstd::logger::error("main", "file has not been opened");
+//        return 1;
+//    }
+//
+//    int type;
+//    while (!query_parser.next_query(&v, &type)) {
+//        switch (type) {
+//            case INSERTION:
+//                mstd::logger::success("main", "Got insertion operation");
+////                for (int i = 0; i < v.size(); i++) {
+////                    cout << v[i] << endl;
+////                }
+////                break;
+//            case QUERY:
+//                mstd::logger::success("main", "Got query operation");
+//                break;
+//            case DELETION:
+//                mstd::logger::success("main", "Got deletion operation");
+//                break;
+//            case UNKNOWN_OP:
+//                mstd::logger::warn("main", "Got an unknown operation");
+//                break;
+//        }
+//        for (int i = 0; i < v.size(); i++) {
+//            cout << v[i] << endl;
+//        }
+//    }
 }

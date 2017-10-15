@@ -25,6 +25,8 @@ namespace mstd {
 
         string(const int num);
 
+        string rstrip();
+
         virtual ~string();
 
         const char *c_str();

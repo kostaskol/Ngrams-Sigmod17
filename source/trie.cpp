@@ -37,7 +37,6 @@ void trie::add(mstd::string ngram) {
     // Go up until the previous to last part (we need to treat the last part differently)
     for (int i = 0; i < grams.size() - 1; i++) {
         // TODO: Binary search here
-
         trie_node *child;
         if ((child = current->get_child(grams.at(i))) == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)

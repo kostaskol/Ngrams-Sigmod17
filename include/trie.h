@@ -17,7 +17,7 @@ private:
     private:
         mstd::string _word;
         bool _eow;
-        mstd::vector<trie_node *> _children;
+        mstd::vector<trie_node> _children;
         trie_node *_parent;
     public:
         trie_node() :
@@ -29,44 +29,44 @@ private:
         }
 
         trie_node(const trie_node &other)
-                : _word(other._word), _eow(other._eow), _children(other._children), _parent(other._parent) {}
+                  : _word(other._word), _eow(other._eow), _children(other._children), _parent(other._parent) {}
 
         ~trie_node()=default;
 
         trie_node *add_child(mstd::string word, bool eow) {
-            trie_node *new_node = new trie_node(word, eow);
+            trie_node *new_node = new trie_node(word, eow, this);
             if (_children.size() == 0) {
-                _children.push(new_node);
+                _children.push(*new_node);
             } else {
                 for (int i = 0; i < (size_t) _children.size(); i++) {
-                    if (word > (_children.get(i))->_word) {
-                        _children.insert_at(i, new_node);
+                    if (word > _children.get(i)._word) {
+                        _children.insert_at(i, *new_node);
                         break;
                     }
                 }
             }
-            return new_node;
+            return _children.get_last_inserted();
         }
 
-        mstd::vector<trie_node *> &get_children() {
+        mstd::vector<trie_node> &get_children() {
             return _children;
         }
 
         trie_node *get_child(int index) {
-            return _children.at(index);
+            return _children.at_p(index);
         }
 
         trie_node *get_child(mstd::string &word) {
             for (int i = 0; i < _children.size(); i++) {
-                if (_children.at(i)->_word == word) {
-                    return _children.at(i);
+                if (_children.at(i)._word == word) {
+                    return _children.at_p(i);
                 }
             }
             return nullptr;
         }
 
         void push_child(trie_node *node) {
-            _children.push(node);
+            _children.push(*node);
         }
 
         bool is_end_of_word() {
@@ -85,7 +85,12 @@ private:
             _eow = true;
         }
 
-        trie_node &operator=(const trie_node &other)=delete;
+        trie_node &operator=(const trie_node &other) {
+            _word = other._word;
+            _eow = other._eow;
+            _children = other._children;
+            _parent = other._parent;
+        }
     };
 
     trie_node *_root;

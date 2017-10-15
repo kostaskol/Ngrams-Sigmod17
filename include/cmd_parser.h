@@ -23,7 +23,7 @@ namespace mstd {
         mstd::hash_table<mstd::string> _args;
         mstd::vector<mstd::string> _flags;
     public:
-        cmd_parser() = default;
+        cmd_parser() : _args(5), _flags(3) {}
 
         ~cmd_parser() = default;
 
@@ -31,7 +31,14 @@ namespace mstd {
             for (int i = 1; i < argc; i++) {
                 mstd::string s = argv[i];
                 mstd::string type;
-                if (!ht.get(s, &type) && !allow_unknown) {
+                bool known = true;
+                try {
+                    type = ht.get(s);
+                } catch (std::runtime_error &e) {
+                    known = false;
+                }
+
+                if (!known && !allow_unknown) {
                     std::cout << "Unknown key: " << s << std::endl;
                     return UNKNOWN_ARG;
                 }
@@ -58,15 +65,12 @@ namespace mstd {
             return SUCCESS;
         }
 
-        bool get_string(mstd::string key, mstd::string *val) {
-            return _args.get(key, val);
+        mstd::string get_string(mstd::string key) {
+            return _args.get(key);
         }
 
-        bool get_int(mstd::string key, int *val) {
-            mstd::string tmp;
-            bool ret = _args.get(key, &tmp);
-            *val = atoi(tmp.c_str());
-            return ret;
+        int get_int(mstd::string key) {
+            return atoi(_args.get(key).c_str());
         }
 
         bool is_set(mstd::string key) {

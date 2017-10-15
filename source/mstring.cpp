@@ -54,6 +54,26 @@ mstd::string::string(int num) {
     _len = strlen(_str) + 1;
 }
 
+// Removes all whitespace at the end of the string
+mstd::string mstd::string::rstrip() {
+    int i;
+    for (i = strlen(_str) - 1; i >= 0; i--) {
+        if (_str[i] != ' ' && _str[i] != '\n' && _str[i] != '\t') break;
+    }
+    size_t length = this->length();
+    i++;
+    char *tmp = new char[i + 1];
+    for (int j = 0; j < i; j++) {
+        tmp[j] = _str[j];
+    }
+    tmp[i] = '\0';
+
+    delete[] _str;
+    _str = tmp;
+
+    return *this;
+}
+
 
 mstd::string::~string() {
     delete[] _str;
