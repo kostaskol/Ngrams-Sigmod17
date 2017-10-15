@@ -1,28 +1,6 @@
-1. Άλλαξα το my_vector.h/.cpp και το my_string.h/.cpp σε mvector.h (χωρίς .cpp αρχείο) και mstring.h/.cpp αντίστοιχα.
-2. Άλλαξα τα ονόματα και των 2 (my_vector -> vector | my_string -> string) και τα έβαλα σε νέο namespace (mstd)
-	2.1. Οπότε τα χρησιμοποιείτε ως εξής:
-		#include "mstring.h"
-		#include "mvector.h"
-		
-		int main(void) {
-			mstd::vector<mstd::string> v;
-			v.push(mstd::string("Hello World"));
-			...
-		}
-
-	2.2. Για να μην γράφετε το mstd συνέχεια: 
-		using namespace mstd;
-
-	2.3. Για να μην χρειάζεται να γράφετε το std::cout κλπ, χρησιμοποιείτε τα:
-		using namespace std; // Δεν χρειάζεται το (std::)cout
-		using mstd::vector;  // Δεν χρειάζεται το (mstd::)string και (mstd::)vector
-		using mstd::string;  
-3. Για να λύσω το πρόβλημα του memory leak όταν φτιάχνεις mstd::vector<T*>, έφτιαξα ένα "άλλο" template class που το αναλαμβάνει.
-	Όμως όταν βάζεις έναν pointer σε αυτό το class, η κλάση παίρνει το ownership του δείκτη και δεν δημιουργεί νέο αντικείμενο.
-	Αυτό σημαίνει πως:
-	mstd::vector<int *> v;
-	int *p = new int(3);
-	v.add(p);
-	// delete p; -> Μόλις διαγράφηκε το αντικείμενο που κρατούσε το v, οπότε segfault
-	// Τα αντικείμενα τα διαγράφει ο destructor του vector μόνος του.
-	// Με απλά test δεν βρήκα memory leaks. Αν βρείτε κανένα, μου το λέτε και το κοιτάζω
+Changes:
+	1. Adds parser and file_reader to parse files
+	2. Changes mstd::vector<trie_node *> to mstd::vector<trie_node> in the trie_node implementation
+	3. Adds a T *mstd::vector::get_last_inserted() function which returns a pointer to the vector's last object, which is held *internally* within the vector, so any changes to the T *, will also affect the vector itself (use with caution). Basically the same functionality as vector.get_p(vector.size() - 1).
+	4. Adds a void mstd::vector::shrink_to_size() function, that can makes the vector's capacity equal to its size (mostly used for finalizing a vector that takes too much unneeded space)
+	5. Adds an mstd::string mstd::string::rstrip() function that removes *all* trailing whitespace of the string. It modifies *and* returns the mstd::string object itself
