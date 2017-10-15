@@ -2,6 +2,8 @@
 #include "logger.h"
 
 #include <iostream>
+#include <sstream>
+#include "helpers.h"
 
 using namespace std;
 
@@ -27,12 +29,18 @@ void trie::print() {
     _in_order(_root);
 }
 
-void trie::add(mstd::string ngram) {
+void trie::add(const std::string &ngram) {
     // Start at the root
     trie_node *current = _root;
 
+
     // Get the parts of the N-Gram
-    mstd::vector<mstd::string> grams = ngram.split(' ');
+    mstd::vector<std::string> grams;
+    std::stringstream ss(ngram);
+    std::string tmp;
+    while (std::getline(ss, tmp, ' ')) {
+        grams.add(tmp);
+    }
 
     // Go up until the previous to last part (we need to treat the last part differently)
     for (int i = 0; i < grams.size() - 1; i++) {
@@ -47,7 +55,7 @@ void trie::add(mstd::string ngram) {
         }
     }
 
-    mstd::string last_word = grams.get((int) grams.size() - 1);
+    std::string last_word = grams.get_cpy((int) grams.size() - 1);
 
     if (current->get_child(last_word) != nullptr) {
         // If the word already existed in the tree, we simply mark it as the end of the N-Gram
@@ -58,9 +66,10 @@ void trie::add(mstd::string ngram) {
     }
 }
 
-bool trie::search(mstd::string ngram) {
+bool trie::search(const std::string &ngram) {
     trie_node *current = _root;
-    mstd::vector<mstd::string> grams = ngram.split(' ');
+    mstd::vector<std::string> grams;
+    helpers::split(ngram, grams, ' ');
     for (int i = 0; i < grams.size() - 1; i++) {
         if (current->get_child(grams.get(i)) == nullptr) {
             return false;

@@ -11,16 +11,13 @@ set(SOURCE_FILES
         source/main.cpp
         source/trie.cpp
         include/trie.h
-        source/mstring.cpp
-        include/mstring.h
         include/mvector.h
         include/logger.h
         include/cmd_parser.h
         include/hash_table.h
-        include/file_reader.h
-        source/file_reader.cpp
         include/parser.h
         source/parser.cpp
-        include/date_time.h)
+        include/date_time.h
+        include/helpers.h)
 
 add_executable(ngrams ${SOURCE_FILES})

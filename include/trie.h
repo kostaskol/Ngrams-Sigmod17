@@ -1,7 +1,8 @@
 #ifndef TRIE
 #define TRIE
 
-#include "mstring.h"
+#include <string>
+#include "mvector.h"
 #include "logger.h"
 
 class trie_node;
@@ -15,7 +16,7 @@ class trie {
 private:
     class trie_node {
     private:
-        mstd::string _word;
+        std::string _word;
         bool _eow;
         mstd::vector<trie_node> *_children;
         trie_node *_parent;
@@ -25,7 +26,7 @@ private:
             _children = nullptr;
         }
 
-        trie_node(const mstd::string &word, bool eow, trie_node *par = nullptr) :
+        trie_node(const std::string &word, bool eow, trie_node *par = nullptr) :
                 _word(word), _eow(eow), _parent(par) {
             _children = nullptr;
         }
@@ -39,23 +40,26 @@ private:
             _children = new mstd::vector<trie_node>(*other._children);
         }
 
-        ~trie_node()=default;
+        ~trie_node() {
+            delete _children;
+        }
 
-        trie_node *add_child(mstd::string word, bool eow) {
+        trie_node *add_child(std::string word, bool eow) {
             if (_children == nullptr) {
                 _children = new mstd::vector<trie_node>();
             }
-            auto *new_node = new trie_node(word, eow, this);
+            trie_node new_node(word, eow, this);
             if (_children->size() == 0) {
-                _children->push(*new_node);
+                _children->push(new_node);
             } else {
                 for (int i = 0; i < (size_t) _children->size(); i++) {
                     if (word > _children->get(i)._word) {
-                        _children->insert_at(i, *new_node);
+                        _children->insert_at(i, new_node);
                         break;
                     }
                 }
             }
+
             return _children->get_last_inserted();
         }
 
@@ -67,7 +71,7 @@ private:
             return _children->at_p(index);
         }
 
-        trie_node *get_child(mstd::string &word) {
+        trie_node *get_child(std::string &word) {
             if (_children == nullptr) return nullptr;
             for (int i = 0; i < _children->size(); i++) {
                 if (_children->at(i)._word == word) {
@@ -92,7 +96,7 @@ private:
             return _children->size();
         }
 
-        mstd::string get_word() {
+        std::string get_word() {
             return _word;
         }
 
@@ -117,11 +121,11 @@ public:
     trie();
     ~trie();
 
-    void add(mstd::string ngram);
+    void add(const std::string &ngram);
 
     void print();
 
-    bool search(mstd::string ngram);
+    bool search(const std::string &ngram);
 };
 
 #endif // TRIE

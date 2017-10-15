@@ -2,16 +2,16 @@
 #include <cmd_parser.h>
 #include <parser.h>
 #include "trie.h"
-#include "mstring.h"
+#include <string>
 #include "mvector.h"
 #include "hash_table.h"
 
 using std::cout;
 using std::endl;
-using mstd::string;
+using std::string;
 using mstd::vector;
 
-mstd::string mstd::logger::file;
+std::string mstd::logger::file;
 
 int main(int argc, char **argv) {
     mstd::logger::file = "../debug/log.txt";
@@ -49,12 +49,22 @@ int main(int argc, char **argv) {
     t.add("Hello World this is an N-Gram");
     t.add("Hello World");
     t.add("Hello");
-    string s = t.search("Hello World this is an N-Gram") ? "The N-Gram exists" : "The N-Gram does not exist";
-    cout << s << endl;
-    s = t.search("Hello") ? "The N-Gram exists" : "The N-Gram does not exist";
-    cout << s << endl;
-    s = t.search("hi") ? "The N-Gram exists" : "The N-Gram does not exist";
-    cout << s << endl;
+
+    std::string checks[] = {
+            "Hello World this is an N-Gram",
+            "Hello",
+            "hi"
+    };
+
+    for (int i = 0; i < 3; i++) {
+        if (t.search(checks[i])) {
+            std::string succ = "The N-Gram " + checks[i] + " exists!";
+            mstd::logger::success("main", succ);
+        } else {
+            std::string fail = "The N-Gram " + checks[i] + " does not exist";
+            mstd::logger::error("main", fail);
+        }
+    }
 
 //    parser init_parser("../file.init");
 //    if (!init_parser.is_open()) {

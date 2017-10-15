@@ -1,7 +1,9 @@
 #ifndef TRIES_PARSER_H
 #define TRIES_PARSER_H
 
-#include "file_reader.h"
+#include <string>
+#include <fstream>
+#include "mvector.h"
 
 #define INSERTION 0
 #define QUERY 1
@@ -10,18 +12,18 @@
 
 class parser {
 private:
-    mstd::file_reader _file;
+    std::ifstream _file;
 
 public:
-    explicit parser(mstd::string file_name);
+    explicit parser(std::string file_name);
 
     ~parser() = default;
 
     bool is_open();
 
-    bool next_init(mstd::vector<mstd::string> *);
+    bool next_init(mstd::vector<std::string> *);
 
-    bool next_query(mstd::vector<mstd::string> *, int *);
+    bool next_query(mstd::vector<std::string> *, int *);
 };
 
 

@@ -20,7 +20,7 @@ namespace mstd {
         T *_entries;
 
         void _enlarge() {
-            T *tmp = new T[_capacity * 2];
+            auto *tmp = new T[_capacity * 2];
             for (size_t i = 0; i < _size; i++) {
                 tmp[i] = _entries[i];
             }
@@ -56,7 +56,7 @@ namespace mstd {
             _last = other._last;
             _entries = new T[_capacity];
             int cur = 0;
-            for (size_t i = (size_t) start; i < (size_t) end; i++) {
+            for (auto i = (size_t) start; i < (size_t) end; i++) {
                 _entries[cur++] = other._entries[i];
             }
         }
@@ -67,7 +67,7 @@ namespace mstd {
             }
 
             vector tmp;
-            for (size_t i = (size_t) start; i <= (size_t) start + length; i++) {
+            for (auto i = (size_t) start; i <= (size_t) start + length; i++) {
                 tmp.push(_entries[i]);
             }
 
@@ -78,34 +78,24 @@ namespace mstd {
             delete[] _entries;
         }
 
-        void push(T ent) {
+        void push(const T &ent) {
             if (_size + 1>= (size_t) _capacity) {
                 _enlarge();
             }
 
-            _entries[_last++] = ent;
+            _entries[_last++] = T(ent);
             _size++;
-        }
-
-        void shrink_to_size() {
-            auto *tmp = new T[_size];
-            for (int i = 0; i < _size; i++) {
-                tmp[i] = _entries[i];
-            }
-            delete[] _entries;
-            _entries = tmp;
-            _capacity = _size;
         }
 
         T *get_last_inserted() {
             return &_entries[_last - 1];
         }
 
-        void add(T ent) {
+        void add(const T &ent) {
             push(ent);
         }
 
-        void insert_at(int index, T ent) {
+        void insert_at(int index, const T &ent) {
             if (_size + 1>= (size_t) _capacity) {
                 _enlarge();
             }
@@ -119,11 +109,21 @@ namespace mstd {
                 _entries[i + 1] = _entries[i];
             }
 
-            _entries[index] = ent;
+            _entries[index] = T(ent);
             _size++;
         }
 
-        bool in(T ent) {
+        void shrink_to_size() {
+            auto *tmp = new T[_size];
+            for (int i = 0; i < _size; i++) {
+                tmp[i] = _entries[i];
+            }
+            delete[] _entries;
+            _entries = tmp;
+            _capacity = _size;
+        }
+
+        bool in(const T &ent) {
             for (size_t i = 0; i < _size; i++) {
                 if (_entries[i] == ent) {
                     return true;
@@ -160,7 +160,7 @@ namespace mstd {
             return at_p(index);
         }
 
-        int get_index(T ent) {
+        int get_index(const T &ent) {
             for (size_t i = 0; i < _size; i++) {
                 if (_entries[i] == ent) return (int) i;
             }
@@ -178,17 +178,17 @@ namespace mstd {
             _entries = new T[_capacity];
         }
 
-        void set_at(int index, T ent) {
+        void set_at(int index, const T &ent) {
             if (index < 0 || index > (int) _size) {
                 throw std::runtime_error("Bad index: " + index);
             }
 
-            _entries[index] = ent;
+            _entries[index] = T(ent);
         }
 
 
-        bool remove(T ent) {
-            T *tmp = new T[_capacity];
+        bool remove(const T &ent) {
+            auto *tmp = new T[_capacity];
             int j = 0;
             bool found = false;
             for (size_t i = 0; i < _size; i++) {
@@ -217,7 +217,7 @@ namespace mstd {
             if (index >= (int) _size || index < 0) {
                 throw std::runtime_error("Bad index: " + index);
             }
-            T *tmp_ent = new T[_capacity];
+            auto *tmp_ent = new T[_capacity];
 
             int j = 0;
             for (size_t i = 0; i < _size; i++) {
@@ -246,6 +246,14 @@ namespace mstd {
             }
 
             return *this;
+        }
+
+        T get_cpy(int index) {
+            if (index >= _size) {
+                throw std::runtime_error("Index out of range");
+            }
+
+            return _entries[index];
         }
 
         bool operator==(const vector &other) {

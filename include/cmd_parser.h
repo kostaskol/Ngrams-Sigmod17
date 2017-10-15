@@ -2,7 +2,7 @@
 #define TRIES_CMD_PARSER_H
 
 
-#include "mstring.h"
+#include <string>
 #include "hash_table.h"
 
 #define UNKNOWN_ARG 1
@@ -20,17 +20,17 @@
 namespace mstd {
     class cmd_parser {
     private:
-        mstd::hash_table<mstd::string> _args;
-        mstd::vector<mstd::string> _flags;
+        mstd::hash_table<std::string> _args;
+        mstd::vector<std::string> _flags;
     public:
         cmd_parser() : _args(5), _flags(3) {}
 
         ~cmd_parser() = default;
 
-        int parse(int argc, char **argv, mstd::hash_table<mstd::string> &ht, bool allow_unknown = false) {
+        int parse(int argc, char **argv, mstd::hash_table<std::string> &ht, bool allow_unknown = false) {
             for (int i = 1; i < argc; i++) {
-                mstd::string s = argv[i];
-                mstd::string type;
+                std::string s = argv[i];
+                std::string type;
                 bool known = true;
                 try {
                     type = ht.get(s);
@@ -65,15 +65,15 @@ namespace mstd {
             return SUCCESS;
         }
 
-        mstd::string get_string(const mstd::string &key) const {
+        std::string get_string(const std::string &key) const {
             return _args.get(key);
         }
 
-        int get_int(const mstd::string &key) {
+        int get_int(const std::string &key) {
             return atoi(_args.get(key).c_str());
         }
 
-        bool is_set(const mstd::string &key) {
+        bool is_set(const std::string &key) {
             return _flags.in(key);
         }
     };

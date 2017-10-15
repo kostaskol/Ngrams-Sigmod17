@@ -3,7 +3,8 @@
 
 #include <cstdio>
 #include <cstring>
-#include "mstring.h"
+#include <string>
+#include <mvector.h>
 
 namespace mstd {
 
@@ -12,14 +13,14 @@ namespace mstd {
     private:
         template<typename V>
         struct hash_entry {
-            mstd::string _key;
+            std::string _key;
             V _value;
         };
 
         mstd::vector<hash_entry<B>> *_entries;
         size_t _size;
 
-        int _hash_function(const mstd::string &key) const {
+        int _hash_function(const std::string &key) const {
             auto *str = new char[key.length() + 1];
             auto *tmp = str;
             strcpy(str, key.c_str());
@@ -46,7 +47,7 @@ namespace mstd {
             delete[] _entries;
         }
 
-        void put(mstd::string key, B val) {
+        void put(std::string key, B val) {
             hash_entry<B> tmp;
             tmp._key = key;
             tmp._value = val;
@@ -54,7 +55,7 @@ namespace mstd {
             _entries[index].add(tmp);
         }
 
-        B get(const mstd::string &key) const {
+        B get(const std::string &key) const {
             size_t index = _hash_function(key) % _size;
             mstd::vector<hash_entry<B>> v = _entries[index];
             for (int i = 0; i < v.size(); i++) {
@@ -65,7 +66,7 @@ namespace mstd {
             throw std::runtime_error("Unknown key");
         }
 
-        void set(mstd::string key, B val) {
+        void set(std::string key, B val) {
             size_t index = _hash_function(key) % _size;
             for (int i = 0; i < _entries[index].size(); i++) {
                 if (_entries[index].get(i)._key == key) {
