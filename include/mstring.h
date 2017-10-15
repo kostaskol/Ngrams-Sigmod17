@@ -29,31 +29,33 @@ namespace mstd {
 
         virtual ~string();
 
-        const char *c_str();
+        const char *c_str() const;
+
+        char *c_str();
 
         std::string cpp_str();
 
-        size_t length();
+        size_t length() const;
 
-        vector<string> split(char *delim);
+        vector<string> split(char *delim) const;
 
-        vector<string> split(char delim);
+        vector<string> split(char delim) const;
 
-        vector<string> split(const char *delim);
+        vector<string> split(const char *delim) const;
 
-        string substr(int start, int length);
+        string substr(int start, int length) const;
 
-        int to_int();
+        int to_int() const;
 
         void remove(char c);
 
         void replace(char old, char n);
 
-        bool contains(char *str);
+        bool contains(char *str) const;
 
-        bool contains(const char *str);
+        bool contains(const char *str) const;
 
-        bool contains(const string &other);
+        bool contains(const string &other) const;
 
         void remove_substr(const string &other);
 
@@ -61,11 +63,11 @@ namespace mstd {
 
         void remove_substr(char *str);
 
-        bool starts_with(char *str);
+        bool starts_with(char *str) const;
 
-        bool starts_with(const string &other);
+        bool starts_with(const string &other) const;
 
-        bool starts_with(const char *str);
+        bool starts_with(const char *str) const;
 
         string &operator=(const string &other);
 
@@ -87,23 +89,41 @@ namespace mstd {
 
         friend string operator+(const char *first, const string &other);
 
-        const bool operator==(const string &other);
+        const bool operator==(const string &other) const;
 
-        const bool operator==(const char *str);
+        const bool operator==(const char *str) const;
 
-        const bool operator!=(const string &other);
+        const bool operator!=(const string &other) const;
 
-        const bool operator!=(const char *str);
+        const bool operator!=(const char *str) const;
 
-        const bool operator>(const string &other);
+        const bool operator>(const string &other) const;
 
-        const bool operator>(const char *str);
+        const bool operator>(const char *str) const;
 
-        const bool operator<(const string &other);
+        const bool operator<(const string &other) const;
 
-        const bool operator<(const char *str);
+        const bool operator<(const char *str) const;
 
-        const char operator[](int index);
+        const char operator[](int index) const;
+
+        const bool operator==(const string &other) ;
+
+        const bool operator==(const char *str) ;
+
+        const bool operator!=(const string &other) ;
+
+        const bool operator!=(const char *str) ;
+
+        const bool operator>(const string &other) ;
+
+        const bool operator>(const char *str) ;
+
+        const bool operator<(const string &other) ;
+
+        const bool operator<(const char *str) ;
+
+        const char operator[](int index) ;
 
         friend std::ostream &operator<<(std::ostream &out, mstd::string str);
     };

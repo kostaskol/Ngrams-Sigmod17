@@ -19,9 +19,9 @@ namespace mstd {
         mstd::vector<hash_entry<B>> *_entries;
         size_t _size;
 
-        int _hash_function(mstd::string key) {
-            char *str = new char[key.length() + 1];
-            char *tmp = str;
+        int _hash_function(const mstd::string &key) const {
+            auto *str = new char[key.length() + 1];
+            auto *tmp = str;
             strcpy(str, key.c_str());
             int hash = 5381;
             int c;
@@ -54,7 +54,7 @@ namespace mstd {
             _entries[index].add(tmp);
         }
 
-        B get(mstd::string key) {
+        B get(const mstd::string &key) const {
             size_t index = _hash_function(key) % _size;
             mstd::vector<hash_entry<B>> v = _entries[index];
             for (int i = 0; i < v.size(); i++) {

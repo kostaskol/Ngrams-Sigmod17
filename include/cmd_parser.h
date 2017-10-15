@@ -61,19 +61,19 @@ namespace mstd {
                     return WRONG_INPUT;
                 }
             }
-
+            _flags.shrink_to_size();
             return SUCCESS;
         }
 
-        mstd::string get_string(mstd::string key) {
+        mstd::string get_string(const mstd::string &key) const {
             return _args.get(key);
         }
 
-        int get_int(mstd::string key) {
+        int get_int(const mstd::string &key) {
             return atoi(_args.get(key).c_str());
         }
 
-        bool is_set(mstd::string key) {
+        bool is_set(const mstd::string &key) {
             return _flags.in(key);
         }
     };

@@ -82,10 +82,23 @@ namespace mstd {
             if (_size + 1>= (size_t) _capacity) {
                 _enlarge();
             }
-             // *new_node
-            _entries[_last++] = ent;
 
+            _entries[_last++] = ent;
             _size++;
+        }
+
+        void shrink_to_size() {
+            auto *tmp = new T[_size];
+            for (int i = 0; i < _size; i++) {
+                tmp[i] = _entries[i];
+            }
+            delete[] _entries;
+            _entries = tmp;
+            _capacity = _size;
+        }
+
+        T *get_last_inserted() {
+            return &_entries[_last - 1];
         }
 
         void add(T ent) {
@@ -127,17 +140,10 @@ namespace mstd {
             return _entries[index];
         }
 
-        T *get_last_inserted() {
-            if (_size != 0) {
-                return &_entries[_last - 1];
-            }
-        }
-
         // Method sugar
         T &get(int index) {
             return at(index);
         }
-
 
 
 
@@ -148,18 +154,6 @@ namespace mstd {
 
             return &_entries[index];
         }
-
-        void shrink_to_size() {
-            T *tmp = new T[_size];
-            for (int i = 0; i < _size; i++) {
-                tmp[i] = _entries[i];
-            }
-            delete[] _entries;
-            _entries = tmp;
-            _capacity = _size;
-        }
-
-        size_t capacity() { return _capacity; }
 
         // Method sugar
         T *get_p(int index) {
@@ -243,7 +237,6 @@ namespace mstd {
         size_t size() { return _size; }
 
         vector &operator=(const vector &other) {
-
             delete[] _entries;
             _size = other._size;
             _capacity = other._capacity;
@@ -255,12 +248,12 @@ namespace mstd {
             return *this;
         }
 
-        T &operator[](int index) {
-            return at(index);
-        }
-
         bool operator==(const vector &other) {
             return true;
+        }
+
+        T &operator[](int index) {
+            return at(index);
         }
 
         friend std::ostream &operator<<(std::ostream &out, vector vec) {
@@ -477,10 +470,6 @@ namespace mstd {
 
             _size--;
             _last--;
-        }
-
-        T *operator[](int index) {
-            return at(index);
         }
 
         size_t size() { return _size; }

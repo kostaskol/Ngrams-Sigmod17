@@ -1,0 +1,3 @@
+/home/kostas/CLionProjects/ngrams/CMakeFiles/rebuild_cache.dir
+/home/kostas/CLionProjects/ngrams/CMakeFiles/ngrams.dir
+/home/kostas/CLionProjects/ngrams/CMakeFiles/edit_cache.dir

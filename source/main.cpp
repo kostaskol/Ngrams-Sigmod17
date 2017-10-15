@@ -11,64 +11,50 @@ using std::endl;
 using mstd::string;
 using mstd::vector;
 
+mstd::string mstd::logger::file;
+
 int main(int argc, char **argv) {
-//    if (argc < 3) {
-//        cout << "Invalid number of arguments. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
-//        return 1;
-//    }
-//    mstd::hash_table<string> ht(5);
-//    ht.put("-i", "<s>");
-//    ht.put("-q", "<s>");
-//    ht.put("--debug", "<none>");
-//    mstd::cmd_parser parser;
-//    int status = parser.parse(argc, argv, ht);
-//    switch (status) {
-//        case UNKNOWN_ARG:
-//            cout << "Unknown arguments found. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
-//            return 1;
-//        case WRONG_FORMAT:
-//            cout << "Wrong usage found. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
-//            return 1;
-//        case WRONG_INPUT:
-//            std::cerr << "Our input was wrong" << endl;
-//            return 1;
-//    }
-//
-//    try {
-//        string init_file = parser.get_string("-i");
-//        string query_file = parser.get_string("-q");
-//    } catch (std::runtime_error &e) {
-//        mstd::logger::error("main", "User has not provided both -i and -q. Exiting..");
-//        return 1;
-//    }
-//
-//
-//
-    vector<string> v;
-    v.add("Hello");
-    v.add("World");
-    v.add("What's");
-    cout << v.capacity() << endl;
-    v.add("up");
-    cout << v.capacity() << endl;
-    v.shrink_to_size();
-    cout << v.capacity() << endl;
-    v.add("?");
-    cout << v.capacity() << endl;
-    v.shrink_to_size();
-    cout << v.capacity() << endl;
-    v.add("??");
-    cout << v.capacity() << endl;
-//    trie t;
-//    t.add("Hello World this is an N-Gram");
-//    t.add("Hello World");
-//    t.add("Hello");
-//    string s = t.search("Hello World this is an N-Gram") ? "The N-Gram exists" : "The N-Gram does not exist";
-//    cout << s << endl;
-//    s = t.search("Hello") ? "The N-Gram exists" : "The N-Gram does not exist";
-//    cout << s << endl;
-//    s = t.search("hi") ? "The N-Gram exists" : "The N-Gram does not exist";
-//    cout << s << endl;
+    mstd::logger::file = "../debug/log.txt";
+    if (argc < 3) {
+        cout << "Invalid number of arguments. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
+        return 1;
+    }
+    mstd::hash_table<string> ht(5);
+    ht.put("-i", "<s>");
+    ht.put("-q", "<s>");
+    ht.put("--debug", "<none>");
+    mstd::cmd_parser parser;
+    int status = parser.parse(argc, argv, ht);
+    switch (status) {
+        case UNKNOWN_ARG:
+            cout << "Unknown arguments found. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
+            return 1;
+        case WRONG_FORMAT:
+            cout << "Wrong usage found. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
+            return 1;
+        case WRONG_INPUT:
+            std::cerr << "Our input was wrong" << endl;
+            return 1;
+    }
+
+    try {
+        string init_file = parser.get_string("-i");
+        string query_file = parser.get_string("-q");
+    } catch (std::runtime_error &e) {
+        mstd::logger::error("main", "User has not provided both -i and -q. Exiting..", BOTH);
+        return 1;
+    }
+
+    trie t;
+    t.add("Hello World this is an N-Gram");
+    t.add("Hello World");
+    t.add("Hello");
+    string s = t.search("Hello World this is an N-Gram") ? "The N-Gram exists" : "The N-Gram does not exist";
+    cout << s << endl;
+    s = t.search("Hello") ? "The N-Gram exists" : "The N-Gram does not exist";
+    cout << s << endl;
+    s = t.search("hi") ? "The N-Gram exists" : "The N-Gram does not exist";
+    cout << s << endl;
 
 //    parser init_parser("../file.init");
 //    if (!init_parser.is_open()) {

@@ -1,6 +1,13 @@
 Changes:
 	1. Adds parser and file_reader to parse files
 	2. Changes mstd::vector<trie_node *> to mstd::vector<trie_node> in the trie_node implementation
-	3. Adds a T *mstd::vector::get_last_inserted() function which returns a pointer to the vector's last object, which is held *internally* within the vector, so any changes to the T *, will also affect the vector itself (use with caution). Basically the same functionality as vector.get_p(vector.size() - 1).
-	4. Adds a void mstd::vector::shrink_to_size() function, that can makes the vector's capacity equal to its size (mostly used for finalizing a vector that takes too much unneeded space)
-	5. Adds an mstd::string mstd::string::rstrip() function that removes *all* trailing whitespace of the string. It modifies *and* returns the mstd::string object itself
+	3. Changes trie_node::_children from mstd::vector<trie_node> to mstd::vector<trie_node> *, which is created *on demand* meaning
+		that the vector is instantiated only when a child is required to be entered (otherwise an infinite recursion problem is
+		introduced)
+	4. Adds a T *mstd::vector::get_last_inserted() function which returns a pointer to the vector's last object, which is held *internally* 
+		within the vector, so any changes to the T *, will also affect the vector itself (use with caution). 
+		Basically the same functionality as vector.get_p(vector.size() - 1).
+	5. Adds a void mstd::vector::shrink_to_size() function, that can makes the vector's capacity equal to its size (mostly used for 
+		finalizing a vector that takes too much unneeded space)
+	6. Adds an mstd::string mstd::string::rstrip() function that removes *all* trailing whitespace of the string. 
+		It modifies *and* returns the mstd::string object itself

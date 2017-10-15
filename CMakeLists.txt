@@ -20,6 +20,7 @@ set(SOURCE_FILES
         include/file_reader.h
         source/file_reader.cpp
         include/parser.h
-        source/parser.cpp)
+        source/parser.cpp
+        include/date_time.h)
 
 add_executable(ngrams ${SOURCE_FILES})
