@@ -10,14 +10,14 @@ set(CMAKE_CXX_FLAGS "-g -std=c++0x -I../include -Iinclude")
 set(SOURCE_FILES
         source/main.cpp
         source/trie.cpp
-        include/trie.h
-        include/mvector.h
-        include/logger.h
-        include/cmd_parser.h
-        include/hash_table.h
-        include/parser.h
+        include/trie.hpp
+        include/mvector.hpp
+        include/logger.hpp
+        include/cmd_parser.hpp
+        include/hash_table.hpp
+        include/parser.hpp
         source/parser.cpp
-        include/date_time.h
-        include/helpers.h)
+        include/date_time.hpp
+        include/helpers.hpp)
 
 add_executable(ngrams ${SOURCE_FILES})

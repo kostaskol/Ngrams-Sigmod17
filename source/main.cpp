@@ -1,10 +1,10 @@
 #include <iostream>
-#include <cmd_parser.h>
-#include <parser.h>
-#include "trie.h"
+#include <cmd_parser.hpp>
+#include <parser.hpp>
+#include "trie.hpp"
 #include <string>
-#include "mvector.h"
-#include "hash_table.h"
+#include "mvector.hpp"
+#include "hash_table.hpp"
 
 using std::cout;
 using std::endl;

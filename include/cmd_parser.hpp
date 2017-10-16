@@ -3,7 +3,7 @@
 
 
 #include <string>
-#include "hash_table.h"
+#include "hash_table.hpp"
 
 #define UNKNOWN_ARG 1
 #define WRONG_FORMAT 2

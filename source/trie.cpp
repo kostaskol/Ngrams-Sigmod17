@@ -1,13 +1,15 @@
-#include "trie.h"
-#include "logger.h"
+#include "trie.hpp"
+#include "logger.hpp"
 
 #include <iostream>
 #include <sstream>
-#include "helpers.h"
+#include "helpers.hpp"
 
 using namespace std;
 
-
+/*
+ * Trie Implementation
+ */
 trie::trie() {
     _root = new trie_node();
     _size = 0;
@@ -78,4 +80,120 @@ bool trie::search(const std::string &ngram) {
     }
 
     return ((current = current->get_child(grams.get((int) grams.size() - 1))) != nullptr && current->is_end_of_word());
+}
+
+
+/*
+ * trie_node implementation
+ */
+
+trie::trie_node::trie_node()
+        : _word(""), _eow(false), _parent(nullptr) {
+    _children = nullptr;
+}
+
+trie::trie_node::trie_node(const std::string &word, bool eow, trie_node *par)
+        : _word(word), _eow(eow), _parent(par) {
+    _children = nullptr;
+}
+
+trie::trie_node::trie_node(const trie_node &other)
+        : _word(other._word), _eow(other._eow), _parent(other._parent) {
+    if (other._children == nullptr) {
+        _children = nullptr;
+        return;
+    }
+    _children = new mstd::vector<trie_node>(*other._children);
+}
+
+trie::trie_node::trie_node(trie_node &&other) noexcept {
+    _word = other._word;
+    _eow = other._eow;
+    _parent = other._parent;
+    _children = other._children;
+    other._children = nullptr;
+}
+
+trie::trie_node::~trie_node() {
+    delete _children;
+}
+
+trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
+    if (_children == nullptr) {
+        _children = new mstd::vector<trie_node>();
+    }
+    trie_node new_node(word, eow, this);
+    if (_children->size() == 0) {
+        _children->m_push(new_node);
+    } else {
+        for (int i = 0; i < (size_t) _children->size(); i++) {
+            if (word > _children->get(i)._word) {
+                _children->m_insert_at(i, new_node);
+                break;
+            }
+        }
+    }
+
+    return _children->get_last_inserted();
+}
+
+const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
+    return *_children;
+}
+
+trie::trie_node *trie::trie_node::get_child(int index) {
+    return _children->at_p(index);
+}
+
+trie::trie_node *trie::trie_node::get_child(std::string &word) {
+    if (_children == nullptr) return nullptr;
+    for (int i = 0; i < _children->size(); i++) {
+        if (_children->at(i)._word == word) {
+            return _children->at_p(i);
+        }
+    }
+    return nullptr;
+}
+
+void trie::trie_node::push_child(trie_node *node) {
+    if (_children == nullptr) {
+        _children = new mstd::vector<trie_node>();
+    }
+    _children->push(*node);
+}
+
+bool trie::trie_node::is_end_of_word() {
+    return _eow;
+}
+
+size_t trie::trie_node::children_size() {
+    return _children->size();
+}
+
+std::string trie::trie_node::get_word() {
+    return _word;
+}
+
+void trie::trie_node::set_end_of_word() {
+    _eow = true;
+}
+
+trie::trie_node &trie::trie_node::operator=(const trie::trie_node &other) {
+    _word = other._word;
+    _eow = other._eow;
+    _children = new mstd::vector<trie_node>(*other._children);
+    _parent = other._parent;
+    return *this;
+}
+
+// Move assignment operator
+// "Steals" the _children pointer from the other
+// trie_node
+trie::trie_node &trie::trie_node::operator=(trie::trie_node &&other) noexcept {
+    _word = other._word;
+    _eow = other._eow;
+    _children = other._children;
+    other._children = nullptr;
+    _parent = other._parent;
+    return *this;
 }

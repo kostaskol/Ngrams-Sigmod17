@@ -1,0 +1,8 @@
+1. Removed comments.txt and added changes.txt (makes usage clearer)
+2. Added move constructor and operator= to mstd::vector and trie::trie_node
+3. Fixed a possible issue where trie::trie_node::operator= would simply "take" the pointer from the other object 
+	(no trie_node object was assigned so far, but could have caused problems in the future)
+4. Changed all .h files to .hpp (better understood by cmake)
+5. Added mstd::vector::m_push (move_push), which uses std::move to "copy" the object to the vector. 
+	In the context of trie_nodes, this means that the _children vector is not copied, but simply moved
+6. Newly created nodes are thus not copied to their parent's children vector, but instead moved there.

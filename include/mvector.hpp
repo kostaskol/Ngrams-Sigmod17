@@ -14,22 +14,19 @@ namespace mstd {
     template <typename T>
     class vector {
     private:
-        size_t _size;
+        size_t _size{};
         size_t _capacity;
         int _last;
         T *_entries;
 
         void _enlarge() {
-            auto *tmp = new T[_capacity * 2];
-            for (size_t i = 0; i < _size; i++) {
-                tmp[i] = _entries[i];
-            }
+            auto *tmp = new T[_capacity << 1];
+            std::copy(_entries, _entries + _size, tmp);
 
             delete[] _entries;
-
             _entries = tmp;
 
-            _capacity *= 2;
+            _capacity = _capacity << 1;
         }
 
     public:
@@ -43,9 +40,10 @@ namespace mstd {
                   _capacity(other._capacity) {
 
             _entries = new T[_capacity];
-            for (size_t i = 0; i < _size; i++) {
-                _entries[i] = other._entries[i];
-            }
+            std::copy(other._entries, other._entries + other._size, _entries);
+//            for (size_t i = 0; i < _size; i++) {
+//                _entries[i] = other._entries[i];
+//            }
             _last = other._last;
         }
 
@@ -56,12 +54,52 @@ namespace mstd {
             _last = other._last;
             _entries = new T[_capacity];
             int cur = 0;
-            for (auto i = (size_t) start; i < (size_t) end; i++) {
-                _entries[cur++] = other._entries[i];
-            }
+            std::copy(other._entries + start, other._entries + end, _entries);
+//            for (auto i = (size_t) start; i < (size_t) end; i++) {
+//                _entries[cur++] = other._entries[i];
+//            }
         }
 
-        vector sublist(int start, int length) {
+        vector(vector &&other) noexcept {
+            _size = other._size;
+            _capacity = other._capacity;
+            _last = other._last;
+            _entries = other._entries;
+            other._entries = nullptr;
+        }
+
+        vector(vector &&other, int start = 0, int end = 0) noexcept {
+            _size = other._size;
+            _capacity = other._capacity;
+            _last = other._last;
+            _entries = other._entries;
+            other._entries = nullptr;
+            if (start < 0 || end >= _size) return;
+            std::move(_entries + start, _entries + end, _entries);
+        }
+
+        vector(const T *other, int size, int start = 0, int end = size) {
+            if (end >= size || start < 0) return;
+
+            _size = (size_t) end - start;
+            _capacity = _size;
+            _last = (int) _size;
+
+            _entries = new T[_size];
+            std::copy(other + start, other + end, _entries);
+        }
+
+        vector(const T *other, int start = 0, int end = 0) {
+            if (start < 0) return;
+            _size = (size_t) end - start;
+            _capacity = _size;
+            _last = (int) _size;
+
+            _entries = new T[_size];
+            std::copy(other + start, other + end, _entries);
+        }
+
+        vector sublist(int start, int length) const {
             if (start + length > (int) _size) {
                 throw std::runtime_error("Bad indices");
             }
@@ -87,7 +125,14 @@ namespace mstd {
             _size++;
         }
 
-        T *get_last_inserted() {
+        void m_push(T &ent) {
+            if (_size + 1 >= (size_t) _capacity) _enlarge();
+
+            _entries[_last++] = std::move(ent);
+            _size++;
+        }
+
+        T *get_last_inserted() const {
             return &_entries[_last - 1];
         }
 
@@ -105,11 +150,28 @@ namespace mstd {
                 return;
             }
 
+
             for (size_t i = _size - 1; i >= index; i--) {
                 _entries[i + 1] = _entries[i];
             }
 
             _entries[index] = T(ent);
+            _size++;
+        }
+
+        void m_insert_at(int index, T &ent) {
+            if (_size + 1 >= (size_t) _capacity) _enlarge();
+
+            if (index == 0) {
+                m_push(ent);
+                return;
+            }
+
+            for (size_t i = _size - 1; i >= index; i--) {
+                _entries[i + 1] = std::move(_entries[i]);
+            }
+
+            _entries[index] = std::move(ent);
             _size++;
         }
 
@@ -123,7 +185,7 @@ namespace mstd {
             _capacity = _size;
         }
 
-        bool in(const T &ent) {
+        bool in(const T &ent) const {
             for (size_t i = 0; i < _size; i++) {
                 if (_entries[i] == ent) {
                     return true;
@@ -132,7 +194,7 @@ namespace mstd {
             return false;
         }
 
-        T &at(int index) {
+        T &at(int index) const {
             if (index >= (int) _size) {
                 throw std::runtime_error("Index out of range:");
             }
@@ -141,7 +203,7 @@ namespace mstd {
         }
 
         // Method sugar
-        T &get(int index) {
+        T &get(int index) const {
             return at(index);
         }
 
@@ -160,7 +222,7 @@ namespace mstd {
             return at_p(index);
         }
 
-        int get_index(const T &ent) {
+        int get_index(const T &ent) const {
             for (size_t i = 0; i < _size; i++) {
                 if (_entries[i] == ent) return (int) i;
             }
@@ -234,21 +296,31 @@ namespace mstd {
             _last--;
         }
 
-        size_t size() { return _size; }
+        size_t size() const { return _size; }
 
+        // Copy operator=
         vector &operator=(const vector &other) {
             delete[] _entries;
             _size = other._size;
             _capacity = other._capacity;
             _entries = new T[_capacity];
-            for (size_t i = 0; i < _capacity; i++) {
-                _entries[i] = other._entries[i];
-            }
+            std::copy(other._entries, other._entries + _size, _entries);
 
             return *this;
         }
 
-        T get_cpy(int index) {
+        // Move operator=
+        vector &operator=(vector &&other) noexcept {
+            delete[] _entries;
+            _size = other._size;
+            _capacity = other._capacity;
+            _entries = other._entries;
+            other._entries = nullptr;
+
+            return *this;
+        }
+
+        T get_cpy(int index) const {
             if (index >= _size) {
                 throw std::runtime_error("Index out of range");
             }
@@ -256,11 +328,7 @@ namespace mstd {
             return _entries[index];
         }
 
-        bool operator==(const vector &other) {
-            return true;
-        }
-
-        T &operator[](int index) {
+        T &operator[](int index) const {
             return at(index);
         }
 

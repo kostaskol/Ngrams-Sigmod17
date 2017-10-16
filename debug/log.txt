@@ -1,3 +1,18 @@
 15/10/2017 - 21:42:12 - [SUCCESS] 	-- main : The N-Gram Hello World this is an N-Gram exists!
 15/10/2017 - 21:42:12 - [SUCCESS] 	-- main : The N-Gram Hello exists!
 15/10/2017 - 21:42:12 - [ERROR] 	-- main : The N-Gram hi does not exist
+16/10/2017 - 23:39:44 - [SUCCESS] 	-- main : The N-Gram Hello World this is an N-Gram exists!
+16/10/2017 - 23:39:44 - [SUCCESS] 	-- main : The N-Gram Hello exists!
+16/10/2017 - 23:39:44 - [ERROR] 	-- main : The N-Gram hi does not exist
+17/10/2017 - 00:17:29 - [SUCCESS] 	-- main : The N-Gram Hello World this is an N-Gram exists!
+17/10/2017 - 00:17:29 - [SUCCESS] 	-- main : The N-Gram Hello exists!
+17/10/2017 - 00:17:29 - [ERROR] 	-- main : The N-Gram hi does not exist
+17/10/2017 - 00:17:43 - [SUCCESS] 	-- main : The N-Gram Hello World this is an N-Gram exists!
+17/10/2017 - 00:17:43 - [SUCCESS] 	-- main : The N-Gram Hello exists!
+17/10/2017 - 00:17:43 - [ERROR] 	-- main : The N-Gram hi does not exist
+17/10/2017 - 00:27:01 - [SUCCESS] 	-- main : The N-Gram Hello World this is an N-Gram exists!
+17/10/2017 - 00:27:01 - [SUCCESS] 	-- main : The N-Gram Hello exists!
+17/10/2017 - 00:27:01 - [ERROR] 	-- main : The N-Gram hi does not exist
+17/10/2017 - 00:27:09 - [SUCCESS] 	-- main : The N-Gram Hello World this is an N-Gram exists!
+17/10/2017 - 00:27:09 - [SUCCESS] 	-- main : The N-Gram Hello exists!
+17/10/2017 - 00:27:09 - [ERROR] 	-- main : The N-Gram hi does not exist
