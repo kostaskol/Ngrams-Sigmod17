@@ -8,7 +8,8 @@
 #define INSERTION 0
 #define QUERY 1
 #define DELETION 2
-#define UNKNOWN_OP 3
+#define FINISH 3
+#define UNKNOWN_OP 4
 
 class parser {
 private:
@@ -23,7 +24,7 @@ public:
 
     bool next_init(mstd::vector<std::string> *);
 
-    bool next_query(mstd::vector<std::string> *, int *);
+    bool next_command(mstd::vector<std::string> *, int *);
 };
 
 

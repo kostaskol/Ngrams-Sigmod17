@@ -30,7 +30,7 @@ namespace mstd {
         }
 
     public:
-        explicit vector( bool ptr = false, size_t capacity = 1)
+        explicit vector(size_t capacity = 1)
                 : _size(0), _capacity(capacity), _last(0) {
             _entries = new T[_capacity];
         }
@@ -89,15 +89,15 @@ namespace mstd {
             std::copy(other + start, other + end, _entries);
         }
 
-        vector(const T *other, int start = 0, int end = 0) {
-            if (start < 0) return;
-            _size = (size_t) end - start;
-            _capacity = _size;
-            _last = (int) _size;
-
-            _entries = new T[_size];
-            std::copy(other + start, other + end, _entries);
-        }
+//        vector(const T *other, int start, int end) {
+//            if (start < 0) return;
+//            _size = (size_t) end - start;
+//            _capacity = _size;
+//            _last = (int) _size;
+//
+//            _entries = new T[_size];
+//            std::copy(other + start, other + end, _entries);
+//        }
 
         vector sublist(int start, int length) const {
             if (start + length > (int) _size) {
@@ -149,7 +149,6 @@ namespace mstd {
                 push(ent);
                 return;
             }
-
 
             for (size_t i = _size - 1; i >= index; i--) {
                 _entries[i + 1] = _entries[i];
@@ -229,14 +228,13 @@ namespace mstd {
             return -1;
         }
 
-        void clear() {
-            if (_size != 0) delete[] _entries;
-
+        void clear(size_t new_cap = 1) {
+            delete[] _entries;
             _size = 0;
 
             _last = 0;
 
-            _capacity = 1;
+            _capacity = new_cap;
             _entries = new T[_capacity];
         }
 
@@ -303,6 +301,7 @@ namespace mstd {
             delete[] _entries;
             _size = other._size;
             _capacity = other._capacity;
+            _last = other._last;
             _entries = new T[_capacity];
             std::copy(other._entries, other._entries + _size, _entries);
 
@@ -315,6 +314,7 @@ namespace mstd {
             _size = other._size;
             _capacity = other._capacity;
             _entries = other._entries;
+            _last = other._last;
             other._entries = nullptr;
 
             return *this;

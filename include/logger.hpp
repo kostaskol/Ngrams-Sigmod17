@@ -64,10 +64,16 @@ namespace mstd {
         }
 
 
-        static void error(const std::string &context, const std::string &message, int type = BOTH) {
+        static void error(const std::string &context, const std::string &message, int type = BOTH, bool stderr = true) {
             mstd::date_time now;
             if (type == STDOUT || type == BOTH) {
-                std::cerr << "\033[1;31m " << now() << " - [ERROR] \t-- " << context << " : "
+                std::ostream *outp;
+                if (stderr) {
+                    outp = &std::cerr;
+                } else {
+                    outp = &std::cout;
+                }
+                *outp << "\033[1;31m " << now() << " - [ERROR] \t-- " << context << " : "
                           << message << "\033[0m" << std::endl;
             }
 

@@ -4,6 +4,7 @@
 
 #include <string>
 #include "hash_table.hpp"
+#include "helpers.hpp"
 
 #define UNKNOWN_ARG 1
 #define WRONG_FORMAT 2
@@ -13,7 +14,7 @@
 
 /*
  * Simple command line arguments parser. Expects an mstd::hash_table object
- * with entries in the form of: "argument-name" => "<s/i/none>"
+ * with entries in the form of: "argument-name" => "<u(nary)/b(inary)>"
  * and parses the command line arguments trying to match them
  */
 
@@ -22,8 +23,24 @@ namespace mstd {
     private:
         mstd::hash_table<std::string> _args;
         mstd::vector<std::string> _flags;
+        bool _auto_msg;
+        std::string _legal;
+        void _exit(const std::string &&exec_name, int err_type) {
+            switch (err_type) {
+                case UNKNOWN_ARG:
+                    std::cout << "Unknown arguments found. Usage: " << exec_name << _legal << std::endl;
+                    exit(-1);
+                case WRONG_FORMAT:
+                    std::cout << "Wrong usage found. Usage: " << exec_name << _legal << std::endl;
+                    exit(-1);
+                case WRONG_INPUT:
+                    std::cerr << "Our input was wrong" << std::endl;
+                    exit(-1);
+            }
+        }
     public:
-        cmd_parser() : _args(5), _flags(3) {}
+        explicit cmd_parser(bool auto_msg = false, std::string &&legal = "")
+                : _args(5), _flags(3), _auto_msg(auto_msg), _legal(legal) {}
 
         ~cmd_parser() = default;
 
@@ -39,25 +56,28 @@ namespace mstd {
                 }
 
                 if (!known && !allow_unknown) {
+                    if (_auto_msg) {
+                        _exit(std::string(argv[0]), UNKNOWN_ARG);
+                    }
                     std::cout << "Unknown key: " << s << std::endl;
                     return UNKNOWN_ARG;
                 }
 
-                if (type == "<none>") {
+                if (type == "<u>") {
                     _flags.add(s);
-                } else if (type == "<i>") {
+                } else if (type == "<b>") {
                     if (i + 1 >= argc) {
-                        return WRONG_FORMAT;
-                    } else {
-                        _args.put(s, argv[++i]);
-                    }
-                } else if (type == "<s>") {
-                    if (i + 1 >= argc) {
+                        if (_auto_msg) {
+                            _exit(std::string(argv[0]), WRONG_FORMAT);
+                        }
                         return WRONG_FORMAT;
                     } else {
                         _args.put(s, argv[++i]);
                     }
                 } else {
+                    if (_auto_msg) {
+                        _exit(std::string(argv[0]), WRONG_INPUT);
+                    }
                     return WRONG_INPUT;
                 }
             }
@@ -70,7 +90,7 @@ namespace mstd {
         }
 
         int get_int(const std::string &key) {
-            return atoi(_args.get(key).c_str());
+            return helpers::to_int(_args.get(key));
         }
 
         bool is_set(const std::string &key) {

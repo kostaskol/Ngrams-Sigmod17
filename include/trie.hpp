@@ -52,18 +52,13 @@ private:
 
     trie_node *_root;
     size_t _size;
-
-    void _in_order(trie_node *root);
 public:
-
     trie();
     ~trie();
 
-    void add(const std::string &ngram);
+    void add(const mstd::vector<std::string> &ngram);
 
-    void print();
-
-    bool search(const std::string &ngram);
+    bool search(const mstd::vector<std::string> &ngram);
 };
 
 #endif // TRIE

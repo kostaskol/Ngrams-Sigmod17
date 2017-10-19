@@ -2,112 +2,93 @@
 #include <cmd_parser.hpp>
 #include <parser.hpp>
 #include "trie.hpp"
-#include <string>
-#include "mvector.hpp"
-#include "hash_table.hpp"
 
 using std::cout;
 using std::endl;
 using std::string;
 using mstd::vector;
+using mstd::logger;
 
 std::string mstd::logger::file;
 
 int main(int argc, char **argv) {
-    mstd::logger::file = "../debug/log.txt";
+    logger::file = "../debug/log.txt";
+    // Start command line arguments parsing
+    string legal = " -i <init-file> -q <query-file> [--debug]";
     if (argc < 3) {
-        cout << "Invalid number of arguments. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
+        cout << "Invalid number of arguments. Usage: " << argv[0] << legal << endl;
         return 1;
-    }
-    mstd::hash_table<string> ht(5);
-    ht.put("-i", "<s>");
-    ht.put("-q", "<s>");
-    ht.put("--debug", "<none>");
-    mstd::cmd_parser parser;
-    int status = parser.parse(argc, argv, ht);
-    switch (status) {
-        case UNKNOWN_ARG:
-            cout << "Unknown arguments found. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
-            return 1;
-        case WRONG_FORMAT:
-            cout << "Wrong usage found. Usage: " << argv[0] << " -i <init_file> -q <query_file> [--debug]" << endl;
-            return 1;
-        case WRONG_INPUT:
-            std::cerr << "Our input was wrong" << endl;
-            return 1;
     }
 
+    auto *ht = new mstd::hash_table<string>(3);
+    ht->put("-i", "<b>");
+    ht->put("-q", "<b>");
+    ht->put("--debug", "<u>");
+    auto *c_parser = new mstd::cmd_parser(true, std::move(legal));
+    c_parser->parse(argc, argv, *ht);
+    delete ht;
+
+    string init_file;
+    string query_file;
+    bool debug;
     try {
-        string init_file = parser.get_string("-i");
-        string query_file = parser.get_string("-q");
+        init_file = c_parser->get_string("-i");
+        query_file = c_parser->get_string("-q");
     } catch (std::runtime_error &e) {
-        mstd::logger::error("main", "User has not provided both -i and -q. Exiting..", BOTH);
-        return 1;
+        logger::error("main", "User has not provided both -i and -q. Exiting..", BOTH);
+        return -1;
     }
+
+    debug = c_parser->is_set("--debug");
+
+    delete c_parser;
+    // End command line arguments parsing
 
     trie t;
-    t.add("Hello World this is an N-Gram");
-    t.add("Hello World");
-    t.add("Hello");
 
-    std::string checks[] = {
-            "Hello World this is an N-Gram",
-            "Hello",
-            "hi"
-    };
+    // Begin initialisation file parsing
+    parser init_parser(init_file);
 
-    for (int i = 0; i < 3; i++) {
-        if (t.search(checks[i])) {
-            std::string succ = "The N-Gram " + checks[i] + " exists!";
-            mstd::logger::success("main", succ);
-        } else {
-            std::string fail = "The N-Gram " + checks[i] + " does not exist";
-            mstd::logger::error("main", fail);
-        }
+    vector<string> v;
+    while (true) {
+        bool stop = init_parser.next_init(&v);
+        if (v.size() == 0) break;
+        string s = helpers::join(v, ' ');
+        t.add(v);
+        logger::success("init", "Added N-Gram " + s);
+        v.clear();
+        if (stop) break;
     }
 
-//    parser init_parser("../file.init");
-//    if (!init_parser.is_open()) {
-//        mstd::logger::error("main", "file has not been opened");
-//        return 1;
-//    }
-//
-//    vector<string> v;
-//
-//    while (!init_parser.next_init(&v)) {
-//        for (int i = 0; i < v.size(); i++) {
-//            cout << v[i] << endl;
-//        }
-//        cout << endl;
-//    }
-//
-//    parser query_parser("../file.query");
-//    if (!query_parser.is_open()) {
-//        mstd::logger::error("main", "file has not been opened");
-//        return 1;
-//    }
-//
-//    int type;
-//    while (!query_parser.next_query(&v, &type)) {
-//        switch (type) {
-//            case INSERTION:
-//                mstd::logger::success("main", "Got insertion operation");
-////                for (int i = 0; i < v.size(); i++) {
-////                    cout << v[i] << endl;
-////                }
-////                break;
-//            case QUERY:
-//                mstd::logger::success("main", "Got query operation");
-//                break;
-//            case DELETION:
-//                mstd::logger::success("main", "Got deletion operation");
-//                break;
-//            case UNKNOWN_OP:
-//                mstd::logger::warn("main", "Got an unknown operation");
-//                break;
-//        }
-//        for (int i = 0; i < v.size(); i++) {
-//            cout << v[i] << endl;
-//        }
-//    }
+    // End initialisation file parsing
+
+    // Begin query file parsing
+    parser query_parser(query_file);
+
+    int cmd_type;
+
+    while (true) {
+        bool stop = query_parser.next_command(&v, &cmd_type);
+        string s;
+        switch (cmd_type) {
+            case INSERTION:
+                s = helpers::join(v, ' ');
+                logger::success("query", "Added N-Gram \"" + s + "\"");
+                t.add(v);
+                break;
+            case QUERY:
+                s = helpers::join(v, ' ');
+                if (t.search(v)) {
+                    string succ = "The N-Gram \"" + s + "\" exists!";
+                    logger::success("query", succ, BOTH);
+                } else {
+                    string fail = "The N-Gram \"" + s + "\" does not exist!";
+                    logger::error("query", fail, BOTH, false);
+                }
+                break;
+        }
+        if (stop) break;
+        v.clear();
+    }
+    // End query file parsing
 }

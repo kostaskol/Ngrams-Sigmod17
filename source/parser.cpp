@@ -1,6 +1,8 @@
 #include "parser.hpp"
+#include <iostream>
 #include <string>
 #include <sstream>
+#include <helpers.hpp>
 
 using std::string;
 using mstd::vector;
@@ -10,44 +12,47 @@ using std::endl;
 parser::parser(string file_name) : _file(file_name) {}
 
 bool parser::next_init(vector<string> *line) {
-    string s;
-    std::getline(_file, s);
-    const auto str_end = s.find_last_not_of('\n');
-    s.substr(0, str_end);
-    std::istringstream ss(s);
-    string tmp;
-    while (getline(ss, s, ' ')) {
-        line->add(s);
-    }
+    if (_file.is_open()) {
+        string s;
+        std::getline(_file, s);
+        const auto str_end = s.find_last_not_of('\n');
+        s.substr(0, str_end);
+        helpers::split(s, *line, ' ');
 
-    return _file.eof();
+        return _file.eof();
+    } else {
+        throw std::runtime_error("File not opened");
+    }
 }
 
-bool parser::next_query(vector<std::string> *line, int *type) {
+bool parser::next_command(vector<string> *line, int *type) {
     string s;
     std::getline(_file, s);
     const auto str_end = s.find_last_not_of('\n');
     s.substr(0, str_end);
-    std::istringstream ss(s);
-    string tmp;
     vector<string> tmp_v;
-    while(getline(ss, s, ' ')) {
-        tmp_v.add(s);
+
+    helpers::split(s, tmp_v, ' ');
+    if (tmp_v.size() != 0) {
+        if (tmp_v[0] == "A") {
+            *type = INSERTION;
+        } else if (tmp_v[0] == "Q") {
+            *type = QUERY;
+        } else if (tmp_v[0] == "D") {
+            *type = DELETION;
+        } else if (tmp_v[0] == "F") {
+            *type = FINISH;
+        } else {
+            *type = UNKNOWN_OP;
+        }
+
+        for (int i = 1; i < tmp_v.size(); i++) {
+            line->m_push(tmp_v[i]);
+        }
+
+        return _file.eof();
     }
-
-    if (tmp_v[0] == "A") {
-        *type = INSERTION;
-    } else if (tmp_v[0] == "Q") {
-        *type = QUERY;
-    } else if (tmp_v[0] == "D") {
-        *type = DELETION;
-    } else {
-        *type = UNKNOWN_OP;
-    }
-
-    *line = vector<string>(tmp_v, 1, (int) tmp.size());
-
-    return _file.eof();
+    return true;
 }
 
 bool parser::is_open() {
