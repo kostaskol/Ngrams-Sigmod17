@@ -39,10 +39,7 @@ void trie::add(const vector<string> &ngram) {
             current = child;
         }
     }
-
-    if (ngram.size() == 2 && ngram[0] == "Hello" && ngram[1] == "World") {
-        int x = 5;
-    }
+    
     std::string last_word = ngram.get_cpy((int) ngram.size() - 1);
 
     trie_node *child;
@@ -55,6 +52,7 @@ void trie::add(const vector<string> &ngram) {
     }
 }
 
+// To be deleted
 bool trie::search(const vector<string> &ngram) {
     trie_node *current = _root;
     for (int i = 0; i < ngram.size() - 1; i++) {
@@ -103,7 +101,6 @@ trie::trie_node::~trie_node() {
 }
 
 trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
-    // TODO: Add capacity equal to N
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(SIZE);
     }
