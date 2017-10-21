@@ -13,6 +13,8 @@ private:
         bool _eow;
         mstd::vector<trie_node> *_children;
         trie_node *_parent;
+
+        bool _bsearch_children(std::string &word, int *index);
     public:
         trie_node();
 

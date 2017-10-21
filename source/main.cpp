@@ -46,14 +46,26 @@ int main(int argc, char **argv) {
     }
 
     trie t;
-    t.add("Hello World this is an N-Gram");
-    t.add("Hello World");
-    t.add("Hello");
+    // t.add("Hello World this is an N-Gram");
+    // t.add("Hello World");
+    // t.add("Hello");
+    t.add("this is a dog");
+    t.add("this is a cat");
+    // t.add("the fox is bad");
+    // t.add("the car is red");
+    // t.add("this is the test");
+    // t.add("this is a");
 
     std::string checks[] = {
-            "Hello World this is an N-Gram",
-            "Hello",
-            "hi"
+            "this is a dog"
+            "this is a cat",
+            // "the fox is bad",
+            // "the car is red",
+            // "this is the test",
+            // "this is a"
+            // "Hello World this is an N-Gram",
+            // "Hello",
+            // "hi"
     };
 
     for (int i = 0; i < 3; i++) {
