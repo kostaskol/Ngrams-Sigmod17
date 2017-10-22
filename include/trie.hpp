@@ -50,6 +50,8 @@ private:
         // "Steals" the _children pointer from the other
         // trie_node
         trie_node &operator=(trie_node &&other) noexcept;
+
+        friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
     };
 
     trie_node *_root;
@@ -61,6 +63,8 @@ public:
     void add(const mstd::vector<std::string> &ngram);
 
     bool search(const mstd::vector<std::string> &ngram);
+
+    friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 };
 
 #endif // TRIE

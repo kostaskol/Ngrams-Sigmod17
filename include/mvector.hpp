@@ -16,7 +16,7 @@ namespace mstd {
     private:
         size_t _size{};
         size_t _capacity;
-        int _last;
+        size_t _last;
         T *_entries;
 
         void _enlarge() {
@@ -43,13 +43,12 @@ namespace mstd {
             _last = other._last;
         }
 
-        vector(const vector &other, int start, int end) {
-            if (start < 0 || end > (int) other._size) return;
+        vector(const vector &other, size_t start, size_t end) {
+            if (start < 0 || end > other._size) return;
             _capacity = other._capacity;
             _size = (size_t) end - start;
             _last = other._last;
             _entries = new T[_capacity];
-            int cur = 0;
             std::copy(other._entries + start, other._entries + end, _entries);
         }
 
@@ -64,8 +63,8 @@ namespace mstd {
             delete[] _entries;
         }
 
-        vector sublist(int start, int length) const {
-            if (start + length > (int) _size) {
+        vector sublist(size_t start, size_t length) const {
+            if (start + length > _size) {
                 throw std::runtime_error("Bad indices");
             }
 
@@ -86,62 +85,38 @@ namespace mstd {
             _size++;
         }
 
-        void m_push(T &ent) {
+        T *m_push(T &ent) {
             if (_size + 1 >= (size_t) _capacity) _enlarge();
 
-            _entries[_last++] = std::move(ent);
+            _entries[_last] = std::move(ent);
             _size++;
-        }
-
-        T *get_last_inserted() const {
-            return &_entries[_last - 1];
+            return &_entries[_last++];
         }
 
         void add(const T &ent) {
             push(ent);
         }
 
-        void insert_at(int index, const T &ent) {
-            if (index > _size) {
-                throw std::runtime_error("Index out of range");
-            }
-
-            if (_size + 1>= (size_t) _capacity) {
-                _enlarge();
-            }
+        T *m_insert_at(int index, T &ent) {
+            std::cout << "Inserting at" << std::endl;
+            if (_size + 1 >= _capacity) _enlarge();
 
             if ((_size == 0) || (index == _size)) {
-                push(ent);
-                return;
+                return m_push(ent);
             }
 
-            for (size_t i = _size - 1; i >= index; i--) {
-                _entries[i + 1] = std::move(_entries[i]);
-            }
-
-            _entries[index] = T(ent);
-            _size++;
-        }
-
-        void m_insert_at(int index, T &ent) {
-            if (_size + 1 >= (size_t) _capacity) _enlarge();
-
-            if ((_size == 0) || (index == _size)) {
-                m_push(ent);
-                return;
-            }
-
-            for (size_t i = _size - 1; i >= index; i--) {
+            for (size_t i = _size - 1; (int) i >= index; i--) {
                 _entries[i + 1] = std::move(_entries[i]);
             }
 
             _entries[index] = std::move(ent);
             _size++;
+            return &_entries[index];
         }
 
         void shrink_to_size() {
             auto *tmp = new T[_size];
-            for (int i = 0; i < _size; i++) {
+            for (size_t i = 0; i < _size; i++) {
                 tmp[i] = _entries[i];
             }
             delete[] _entries;
@@ -158,7 +133,7 @@ namespace mstd {
             return false;
         }
 
-        T &at(int index) const {
+        T &at(size_t index) const {
             if (index >= (int) _size) {
                 throw std::runtime_error("Index out of range:");
             }
@@ -167,14 +142,14 @@ namespace mstd {
         }
 
         // Method sugar
-        T &get(int index) const {
+        T &get(size_t index) const {
             return at(index);
         }
 
 
 
-        T *at_p(int index) {
-            if (index >= (int) _size) {
+        T *at_p(size_t index) {
+            if (index >= _size) {
                 throw std::runtime_error("Index out of range");
             }
 
@@ -182,7 +157,7 @@ namespace mstd {
         }
 
         // Method sugar
-        T *get_p(int index) {
+        T *get_p(size_t index) {
             return at_p(index);
         }
 
@@ -203,8 +178,8 @@ namespace mstd {
             _entries = new T[_capacity];
         }
 
-        void set_at(int index, const T &ent) {
-            if (index < 0 || index > (int) _size) {
+        void set_at(size_t index, const T &ent) {
+            if (index < 0 || index > _size) {
                 throw std::runtime_error("Bad index: " + index);
             }
 
@@ -255,15 +230,15 @@ namespace mstd {
             return &_entries[_last];
         }
 
-        void remove_at(int index) {
-            if (index >= (int) _size || index < 0) {
+        void remove_at(size_t index) {
+            if (index >= _size || index < 0) {
                 throw std::runtime_error("Bad index: " + index);
             }
             auto *tmp_ent = new T[_capacity];
 
-            int j = 0;
+            size_t j = 0;
             for (size_t i = 0; i < _size; i++) {
-                if ((int) i != index) {
+                if (i != index) {
                     tmp_ent[j++] = _entries[i];
                 }
             }
@@ -280,7 +255,7 @@ namespace mstd {
 
 
 
-        T get_cpy(int index) const {
+        T get_cpy(size_t index) const {
             if (index >= _size) {
                 throw std::runtime_error("Index out of range");
             }
@@ -288,7 +263,7 @@ namespace mstd {
             return _entries[index];
         }
 
-        T &operator[](int index) const {
+        T &operator[](size_t index) const {
             return at(index);
         }
 

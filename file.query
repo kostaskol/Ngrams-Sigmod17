@@ -1,8 +1,5 @@
-Q Hello World this is an NGram
-Q Hello World
-Q Hi
-A Hi
-Q Hi
-Q Hello
-A this is a cat
-Q this is
+Q This
+Q This is a cat
+Q This is a dog
+A This
+Q This

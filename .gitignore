@@ -2,4 +2,5 @@ build
 clean
 .idea
 cmake-build-debug
+debug/log.txt
 vgcore.*
