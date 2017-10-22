@@ -3,5 +3,7 @@ clean
 .idea
 cmake-build-debug
 debug/log.txt
+file.init
+file.query
 vgcore.*
 source/main.cpp

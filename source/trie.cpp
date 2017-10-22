@@ -137,93 +137,49 @@ trie::trie_node *trie::trie_node::get_child(int index) {
 trie::trie_node *trie::trie_node::get_child(std::string &word) {
     if (_children == nullptr) return nullptr;
     int index;
-    if(!_bsearch_children(word,&index)){
+    if(!_bsearch_children(word,&index)){    // Not found
         return nullptr;
-    } else{
+    } else{                                 // Found
         return get_child(index);
     }
 }
 
-/*
- Ένα απλό implementation που λύνει τα corner cases
- bool bsearch(const vector<string> &v, string w, int *index) {
-    int left = 0;
-    int right = (int) v.size() - 1;
-    while (left <= right) {
-        int mid = (right + left) >> 1;
-        if (v[mid] == w) {
-            *index = mid;
-            return true;
-        }
-
-        if (left == right) {
-            if (v[left] == w) {
-                *index = left;
-                return true;
-            } else if (v[left] > w) {
-                *index = left;
-                return false;
-            } else {
-                *index = left + 1;
-                return false;
-            }
-        }
-
-        if (v[mid] < w) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-}
- */
 bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
-    // FIXME(giannis): Η found δεν χρειάζεται. Δεν γίνεται ποτέ true χωρίς να επιστραφεί αμέσως
-    // TODO(giannis): Θα μπορούσε να χρησιμοποιηθεί αυτό για να γλυτώσουμε υπολογισμούς
-//    if (_children->at(0)._word > word) {
-//        *index = 0;
-//        return false;
-//    }
-//    if (_children->at(_children->size() - 1)._word < word) {
-////      Αν επιστραφεί -1, θα σημαίνει πως μπορούμε απλά να κάνουμε push για να μην πέσουμε πάνω σε κάποιο corner case
-//        *index = -1;
-//        return false;
-//    }
-    bool found = false;
+   if (_children->at(0)._word > word) {
+       *index = 0;
+       return false;
+   }
+   if (_children->at(_children->size() - 1)._word < word) {
+//    // TOMENTION: NOT -> Αν επιστραφεί -1, θα σημαίνει πως μπορούμε απλά να κάνουμε push για να μην πέσουμε πάνω σε κάποιο corner case
+       *index = _children->size() - 1;
+       return false;
+   }
     int left = 0;
     int right = (int) _children->size() - 1;
     while (left <= right) {
-        // FIXME(giannis): Not required. It's the same as (left + right) >> 1
-        // left + (right - left) / 2 = left + right / 2 - left / 2 = left - left / 2 + right / 2 = left / 2 + right / 2 = (left + right) / 2
         int mid = left + ((right-left) / 2);
         if (_children->at(mid)._word == word) {
-            found = true;
             *index = mid;
-            return found;
+            return true;
         }
 
         // FIXME(giannis): Δεν χρειάζεται. Το ίδιο με: _children->at(left)._word > word
         if (left == right) {    //mid._word != word here, so we return where the new word should be added.
             // Note: *Νομίζω* πως εδώ πρέπει να ελέγχει και αν είναι ίσα γιατί μπορεί όταν φτάσει στο τελευταίο
             // split να βρεθεί το παιδί (ίσως να κάνω λάθος. Πρέπει να ελεγχθεί περισσότερο)
-            if (_children->at(left)._word.compare(word) > 0) {
-                // FIXME(giannis): Το index θα έπρεπε να είναι left
-                *index = left+1;
-            }
-            else{
-                // FIXME(giannis): *Νομίζω* πως το index θα έπρεπε να είναι left + 1
+            if (_children->at(left)._word > word) {
                 *index = left;
             }
-            return found;
+            else{
+                *index = left+1;
+            }
+            return false;
         }
 
-        // FIXME(giannis): Αν το word είναι μεγαλύτερο από το _children[mid]._word, τότε πρέπει να πας στο δεξί μισό (άρα left = mid + 1),
-        // αλλιώς right = mid - 1;
-        /// Η _word.compare(word) επιστρέφει αρνητικό αν το *_word* είναι μικρότερο του *word* και όχι ανάποδα
-        if (_children->at(mid)._word.compare(word) < 0) {
+        if (_children->at(mid)._word > word) {
             right = mid - 1;
         }
-        else if (_children->at(mid)._word.compare(word) > 0) {
+        else if (_children->at(mid)._word < word) {
             left = mid + 1;
         }
 

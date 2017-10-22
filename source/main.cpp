@@ -92,4 +92,3 @@ int main(int argc, char **argv) {
     }
     // End query file parsing
 }
-
