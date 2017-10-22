@@ -55,7 +55,8 @@ private:
     };
 
     trie_node *_root;
-    size_t _size;
+    size_t _num_nodes;
+    size_t _num_ngrams;
 public:
     trie();
     ~trie();
@@ -63,6 +64,10 @@ public:
     void add(const mstd::vector<std::string> &ngram);
 
     bool search(const mstd::vector<std::string> &ngram);
+
+    size_t get_num_nodes();
+
+    size_t get_num_ngrams();
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 };
