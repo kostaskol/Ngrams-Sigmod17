@@ -98,12 +98,11 @@ namespace mstd {
         }
 
         T *m_insert_at(int index, T &ent) {
-            std::cout << "Inserting at" << std::endl;
-            if (_size + 1 >= _capacity) _enlarge();
-
             if ((_size == 0) || (index == _size)) {
                 return m_push(ent);
             }
+
+            if (_size + 1 >= _capacity) _enlarge();
 
             for (size_t i = _size - 1; (int) i >= index; i--) {
                 _entries[i + 1] = std::move(_entries[i]);

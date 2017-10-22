@@ -2,6 +2,7 @@
 #include <cmd_parser.hpp>
 #include <parser.hpp>
 #include "trie.hpp"
+#include "mqueue.hpp"
 
 using std::cout;
 using std::endl;

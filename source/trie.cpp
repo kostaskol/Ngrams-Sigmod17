@@ -14,7 +14,8 @@ using std::endl;
  */
 trie::trie() {
     _root = new trie_node();
-    _size = 0;
+    _num_nodes = 0;
+    _num_ngrams = 0;
 }
 
 trie::~trie() {
@@ -32,10 +33,8 @@ void trie::add(const vector<string> &ngram) {
         trie_node *child;
         if ((child = current->get_child(ngram.at(i))) == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
-//             std::cout << "Prosthesa to paidi : " << current->get_word() << '\n';
-//            cout << "Inserted " << ngram.at(i) << endl;
             current = current->add_child(ngram.at(i), false);
-//            cout << "And got back " << current->get_word() << endl;
+            _num_nodes++;
         } else {
             // Otherwise, follow that child's path
             current = child;
@@ -46,15 +45,12 @@ void trie::add(const vector<string> &ngram) {
     trie_node *child;
     if ((child = current->get_child(last_word)) != nullptr) {
         // If the word already existed in the tree, we simply mark it as the end of the N-Gram
-//        cout << "Setting " << child->get_word() << " as end of word" << endl;
-        child->set_end_of_word();
+        child->set_end_of_word(true);
     } else {
         // Otherwise we insert it to that node's children
-//        cout << "Inserted " << last_word << endl;
         current = current->add_child(last_word, true);
-//        cout << "And got back " << current->get_word() << endl;
     }
-    _size++;
+    _num_ngrams++;
 }
 
 
@@ -111,37 +107,20 @@ trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
         _children = new mstd::vector<trie_node>(SIZE);
     }
 
-    size_t pos = 0;
     trie_node new_node(word, eow, this);
     if (_children->size() == 0) {
         return _children->m_push(new_node);
         // The position of the child is the position of the last element of the vector
     } else {
-        // ΝΟΤΕ: Only for testing purposes
 
-        // for (int i = 0; i < _children->size(); i++) {
-        //     if (_children->get((size_t) i)._word < word) {
-        //         return _children->m_insert_at((size_t) i, new_node);
-        //     }
-        // }
-        // // We know that the child does not exist, but no suitable place was found for it.
-        // // That means that it's larger than the last element, which means we can simply push
-        // return _children->m_push(new_node);
-        // TODO: Replace for loop with bsearch
        int at;
        if (!_bsearch_children(word, &at)) {
-// K//            If the bsearch "returns" -1, that means that we can simply push the child into the vector
-        //    if (at == -1) {
-//                return _children->m_push(new_node);
-//            }
            return _children->m_insert_at((size_t) at, new_node);
        } else{ //if word already exists
            //if we are careful to call add_child only when the child we are adding doesnt not already exists, this line is not useful
            return nullptr;
        }
     }
-
-    // return &_children->get(pos);
 }
 
 const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
@@ -168,8 +147,7 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
        return false;
    }
    if (_children->at(_children->size() - 1)._word < word) {
-//    // TOMENTION: NOT -> Αν επιστραφεί -1, θα σημαίνει πως μπορούμε απλά να κάνουμε push για να μην πέσουμε πάνω σε κάποιο corner case
-       *index = _children->size() - 1;
+       *index = _children->size();
        return false;
    }
     int left = 0;
@@ -181,10 +159,7 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
             return true;
         }
 
-        // FIXME(giannis): Δεν χρειάζεται. Το ίδιο με: _children->at(left)._word > word
         if (left == right) {    //mid._word != word here, so we return where the new word should be added.
-            // Note: *Νομίζω* πως εδώ πρέπει να ελέγχει και αν είναι ίσα γιατί μπορεί όταν φτάσει στο τελευταίο
-            // split να βρεθεί το παιδί (ίσως να κάνω λάθος. Πρέπει να ελεγχθεί περισσότερο)
             if (_children->at(left)._word > word) {
                 *index = left;
             }
@@ -208,7 +183,7 @@ void trie::trie_node::push_child(trie_node *node) {
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(SIZE);
     }
-    _children->push(*node);
+    _children->m_push(*node);
 }
 
 bool trie::trie_node::is_end_of_word() {
@@ -223,8 +198,8 @@ std::string trie::trie_node::get_word() {
     return _word;
 }
 
-void trie::trie_node::set_end_of_word() {
-    _eow = true;
+void trie::trie_node::set_end_of_word(bool eow) {
+    _eow = eow;
 }
 
 trie::trie_node &trie::trie_node::operator=(const trie::trie_node &other) {

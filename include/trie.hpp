@@ -4,6 +4,7 @@
 #include <string>
 #include "mvector.hpp"
 #include "logger.hpp"
+#include "mqueue.hpp"
 
 class trie {
 private:
@@ -42,7 +43,7 @@ private:
 
         std::string get_word();
 
-        void set_end_of_word();
+        void set_end_of_word(bool eow);
 
         trie_node &operator=(const trie_node &other);
 
@@ -55,7 +56,8 @@ private:
     };
 
     trie_node *_root;
-    size_t _size;
+    size_t _num_ngrams;
+    size_t _num_nodes;
 public:
     trie();
     ~trie();
