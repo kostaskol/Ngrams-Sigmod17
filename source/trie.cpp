@@ -121,7 +121,9 @@ trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
         if (!_bsearch_children(word, &at)) {
             return _children->m_insert_at(at, new_node);
         } else {
-            return nullptr; //if we are careful to call add_child only when the child we are adding doesnt not already exists, this line is not useful
+            // If we are careful to call add_child only when the child we are adding doesnt not already exists,
+            // this line is not useful
+            return nullptr;
         }
     }
 }
@@ -150,28 +152,25 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
        return false;
    }
    if (_children->at(_children->size() - 1)._word < word) {
-//    // TOMENTION: NOT -> Αν επιστραφεί -1, θα σημαίνει πως μπορούμε απλά να κάνουμε push για να μην πέσουμε πάνω σε κάποιο corner case
-       *index = _children->size() - 1;
+       *index = _children->size();
        return false;
    }
     int left = 0;
     int right = (int) _children->size() - 1;
     while (left <= right) {
         int mid = left + ((right-left) / 2);
+
         if (_children->at(mid)._word == word) {
             *index = mid;
             return true;
         }
 
-        // FIXME(giannis): Δεν χρειάζεται. Το ίδιο με: _children->at(left)._word > word
         if (left == right) {    //mid._word != word here, so we return where the new word should be added.
-            // Note: *Νομίζω* πως εδώ πρέπει να ελέγχει και αν είναι ίσα γιατί μπορεί όταν φτάσει στο τελευταίο
-            // split να βρεθεί το παιδί (ίσως να κάνω λάθος. Πρέπει να ελεγχθεί περισσότερο)
             if (_children->at(left)._word > word) {
                 *index = left;
             }
-            else{
-                *index = left+1;
+            else {
+                *index = left + 1;
             }
             return false;
         }
@@ -190,7 +189,7 @@ void trie::trie_node::push_child(trie_node *node) {
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(SIZE);
     }
-    _children->push(*node);
+    _children->m_push(*node);
 }
 
 bool trie::trie_node::is_end_of_word() {

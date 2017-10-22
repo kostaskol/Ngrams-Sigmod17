@@ -86,6 +86,9 @@ int main(int argc, char **argv) {
                     logger::error("query", fail, BOTH, false);
                 }
                 break;
+            case FINISH:
+                // Print query results
+                break;
         }
         if (stop) break;
         v.clear();
