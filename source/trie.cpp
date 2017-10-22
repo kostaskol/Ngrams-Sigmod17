@@ -119,28 +119,29 @@ trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
     } else {
         // ΝΟΤΕ: Only for testing purposes
 
-        for (int i = 0; i < _children->size(); i++) {
-            if (_children->get((size_t) i)._word < word) {
-                return _children->m_insert_at((size_t) i, new_node);
-            }
-        }
-        // We know that the child does not exist, but no suitable place was found for it.
-        // That means that it's larger than the last element, which means we can simply push
-        return _children->m_push(new_node);
+        // for (int i = 0; i < _children->size(); i++) {
+        //     if (_children->get((size_t) i)._word < word) {
+        //         return _children->m_insert_at((size_t) i, new_node);
+        //     }
+        // }
+        // // We know that the child does not exist, but no suitable place was found for it.
+        // // That means that it's larger than the last element, which means we can simply push
+        // return _children->m_push(new_node);
         // TODO: Replace for loop with bsearch
-//        int at;
-//        if (!_bsearch_children(word, &at)) {
-//K//            If the bsearch "returns" -1, that means that we can simply push the child into the vector
-//            if (at == -1) {
+       int at;
+       if (!_bsearch_children(word, &at)) {
+// K//            If the bsearch "returns" -1, that means that we can simply push the child into the vector
+        //    if (at == -1) {
 //                return _children->m_push(new_node);
 //            }
-//            return _children->m_insert_at((size_t) at, new_node);
-//        } else{
-//            return nullptr; //if we are careful to call add_child only when the child we are adding doesnt not already exists, this line is not useful
-//        }
+           return _children->m_insert_at((size_t) at, new_node);
+       } else{ //if word already exists
+           //if we are careful to call add_child only when the child we are adding doesnt not already exists, this line is not useful
+           return nullptr;
+       }
     }
 
-    return &_children->get(pos);
+    // return &_children->get(pos);
 }
 
 const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
@@ -154,93 +155,49 @@ trie::trie_node *trie::trie_node::get_child(int index) {
 trie::trie_node *trie::trie_node::get_child(std::string &word) {
     if (_children == nullptr) return nullptr;
     int index;
-    if(!_bsearch_children(word,&index)){
+    if(!_bsearch_children(word,&index)){    // Not found
         return nullptr;
-    } else{
+    } else{                                 // Found
         return get_child(index);
     }
 }
 
-/*
- Ένα απλό implementation που λύνει τα corner cases
- bool bsearch(const vector<string> &v, string w, int *index) {
-    int left = 0;
-    int right = (int) v.size() - 1;
-    while (left <= right) {
-        int mid = (right + left) >> 1;
-        if (v[mid] == w) {
-            *index = mid;
-            return true;
-        }
-
-        if (left == right) {
-            if (v[left] == w) {
-                *index = left;
-                return true;
-            } else if (v[left] > w) {
-                *index = left;
-                return false;
-            } else {
-                *index = left + 1;
-                return false;
-            }
-        }
-
-        if (v[mid] < w) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-}
- */
 bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
-    // FIXME(giannis): Η found δεν χρειάζεται. Δεν γίνεται ποτέ true χωρίς να επιστραφεί αμέσως
-    // TODO(giannis): Θα μπορούσε να χρησιμοποιηθεί αυτό για να γλυτώσουμε υπολογισμούς
-//    if (_children->at(0)._word > word) {
-//        *index = 0;
-//        return false;
-//    }
-//    if (_children->at(_children->size() - 1)._word < word) {
-////      Αν επιστραφεί -1, θα σημαίνει πως μπορούμε απλά να κάνουμε push για να μην πέσουμε πάνω σε κάποιο corner case
-//        *index = -1;
-//        return false;
-//    }
-    bool found = false;
+   if (_children->at(0)._word > word) {
+       *index = 0;
+       return false;
+   }
+   if (_children->at(_children->size() - 1)._word < word) {
+//    // TOMENTION: NOT -> Αν επιστραφεί -1, θα σημαίνει πως μπορούμε απλά να κάνουμε push για να μην πέσουμε πάνω σε κάποιο corner case
+       *index = _children->size() - 1;
+       return false;
+   }
     int left = 0;
     int right = (int) _children->size() - 1;
     while (left <= right) {
-        // FIXME(giannis): Not required. It's the same as (left + right) >> 1
-        // left + (right - left) / 2 = left + right / 2 - left / 2 = left - left / 2 + right / 2 = left / 2 + right / 2 = (left + right) / 2
         int mid = left + ((right-left) / 2);
         if (_children->at(mid)._word == word) {
-            found = true;
             *index = mid;
-            return found;
+            return true;
         }
 
         // FIXME(giannis): Δεν χρειάζεται. Το ίδιο με: _children->at(left)._word > word
         if (left == right) {    //mid._word != word here, so we return where the new word should be added.
             // Note: *Νομίζω* πως εδώ πρέπει να ελέγχει και αν είναι ίσα γιατί μπορεί όταν φτάσει στο τελευταίο
             // split να βρεθεί το παιδί (ίσως να κάνω λάθος. Πρέπει να ελεγχθεί περισσότερο)
-            if (_children->at(left)._word.compare(word) > 0) {
-                // FIXME(giannis): Το index θα έπρεπε να είναι left
-                *index = left+1;
-            }
-            else{
-                // FIXME(giannis): *Νομίζω* πως το index θα έπρεπε να είναι left + 1
+            if (_children->at(left)._word > word) {
                 *index = left;
             }
-            return found;
+            else{
+                *index = left+1;
+            }
+            return false;
         }
 
-        // FIXME(giannis): Αν το word είναι μεγαλύτερο από το _children[mid]._word, τότε πρέπει να πας στο δεξί μισό (άρα left = mid + 1),
-        // αλλιώς right = mid - 1;
-        /// Η _word.compare(word) επιστρέφει αρνητικό αν το *_word* είναι μικρότερο του *word* και όχι ανάποδα
-        if (_children->at(mid)._word.compare(word) < 0) {
+        if (_children->at(mid)._word > word) {
             right = mid - 1;
         }
-        else if (_children->at(mid)._word.compare(word) > 0) {
+        else if (_children->at(mid)._word < word) {
             left = mid + 1;
         }
 
