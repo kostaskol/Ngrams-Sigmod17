@@ -50,6 +50,7 @@ void trie::add(const vector<string> &ngram) {
         // Otherwise we insert it to that node's children
         current->add_child(last_word, true);
     }
+    _size++;
 }
 
 // To be deleted
@@ -104,20 +105,26 @@ trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(SIZE);
     }
+
+    size_t pos = 0;
     trie_node new_node(word, eow, this);
     if (_children->size() == 0) {
         _children->m_push(new_node);
+        // The position of the child is the position of the last element of the vector
+        pos = _children->size() - 1;
     } else {
         // TODO: Replace for loop with bsearch
         for (int i = 0; i < (size_t) _children->size(); i++) {
             if (word > _children->get(i)._word) {
+                pos = i;
+                std::cout << "Inserting " << word << " at index " << i << std::endl;
                 _children->m_insert_at(i, new_node);
                 break;
             }
         }
     }
 
-    return _children->get_last_inserted();
+    return &_children->get(pos);
 }
 
 const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
