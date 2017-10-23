@@ -22,7 +22,6 @@ trie::~trie() {
 }
 
 void trie::add(const vector<string> &ngram) {
-    cout << "NEW NGRAM: " << helpers::join(ngram, ' ') << "\n" << endl;
     // Start at the root
     trie_node *current = _root;
 
@@ -57,10 +56,6 @@ void trie::add(const vector<string> &ngram) {
 bool trie::search(const vector<string> &ngram) {
     trie_node *current = _root;
     for (int i = 0; i < ngram.size() - 1; i++) {
-        logger::debug("trie::search", "at node " + current->get_word() + " and searching for " + ngram.get(i));
-        for (int j = 0; j < current->children_size(); j++) {
-            cout << current->get_child(j)->get_word() << endl;
-        }
         if ((current = current->get_child(ngram.get(i))) == nullptr) {
             return false;
         }
@@ -119,30 +114,13 @@ trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
 
     trie_node new_node(word, eow, this);
     if (_children->size() == 0) {
-        logger::debug("trie_node::add_child", "the current node ( " + _word + ") does not have any children");
         return _children->m_push(new_node);
         // The position of the child is the position of the last element of the vector
     } else {
-        logger::debug("trie_node::add_child", "the current node (" + _word + ") already has "
-                                              + std::to_string(_children->size()) + " children which are: ");
-        for (int i = 0; i < _children->size(); i++) {
-            logger::debug("trie_node::add_child::_children content", std::to_string(i) + " - " + _children->get(i)._word);
-        }
         int at;
-        logger::warn("trie_node::add_child", "Binary searching for word " + word);
         if (!_bsearch_children(word, &at)) {
 
-            logger::warn("trie_node::add_child", "not found but should be at index " + std::to_string(at));
-            logger::warn("trie_node::add_child", "children before inserting " + word + ":");
-            for (size_t i = 0; i < _children->size(); i++) {
-                logger::warn("trie_node::add_child::children content", std::to_string(i) + " - " + _children->get(i)._word);
-            }
-            trie_node *tmp = _children->m_insert_at(at, new_node);
-            logger::warn("trie_node::add_child", "children after inserting " + word + ":");
-            for (size_t i = 0; i < _children->size(); i++) {
-                logger::warn("trie_node::add_child::children content", std::to_string(i) + " - " + _children->get(i)._word);
-            }
-            return tmp;
+            return _children->m_insert_at(at, new_node);
         } else {
             // If we are careful to call add_child only when the child we are adding doesnt not already exists,
             // this line is not useful
@@ -156,15 +134,15 @@ const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
 }
 
 trie::trie_node *trie::trie_node::get_child(int index) {
-    return _children->at_p(index);
+    return _children->at_p((size_t) index);
 }
 
 trie::trie_node *trie::trie_node::get_child(std::string &word) {
     if (_children == nullptr) return nullptr;
     int index;
-    if(!_bsearch_children(word, &index)){    // Not found
+    if(!_bsearch_children(word, &index)) {    // Not found
         return nullptr;
-    } else{                                 // Found
+    } else {                                 // Found
         return get_child(index);
     }
 }
@@ -175,7 +153,7 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
        return false;
    }
    if (_children->at(_children->size() - 1)._word < word) {
-       *index = _children->size();
+       *index = (int) _children->size();
        return false;
    }
     int left = 0;
@@ -183,13 +161,13 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
     while (left <= right) {
         int mid = left + ((right-left) / 2);
 
-        if (_children->at(mid)._word == word) {
+        if (_children->at((size_t) mid)._word == word) {
             *index = mid;
             return true;
         }
 
         if (left == right) {    //mid._word != word here, so we return where the new word should be added.
-            if (_children->at(left)._word > word) {
+            if (_children->at((size_t) left)._word > word) {
                 *index = left;
             }
             else {

@@ -29,7 +29,6 @@ namespace mstd {
 
             _capacity = _capacity << 1;
         }
-
     public:
         explicit vector(size_t capacity = 1)
                 : _size(0), _capacity(capacity) {
@@ -55,8 +54,6 @@ namespace mstd {
             // other object is swapped with this (which has been instantiated and is thus safe to delete)
             _swap_vectors(*this, other);
         }
-
-
 
         ~vector() {
             delete[] _entries;
@@ -95,20 +92,13 @@ namespace mstd {
         }
 
         T *m_insert_at(int index, T &ent) {
-            std::stringstream ss("inserting value ");
-            ss << ent << " at index " << index;
-            mstd::logger::debug("vector::m_insert_at", ss.str());
             if ((_size == 0) || (index == _size)) {
-                mstd::logger::debug("vector::m_insert_at", "Pushed to the end");
                 return m_push(ent);
             }
 
             if (_size + 1 >= _capacity) _enlarge();
 
             for (size_t i = _size - 1; (int) i >= index; i--) {
-                ss.str("");
-                ss << _entries[i];
-                mstd::logger::debug("vector::m_insert_at", "_entries[" + std::to_string(i + 1) + " is now equal to " + ss.str());
                 _entries[i + 1] = std::move(_entries[i]);
             }
 
