@@ -20,7 +20,7 @@ private:
 
         trie_node(const std::string &word, bool eow, trie_node *par = nullptr);
 
-        trie_node(const trie_node &other);
+        trie_node(const trie_node &other)=delete;
 
         trie_node(trie_node &&other) noexcept;
 
@@ -30,17 +30,19 @@ private:
 
         const mstd::vector<trie_node> &get_children();
 
+        const bool has_children();
+
         trie_node *get_child(int index);
 
         trie_node *get_child(std::string &word, int *at);
 
         void push_child(trie_node *node);
 
-        bool is_end_of_word();
+        bool is_end_of_word() const;
 
-        size_t children_size();
+        size_t children_size() const;
 
-        std::string get_word();
+        std::string get_word() const;
 
         void set_end_of_word(bool v);
 
