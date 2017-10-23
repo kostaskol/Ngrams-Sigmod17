@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
+#include "logger.hpp"
 
 // Simple resizable array template class
 // that includes some of std::vector's basic operations
@@ -16,7 +18,6 @@ namespace mstd {
     private:
         size_t _size{};
         size_t _capacity;
-        size_t _last;
         T *_entries;
 
         void _enlarge() {
@@ -28,10 +29,9 @@ namespace mstd {
 
             _capacity = _capacity << 1;
         }
-
     public:
         explicit vector(size_t capacity = 1)
-                : _size(0), _capacity(capacity), _last(0) {
+                : _size(0), _capacity(capacity) {
             _entries = new T[_capacity];
         }
 
@@ -40,14 +40,12 @@ namespace mstd {
                   _capacity(other._capacity) {
             _entries = new T[_capacity];
             std::copy(other._entries, other._entries + other._size, _entries);
-            _last = other._last;
         }
 
         vector(const vector &other, size_t start, size_t end) {
             if (start < 0 || end > other._size) return;
             _capacity = other._capacity;
             _size = (size_t) end - start;
-            _last = other._last;
             _entries = new T[_capacity];
             std::copy(other._entries + start, other._entries + end, _entries);
         }
@@ -56,8 +54,6 @@ namespace mstd {
             // other object is swapped with this (which has been instantiated and is thus safe to delete)
             _swap_vectors(*this, other);
         }
-
-
 
         ~vector() {
             delete[] _entries;
@@ -81,16 +77,14 @@ namespace mstd {
                 _enlarge();
             }
 
-            _entries[_last++] = T(ent);
-            _size++;
+            _entries[_size++] = T(ent);
         }
 
         T *m_push(T &ent) {
             if (_size + 1 >= (size_t) _capacity) _enlarge();
 
-            _entries[_last] = std::move(ent);
-            _size++;
-            return &_entries[_last++];
+            _entries[_size] = std::move(ent);
+            return &_entries[_size++];
         }
 
         void add(const T &ent) {
@@ -171,8 +165,6 @@ namespace mstd {
             delete[] _entries;
             _size = 0;
 
-            _last = 0;
-
             _capacity = new_cap;
             _entries = new T[_capacity];
         }
@@ -211,7 +203,6 @@ namespace mstd {
                 _entries = tmp;
 
                 _size--;
-                _last--;
             } else {
                 delete[] tmp;
             }
@@ -226,7 +217,7 @@ namespace mstd {
         }
 
         T *end() {
-            return &_entries[_last];
+            return &_entries[_size - 1];
         }
 
         void remove_at(size_t index) {
@@ -247,7 +238,6 @@ namespace mstd {
             _entries = tmp_ent;
 
             _size--;
-            _last--;
         }
 
         size_t size() const { return _size; }
@@ -282,7 +272,6 @@ namespace mstd {
         friend void _swap_vectors(vector &v1, vector &v2) {
             using std::swap;
             swap(v1._size, v2._size);
-            swap(v1._last, v2._last);
             swap(v1._capacity, v2._capacity);
             swap(v1._entries, v2._entries);
         }

@@ -18,6 +18,7 @@ set(SOURCE_FILES
         include/parser.hpp
         source/parser.cpp
         include/date_time.hpp
-        include/helpers.hpp)
+        include/helpers.hpp
+        include/mqueue.hpp)
 
 add_executable(ngrams ${SOURCE_FILES})

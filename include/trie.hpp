@@ -27,13 +27,13 @@ private:
 
         ~trie_node();
 
-        trie_node *add_child(std::string word, bool eow);
+        trie_node *add_child(int index, std::string word, bool eow);
 
         const mstd::vector<trie_node> &get_children();
 
         trie_node *get_child(int index);
 
-        trie_node *get_child(std::string &word);
+        trie_node *get_child(std::string &word, int *at);
 
         void push_child(trie_node *node);
 
@@ -43,7 +43,7 @@ private:
 
         std::string get_word();
 
-        void set_end_of_word(bool eow);
+        void set_end_of_word(bool v);
 
         trie_node &operator=(const trie_node &other);
 
@@ -65,6 +65,10 @@ public:
     void add(const mstd::vector<std::string> &ngram);
 
     bool search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+
+    size_t get_num_nodes();
+
+    size_t get_num_ngrams();
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 };

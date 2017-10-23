@@ -6,3 +6,4 @@ debug/log.txt
 file.init
 file.query
 vgcore.*
+source/main.cpp

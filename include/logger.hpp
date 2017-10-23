@@ -1,11 +1,10 @@
 #ifndef MY_HEADERS_LOGGER_H
 #define MY_HEADERS_LOGGER_H
 
-#include <string>
 #include "date_time.hpp"
-
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #define STDOUT 0
 #define LOGFILE 1
