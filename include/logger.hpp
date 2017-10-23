@@ -1,11 +1,10 @@
 #ifndef MY_HEADERS_LOGGER_H
 #define MY_HEADERS_LOGGER_H
 
-#include <string>
 #include "date_time.hpp"
-
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #define STDOUT 0
 #define LOGFILE 1
@@ -77,7 +76,7 @@ namespace mstd {
                           << message << "\033[0m" << std::endl;
             }
 
-            if (type == STDOUT || type == BOTH) {
+            if (type == LOGFILE || type == BOTH) {
                 std::ofstream outp(file.c_str(), std::ios::app);
                 outp << now() << " - [ERROR] \t-- " << context << " : " << message << std::endl;
                 outp.flush();

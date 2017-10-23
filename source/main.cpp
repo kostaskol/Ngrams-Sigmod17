@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmd_parser.hpp>
 #include <parser.hpp>
+#include "logger.hpp"
+#include <string>
 #include "trie.hpp"
 
 using std::cout;
@@ -59,7 +61,6 @@ int main(int argc, char **argv) {
         v.clear();
         if (stop) break;
     }
-
     // End initialisation file parsing
 
     // Begin query file parsing

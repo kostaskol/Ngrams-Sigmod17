@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
+#include "logger.hpp"
 
 // Simple resizable array template class
 // that includes some of std::vector's basic operations
@@ -16,7 +18,6 @@ namespace mstd {
     private:
         size_t _size{};
         size_t _capacity;
-        size_t _last;
         T *_entries;
 
         void _enlarge() {
@@ -31,7 +32,7 @@ namespace mstd {
 
     public:
         explicit vector(size_t capacity = 1)
-                : _size(0), _capacity(capacity), _last(0) {
+                : _size(0), _capacity(capacity) {
             _entries = new T[_capacity];
         }
 
@@ -40,14 +41,12 @@ namespace mstd {
                   _capacity(other._capacity) {
             _entries = new T[_capacity];
             std::copy(other._entries, other._entries + other._size, _entries);
-            _last = other._last;
         }
 
         vector(const vector &other, size_t start, size_t end) {
             if (start < 0 || end > other._size) return;
             _capacity = other._capacity;
             _size = (size_t) end - start;
-            _last = other._last;
             _entries = new T[_capacity];
             std::copy(other._entries + start, other._entries + end, _entries);
         }
@@ -81,16 +80,14 @@ namespace mstd {
                 _enlarge();
             }
 
-            _entries[_last++] = T(ent);
-            _size++;
+            _entries[_size++] = T(ent);
         }
 
         T *m_push(T &ent) {
             if (_size + 1 >= (size_t) _capacity) _enlarge();
 
-            _entries[_last] = std::move(ent);
-            _size++;
-            return &_entries[_last++];
+            _entries[_size] = std::move(ent);
+            return &_entries[_size++];
         }
 
         void add(const T &ent) {
@@ -98,13 +95,20 @@ namespace mstd {
         }
 
         T *m_insert_at(int index, T &ent) {
+            std::stringstream ss("inserting value ");
+            ss << ent << " at index " << index;
+            mstd::logger::debug("vector::m_insert_at", ss.str());
             if ((_size == 0) || (index == _size)) {
+                mstd::logger::debug("vector::m_insert_at", "Pushed to the end");
                 return m_push(ent);
             }
 
             if (_size + 1 >= _capacity) _enlarge();
 
             for (size_t i = _size - 1; (int) i >= index; i--) {
+                ss.str("");
+                ss << _entries[i];
+                mstd::logger::debug("vector::m_insert_at", "_entries[" + std::to_string(i + 1) + " is now equal to " + ss.str());
                 _entries[i + 1] = std::move(_entries[i]);
             }
 
@@ -171,8 +175,6 @@ namespace mstd {
             delete[] _entries;
             _size = 0;
 
-            _last = 0;
-
             _capacity = new_cap;
             _entries = new T[_capacity];
         }
@@ -211,7 +213,6 @@ namespace mstd {
                 _entries = tmp;
 
                 _size--;
-                _last--;
             } else {
                 delete[] tmp;
             }
@@ -226,7 +227,7 @@ namespace mstd {
         }
 
         T *end() {
-            return &_entries[_last];
+            return &_entries[_size - 1];
         }
 
         void remove_at(size_t index) {
@@ -247,7 +248,6 @@ namespace mstd {
             _entries = tmp_ent;
 
             _size--;
-            _last--;
         }
 
         size_t size() const { return _size; }
@@ -282,7 +282,6 @@ namespace mstd {
         friend void _swap_vectors(vector &v1, vector &v2) {
             using std::swap;
             swap(v1._size, v2._size);
-            swap(v1._last, v2._last);
             swap(v1._capacity, v2._capacity);
             swap(v1._entries, v2._entries);
         }
