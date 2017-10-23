@@ -29,10 +29,11 @@ void trie::add(const vector<string> &ngram) {
     for (int i = 0; i < ngram.size() - 1; i++) {
 
         trie_node *child;
-        if ((child = current->get_child(ngram.at(i))) == nullptr) {
+        int index;
+        if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
             _num_nodes++;
-            current = current->add_child(ngram.at(i), false);
+            current = current->add_child(index, ngram.at(i), false);
         } else {
             // Otherwise, follow that child's path
             current = child;
@@ -41,12 +42,16 @@ void trie::add(const vector<string> &ngram) {
 
     std::string last_word = ngram.get_cpy(ngram.size() - 1);
     trie_node *child;
-    if ((child = current->get_child(last_word)) != nullptr) {
+    int index = 0;
+    if ((child = current->get_child(last_word, &index)) != nullptr) {
         // If the word already existed in the tree, we simply mark it as the end of the N-Gram
-        child->set_end_of_word();
+        child->set_end_of_word(true);
     } else {
         // Otherwise we insert it to that node's children
-        current->add_child(last_word, true);
+        if (index == -1) {
+            mstd::logger::warn("trie::add", "get child's index is -1");
+        }
+        current->add_child(index, last_word, true);
     }
     _num_ngrams++;
 }
@@ -55,13 +60,15 @@ void trie::add(const vector<string> &ngram) {
 // To be deleted
 bool trie::search(const vector<string> &ngram) {
     trie_node *current = _root;
+    int tmp;
     for (int i = 0; i < ngram.size() - 1; i++) {
-        if ((current = current->get_child(ngram.get(i))) == nullptr) {
+        if ((current = current->get_child(ngram.get(i), nullptr)) == nullptr) {
             return false;
         }
     }
 
-    return ((current = current->get_child(ngram.get((int) ngram.size() - 1))) != nullptr && current->is_end_of_word());
+    return ((current = current->get_child(ngram.get(ngram.size() - 1), &tmp))
+            != nullptr && current->is_end_of_word());
 }
 
 size_t trie::get_num_nodes() {
@@ -107,26 +114,13 @@ trie::trie_node::~trie_node() {
     delete _children;
 }
 
-trie::trie_node *trie::trie_node::add_child(std::string word, bool eow) {
+trie::trie_node *trie::trie_node::add_child(int index, std::string word, bool eow) {
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(SIZE);
     }
 
     trie_node new_node(word, eow, this);
-    if (_children->size() == 0) {
-        return _children->m_push(new_node);
-        // The position of the child is the position of the last element of the vector
-    } else {
-        int at;
-        if (!_bsearch_children(word, &at)) {
-
-            return _children->m_insert_at(at, new_node);
-        } else {
-            // If we are careful to call add_child only when the child we are adding doesnt not already exists,
-            // this line is not useful
-            return nullptr;
-        }
-    }
+    return _children->m_insert_at(index, new_node);
 }
 
 const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
@@ -137,12 +131,25 @@ trie::trie_node *trie::trie_node::get_child(int index) {
     return _children->at_p((size_t) index);
 }
 
-trie::trie_node *trie::trie_node::get_child(std::string &word) {
+trie::trie_node *trie::trie_node::get_child(std::string &word, int *at) {
     if (_children == nullptr) return nullptr;
     int index;
     if(!_bsearch_children(word, &index)) {    // Not found
+        if (at != nullptr) {
+            *at = index;
+        } else {
+            // These loggings *will* appear in the current search functionality.
+            // TODO(kostas): Delete these once the proper search has been implemented
+            mstd::logger::warn("trie::trie_node::get_child", "index request variable was null");
+        }
         return nullptr;
     } else {                                 // Found
+        // If the child is found, we assign -1 to the "not found index" to avoid undefined behaviour
+        if (at != nullptr) {
+            *at = -1;
+        } else {
+            mstd::logger::warn("trie::trie_node::get_child", "index request variable was null");
+        }
         return get_child(index);
     }
 }
@@ -205,8 +212,8 @@ std::string trie::trie_node::get_word() {
     return _word;
 }
 
-void trie::trie_node::set_end_of_word() {
-    _eow = true;
+void trie::trie_node::set_end_of_word(bool v) {
+    _eow = v;
 }
 
 trie::trie_node &trie::trie_node::operator=(const trie::trie_node &other) {
