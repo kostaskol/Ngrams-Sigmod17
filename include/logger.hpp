@@ -77,7 +77,7 @@ namespace mstd {
                           << message << "\033[0m" << std::endl;
             }
 
-            if (type == STDOUT || type == BOTH) {
+            if (type == LOGFILE || type == BOTH) {
                 std::ofstream outp(file.c_str(), std::ios::app);
                 outp << now() << " - [ERROR] \t-- " << context << " : " << message << std::endl;
                 outp.flush();

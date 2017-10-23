@@ -64,7 +64,7 @@ public:
 
     void add(const mstd::vector<std::string> &ngram);
 
-    bool search(const mstd::vector<std::string> &ngram);
+    bool search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 };

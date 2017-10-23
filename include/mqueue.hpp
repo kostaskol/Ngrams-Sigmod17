@@ -20,14 +20,7 @@ namespace mstd {
                 _prev = prev;
             }
 
-            queue_node(const queue_node &other) {
-                _entry = other._entry;
-                if (other._next != nullptr)
-                    _next = new queue_node(other._next->_entry);
-
-                if (other._prev != nullptr)
-                    _prev = new queue_node(other._prev->_entry);
-            }
+            queue_node(const queue_node &other)= delete;
 
             ~queue_node()= default;
 

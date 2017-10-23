@@ -71,6 +71,7 @@ int main(int argc, char **argv) {
     while (true) {
         bool stop = query_parser.next_command(&v, &cmd_type);
         string s;
+        mstd::queue<std::string> results;
         switch (cmd_type) {
             case INSERTION:
                 s = helpers::join(v, ' ');
@@ -79,17 +80,28 @@ int main(int argc, char **argv) {
                 break;
             case QUERY:
                 s = helpers::join(v, ' ');
-                if (t.search(v)) {
-                    string succ = "The N-Gram \"" + s + "\" exists!";
-                    logger::success("query", succ, BOTH);
+                if (t.search(v,&results)) {
+                    // string succ = "The N-Gram \"" + s + "\" exists!";
+                    string succ = "";
+                    while(!results.empty()){
+                        succ += results.pop();
+                        if (results.size() != 0) {
+                            succ += "|";
+                        }
+                    }
+                    logger::success("query", succ, STDOUT);
                 } else {
-                    string fail = "The N-Gram \"" + s + "\" does not exist!";
-                    logger::error("query", fail, BOTH, false);
+                    // string fail = "The N-Gram \"" + s + "\" does not exist!";
+                    string fail = "-1";
+                    logger::error("query", fail, STDOUT, false);
                 }
+                break;
+            case FINISH:
+                // Print query results
                 break;
         }
         if (stop) break;
         v.clear();
-    }
+}
     // End query file parsing
 }
