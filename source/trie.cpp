@@ -27,22 +27,14 @@ void trie::add(const vector<string> &ngram) {
 
     // Go up until the previous to last part (we need to treat the last part differently)
     for (int i = 0; i < ngram.size() - 1; i++) {
-
         trie_node *child;
         int index;
-
         if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
             _num_nodes++;
             current = current->add_child(index, ngram.at(i), false);
-
         } else {
             // Otherwise, follow that child's path
-            logger::debug("trie::add", "Current node's children: ");
-            mstd::vector<trie_node> v = current->get_children();
-            for (int i = 0; i < v.size(); i++) {
-                logger::debug("trie::add", v[i].get_word());
-            }
             current = child;
         }
     }
@@ -78,6 +70,10 @@ bool trie::search(const vector<string> &ngram) {
 
     return ((current = current->get_child(ngram.get(ngram.size() - 1), &tmp))
             != nullptr && current->is_end_of_word());
+}
+
+void trie::print_tree() {
+    _root->print(0);
 }
 
 // The following two functions *could* be used, but aren't
@@ -125,32 +121,25 @@ trie::trie_node *trie::trie_node::add_child(int index, std::string word, bool eo
     }
 
     if (index < 0) {
-        // If we want a fail fast method, uncomment the following line
-        // throw std::runtime_error("Index below zero");
-        // Otherwise, simply log it
-        // and set index to a safe value
-        logger::warn("trie::trie_node::add_child", "Index :" + std::to_string(index));
-        index = 0;
+        // Better to fail fast than fail safe
+         throw std::runtime_error("Index below zero");
+        // If we want a fail safe method (worse imo), uncomment the following 2 lines
+        // logger::warn("trie::trie_node::add_child", "Index below zero(" + std::to_string(index) + ")");
+        // index = 0;
     }
 
     if (index > _children->size()) {
-        // If we want a fail fast method, uncomment the following line
-        //throw std::runtime_error("Index above size (Index: " + std::to_string(index)
-        //                         + " & Size: " + std::to_string(_children->size()) + ")");
-        // Otherwise, simply log it
-        // and set index to a safe value
-        logger::warn("trie::trie_node::add_child", "Index above size (Index: " + std::to_string(index)
+        // Better fail fast than fail safe
+        throw std::runtime_error("Index above size (Index: " + std::to_string(index)
                                                    + " & Size: " + std::to_string(_children->size()) + ")");
-        index = (int) _children->size();
+        // If we want a fail safe method (worse imo), uncomment the following 3 lines
+        // logger::warn("trie::trie_node::add_child", "Index above size (Index: " + std::to_string(index)
+        //                                              + " & Size: " + std::to_string(_children->size()) + ")");
+        // index = (int) _children->size();
     }
 
     trie_node new_node(word, eow, this);
-    trie_node *tmp = _children->m_insert_at(index, new_node);
-    logger::debug("trie::trie_node::add_child", "Current child's " + _word + " children:");
-    for (size_t i = 0; i < _children->size(); i++) {
-        logger::debug("trie::trie_node::add_child", _children->get(i)._word);
-    }
-    return tmp;
+    return _children->m_insert_at(index, new_node);
 }
 
 const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
@@ -170,29 +159,21 @@ trie::trie_node *trie::trie_node::get_child(std::string &word, int *at) {
     // Avoided simply because the variable passed by trie::add was initialised to 0
     // at was not properly set if the _children vector was null
     if (_children == nullptr) {
-        *at = 0;
+        if (at != nullptr) {
+            *at = 0;
+        }
         return nullptr;
     }
     int index;
     if(!_bsearch_children(word, &index)) {    // Not found
         if (at != nullptr) {
             *at = index;
-        } else {
-            // Not sure if <at> would ever be passed as nullptr after trie::search has been implemented
-            // Just make sure to remove this if it *is* passed as nullptr
-            // TODO(kostas): Delete these once the proper search has been implemented
-            mstd::logger::warn("trie::trie_node::get_child", "index request variable was null");
         }
         return nullptr;
     } else {                                 // Found
         // If the child is found, we assign -1 to the "not found index" to avoid undefined behaviour
         if (at != nullptr) {
             *at = -1;
-        } else {
-            // Not sure if <at> would ever be passed as nullptr after trie::search has been implemented
-            // Just make sure to remove this if it *is* passed as nullptr
-            // TODO(kostas): Delete these once the proper search has been implemented
-            mstd::logger::warn("trie::trie_node::get_child", "index request variable was null");
         }
         return get_child(index);
     }
@@ -267,6 +248,20 @@ std::string trie::trie_node::get_word() const {
 
 void trie::trie_node::set_end_of_word(bool v) {
     _eow = v;
+}
+
+void trie::trie_node::print(int level) {
+    for (int i = 1; i < level; i++) {
+        cout << "\t";
+    }
+    if (_word != "") {
+        cout << "| ";
+        cout << _word << endl;
+    }
+    if (_children == nullptr) return;
+    for (size_t i = 0; i < _children->size(); i++) {
+        _children->get(i).print(level + 1);
+    }
 }
 
 // Can't be deleted because it's required by the templated vector (still not used)

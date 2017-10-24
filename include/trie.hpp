@@ -46,6 +46,8 @@ private:
 
         void set_end_of_word(bool v);
 
+        void print(int level);
+
         trie_node &operator=(const trie_node &other);
 
         // Move assignment operator
@@ -70,6 +72,8 @@ public:
     size_t get_num_nodes();
 
     size_t get_num_ngrams();
+
+    void print_tree();
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 };
