@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
     parser query_parser(query_file);
 
     int cmd_type;
+    mstd::queue<string> q;
 
     while (true) {
         bool stop = query_parser.next_command(&v, &cmd_type);
@@ -84,13 +85,19 @@ int main(int argc, char **argv) {
                 break;
             case QUERY:
                 s = helpers::join(v, ' ');
-                if (t.search(v)) {
-                    string succ = "%FOUND% The N-Gram \"" + s + "\" exists!";
-                    logger::debug("query", succ, BOTH);
+                if (t.search(v, &q)) {
+                    while (!q.empty()) {
+                        cout << q.pop() << "|";
+                    }
+                    cout << endl;
+                    q.clear();
                 } else {
                     string fail = "%NOT FOUND% The N-Gram \"" + s + "\" does not exist!";
                     logger::debug("query", fail, BOTH);
                 }
+                break;
+            case DELETION:
+                // delete here
                 break;
             case FINISH:
                 // Print query results
@@ -102,6 +109,6 @@ int main(int argc, char **argv) {
         v.clear();
     }
 
-    t.print_tree();
+//    t.print_tree();
     // End query file parsing
 }

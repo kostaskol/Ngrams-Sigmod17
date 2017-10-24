@@ -1,3 +1,4 @@
+#include <hash_table.hpp>
 #include "trie.hpp"
 #include "logger.hpp"
 #include "helpers.hpp"
@@ -47,9 +48,6 @@ void trie::add(const vector<string> &ngram) {
         child->set_end_of_word(true);
     } else {
         // Otherwise we insert it to that node's children
-        if (index == -1) {
-            mstd::logger::warn("trie::add", "get child's index is -1 even though the word was not found");
-        }
         current->add_child(index, last_word, true);
         _num_nodes++;
     }
@@ -57,19 +55,45 @@ void trie::add(const vector<string> &ngram) {
 }
 
 
-// To be deleted
-// TODO: Delete this after giannis pushes the proper search
-bool trie::search(const vector<string> &ngram) {
+bool trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
     trie_node *current = _root;
-    int tmp;
-    for (int i = 0; i < ngram.size() - 1; i++) {
-        if ((current = current->get_child(ngram.get(i), nullptr)) == nullptr) {
-            return false;
+    mstd::hash_table<void *> ht;
+    std::stringstream ss;
+
+    for (size_t i = 0; i < ngram.size(); i++) {
+        trie_node *child;
+        for (size_t j = i; j < ngram.size(); j++) {
+            if ((child = current->get_child(ngram.at(j),nullptr)) == nullptr) {
+                ss.str("");
+                ss.clear();
+                current = _root;
+                break;
+            }
+            else{
+                ss << ngram.at(j) + " ";
+                try {
+                    // If the key cannot be found in the hash table, it throws an exception
+                    // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
+                    // so we start from the beginning
+                    ht.get(ss.str());
+                    ss.str("");
+                    ss.clear();
+                    current = _root;
+                    break;
+                } catch (std::exception &e) {
+                    // If it throws, the key doesn't exist, so we add it to the hash table and continue
+                    ht.put(ss.str(), nullptr);
+                }
+                if (child->is_end_of_word()) {
+                    results->push(ss.str());
+                }
+                current = child;
+            }
         }
     }
-
-    return ((current = current->get_child(ngram.get(ngram.size() - 1), &tmp))
-            != nullptr && current->is_end_of_word());
+    ss.str("");
+    ss.clear();
+    return results->empty() ? false : true;
 }
 
 void trie::print_tree() {
@@ -173,55 +197,62 @@ trie::trie_node *trie::trie_node::get_child(std::string &word, int *at) {
     } else {                                 // Found
         // If the child is found, we assign -1 to the "not found index" to avoid undefined behaviour
         if (at != nullptr) {
-            *at = -1;
+            *at = index;
         }
         return get_child(index);
     }
 }
 
 bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
-    // If the word is less than the first element
-    // or greater than the last, return the appropriate index without checking
    if (_children->at(0)._word > word) {
        *index = 0;
        return false;
+   }
+   else if (_children->at(0)._word == word) {
+       *index = 0;
+       return true;
    }
 
    if (_children->at(_children->size() - 1)._word < word) {
        *index = (int) _children->size();
        return false;
    }
-    int left = 0;
-    int right = (int) _children->size() - 1;
-    while (left <= right) {
-        // Avoid possible overflow of integers
-        int mid = left + ((right-left) / 2);
+   else if (_children->at(_children->size() - 1)._word == word) {
+       *index = (int) _children->size() - 1;
+       return true;
+   }
+   int left = 0;
+   int right = (int) _children->size() - 1;
+   while (left <= right) {
+       int mid = left + ((right-left) / 2);
 
-        if (_children->at((size_t) mid)._word == word) {
-            *index = mid;
-            return true;
-        }
+       if (_children->at((size_t) mid)._word == word) {
+           *index = mid;
+           return true;
+       }
 
-        // After the left and right index are equal *and* the word hasn't been found there,
-        // we can calculate where it should be insreted instead
-        if (left == right) {    //mid._word != word here, so we return where the new word should be added.
-            if (_children->at((size_t) left)._word > word) {
-                *index = left;
-            }
-            else {
-                *index = left + 1;
-            }
-            return false;
-        }
-
-        // Go to the left/right half accordingly
-        if (_children->at((size_t) mid)._word > word) {
-            right = mid - 1;
-        }
-        else if (_children->at((size_t) mid)._word < word) {
-            left = mid + 1;
-        }
-
+       if (left == right || left == right - 1) {    //mid._word != word here, so we return where the new word should be added.
+           if (_children->at((size_t) left)._word > word) {
+               *index = left;
+           }
+           else if (_children->at((size_t) right)._word < word) {
+               *index = right + 1;
+           }
+           else if (_children->at((size_t) right)._word > word) {
+               *index = right;
+           }
+           else {
+               *index = mid;
+               return true;
+           }
+           return false;
+       }
+       if (_children->at((size_t) mid)._word > word) {
+           right = mid - 1;
+       }
+       else if (_children->at((size_t) mid)._word < word) {
+           left = mid + 1;
+       }
     }
 }
 
