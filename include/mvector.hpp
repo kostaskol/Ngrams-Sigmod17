@@ -296,9 +296,9 @@ namespace mstd {
 
         friend void _swap_vectors(vector &v1, vector &v2) {
             using std::swap;
-            _swap(v1._size, v2._size);
-            _swap(v1._capacity, v2._capacity);
-            _swap(v1._entries, v2._entries);
+            swap(v1._size, v2._size);
+            swap(v1._capacity, v2._capacity);
+            swap(v1._entries, v2._entries);
         }
 
     };
