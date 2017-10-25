@@ -58,7 +58,6 @@ void trie::add(const vector<string> &ngram) {
 //    print_tree();
 }
 
-
 void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
     trie_node *current = _root;
     std::stringstream ss , final_ss;
@@ -110,53 +109,6 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
     final_ss.str("");
     final_ss.clear();
 }
-
-//bool trie::delete_ngram(const mstd::vector<std::string> &ngram){
-//	trie_node *current = _root;
-//	trie_node *parent;
-//    int index;
-////    print_tree();
-//    cout << "ROOT'S CHILDREN SIZE " << current->children_size() << endl;
-//	for (size_t i = 0; i < ngram.size(); i++) {
-//        cout << "PSAXNO TO "+ngram.get(i)+ " APO TA PAIDIA TOU " + current->get_word() << endl;
-//		if ((current = current->get_child(ngram.get(i), &index)) == nullptr) {
-//			// Didn't find the requested N-gram.
-//            cout << "Didn't find " + ngram.get(i) + " at index "<< index << endl;
-//			return false;
-//		}
-//	}
-//    cout << "EIMAI O " + current->get_word() << endl;
-//	// Now current points to the last word of the N-gram.
-//	// We check (Bottom-Up) to remove the N-gram from the trie.
-//    cout << "MEGETHOS " << ngram.size() << endl;
-//	for (int i = ngram.size()-1; i >= 0; i--) {
-//        cout << "EIMAI SE KOMBO ME i = " << i << endl;
-//		parent = current->get_parent();
-//        cout << "MPAMPAS "+ parent->get_word()+ " ME PAIDI "+ current->get_word() << endl;
-//		if (current->get_children_p() == nullptr) {
-//			// Node has no children so it can be deleted if it is the last word of the N-gram
-//            // or it isn't a last word of another N-gram.
-//            if (i == ngram.size()-1 || !current->is_end_of_word()){
-//                cout << "POUTSA" << endl;
-//                parent->remove_child(ngram.get(i));
-//            }
-//            else {
-//                return true;
-//            }
-//		} else {
-//            if (i == ngram.size()-1){ // If it is the last word of the N-gram.
-//                // Uncheck the end_of_word to remove the N-gram from the trie,
-//				// without deleting the node.
-//                current->set_end_of_word(false);
-//            }
-//            return true;
-//		}
-//		current = parent;
-//        cout << "PAO PIO PANO STO TRIE" << endl;
-//	}
-//    cout << "TELEIOSA DIAGRAFI" << endl;
-//    return true;
-//}
 
 bool trie::r_delete_ngram(const mstd::vector<std::string> &ngram) {
     trie_node *curr = _root;
@@ -288,21 +240,6 @@ void trie::trie_node::remove_child(int index) {
         _children = nullptr;
     }
 }
-
-//bool trie::trie_node::remove_child(std::string &word) {
-//    if (_children == nullptr) { cout << "NULL" << endl; return false;}
-////    cout << "EIMAI O " + get_word() +"  KAI THA DIAGRAPSO ENA PAIDI ME LEKSI " + word << endl;
-////    cout << "PAO NA DIAGRAPSO" << endl;
-//    int index;
-//    if (!_bsearch_children(word, &index)) { // Not found
-//        cout << "SKATA" << endl;
-//        return  false;
-//    } else {                                // Found
-//        cout << "PAPARIA " << index << endl;
-//        remove_child(index);
-//        return true;
-//    }
-//}
 
 const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
     return *_children;

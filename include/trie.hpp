@@ -33,8 +33,6 @@ private:
 
         void remove_child(int index);
 
-//        bool remove_child(std::string &word);
-
         const mstd::vector<trie_node> &get_children();
 
         mstd::vector<trie::trie_node> *get_children_p();
@@ -80,8 +78,6 @@ public:
     void add(const mstd::vector<std::string> &ngram);
 
     void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
-
-//	bool delete_ngram(const mstd::vector<std::string> &ngram);
 
     bool r_delete_ngram(const mstd::vector<std::string> &ngram);
 
