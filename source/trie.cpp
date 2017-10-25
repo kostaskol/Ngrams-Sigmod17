@@ -1,6 +1,4 @@
 #include "trie.hpp"
-#include "logger.hpp"
-#include "helpers.hpp"
 
 using mstd::vector;
 using std::string;
@@ -54,8 +52,6 @@ void trie::add(const vector<string> &ngram) {
         current->add_child(index, last_word, true);
     }
     _num_ngrams++;
-
-//    print_tree();
 }
 
 void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
@@ -135,15 +131,9 @@ bool trie::r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *cu
             *found = 0;
             return false;
         }
-        if(current->get_word() == ""){
-            cout << "ROOTS CHILD ON INDEX " << ch_index << endl;
-        }
         if (r_delete_helper(ngram, child, length, level+1, found)) {
             // If my child marked itself for deletion I have to remove it from my children.
             current->remove_child(ch_index);
-            if (ngram.get((size_t) level) == "numerical"){
-                cout << "MY INDEX IS " << ch_index << endl;
-            }
             // Check if I can mark myself for deletion as well.
             if (current->is_end_of_word()){
                 // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
@@ -231,9 +221,6 @@ trie::trie_node *trie::trie_node::add_child(int index, std::string word, bool eo
 }
 
 void trie::trie_node::remove_child(int index) {
-    if(index == 43 || index == 26 || index == 11){
-       cout << "VLEPO " <<  _children->get((size_t) index).get_word() << endl;
-    }
     _children->remove_at((size_t) index);
     if (_children->size() == 0){
         delete _children;
@@ -295,7 +282,7 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
         return false;
     }
     else if (_children->at(_children->size() - 1)._word == word) {
-        *index = _children->size() - 1;
+        *index = (int)_children->size() - 1;
         return true;
     }
 
@@ -310,7 +297,7 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
         }
 
         if (left == right || left == right - 1) {
-            if (_children->at((size_t) left)._word > word) {
+            if (_children->at((size_t) left)._word > word ) {
                 *index = left;
             }
             else if (_children->at((size_t) right)._word < word) {
@@ -320,7 +307,11 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
                 *index = right;
             }
             else {
-                *index = mid;
+                if (_children->at((size_t) right)._word == word) {
+                    *index = right;
+                } else {
+                    *index = mid;
+                }
                 return true;
             }
             return false;
