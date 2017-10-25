@@ -182,13 +182,6 @@ namespace mstd {
             auto *tmp = new T[_capacity];
             int j = 0;
             bool found = false;
-            size_t i;
-            for (i = 0; i < _size; i++) {
-                if (_entries[i] == ent) break;
-            }
-
-            for (size_t j = _size - 1; j >= i; j++) {
-            }
             for (size_t i = 0; i < _size; i++) {
                 if (_entries[i] == ent) {
                     found = true;
@@ -222,20 +215,11 @@ namespace mstd {
 
         void remove_at(size_t index) {
             if (index >= _size || index < 0) {
-                throw std::runtime_error("Bad index: " + index);
+                throw std::runtime_error("Bad index: " + std::to_string(index));
             }
-            auto *tmp_ent = new T[_capacity];
-
-            size_t j = 0;
-            for (size_t i = 0; i < _size; i++) {
-                if (i != index) {
-                    tmp_ent[j++] = _entries[i];
-                }
+            for (size_t i = index + 1; i < _size; i++) {
+                _entries[i - 1] = std::move(_entries[i]);
             }
-
-            delete[] _entries;
-
-            _entries = tmp_ent;
 
             _size--;
         }

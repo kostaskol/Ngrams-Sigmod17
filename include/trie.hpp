@@ -4,6 +4,9 @@
 #include <string>
 #include "mvector.hpp"
 #include "logger.hpp"
+#include "mqueue.hpp"
+#include "hash_table.hpp"
+
 
 class trie {
 private:
@@ -28,7 +31,15 @@ private:
 
         trie_node *add_child(int index, std::string word, bool eow);
 
+        void remove_child(int index);
+
+//        bool remove_child(std::string &word);
+
         const mstd::vector<trie_node> &get_children();
+
+        mstd::vector<trie::trie_node> *get_children_p();
+
+		trie_node *get_parent();
 
         trie_node *get_child(int index);
 
@@ -52,24 +63,35 @@ private:
         trie_node &operator=(trie_node &&other) noexcept;
 
         friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
+
+        void print(int level);
+
     };
 
     trie_node *_root;
     size_t _num_nodes;
     size_t _num_ngrams;
+
+    bool r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *current, int length, int level, int *found);
 public:
     trie();
     ~trie();
 
     void add(const mstd::vector<std::string> &ngram);
 
-    bool search(const mstd::vector<std::string> &ngram);
+    void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+
+//	bool delete_ngram(const mstd::vector<std::string> &ngram);
+
+    bool r_delete_ngram(const mstd::vector<std::string> &ngram);
 
     size_t get_num_nodes();
 
     size_t get_num_ngrams();
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
+
+    void print_tree();
 };
 
 #endif // TRIE

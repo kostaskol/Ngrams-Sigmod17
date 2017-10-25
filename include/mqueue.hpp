@@ -1,7 +1,6 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
-#include <cstring>
 #include <stdexcept>
 
 namespace mstd {
@@ -21,14 +20,7 @@ namespace mstd {
                 _prev = prev;
             }
 
-            queue_node(const queue_node &other) {
-                _entry = other._entry;
-                if (other._next != nullptr)
-                    _next = new queue_node(other._next->_entry);
-
-                if (other._prev != nullptr)
-                    _prev = new queue_node(other._prev->_entry);
-            }
+            queue_node(const queue_node &other)= delete;
 
             ~queue_node()= default;
 
@@ -96,6 +88,12 @@ namespace mstd {
 
         bool empty() {
             return _size == 0;
+        }
+
+        void clear() {
+            delete _head;
+            _last = nullptr;
+            _size = 0;
         }
 
         T pop() {
