@@ -222,20 +222,11 @@ namespace mstd {
 
         void remove_at(size_t index) {
             if (index >= _size || index < 0) {
-                throw std::runtime_error("Bad index: " + index);
+                throw std::runtime_error("Bad index: " + std::to_string(index));
             }
-            auto *tmp_ent = new T[_capacity];
-
-            size_t j = 0;
-            for (size_t i = 0; i < _size; i++) {
-                if (i != index) {
-                    tmp_ent[j++] = _entries[i];
-                }
+            for (size_t i = index + 1; i < _size; i++) {
+                _entries[i - 1] = std::move(_entries[i]);
             }
-
-            delete[] _entries;
-
-            _entries = tmp_ent;
 
             _size--;
         }
