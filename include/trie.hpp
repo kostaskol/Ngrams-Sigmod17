@@ -5,6 +5,7 @@
 #include "mvector.hpp"
 #include "logger.hpp"
 #include "mqueue.hpp"
+#include "hash_table.hpp"
 
 class trie {
 private:
@@ -45,6 +46,8 @@ private:
 
         void set_end_of_word(bool v);
 
+        void print(int level);
+
         trie_node &operator=(const trie_node &other);
 
         // Move assignment operator
@@ -64,7 +67,9 @@ public:
 
     void add(const mstd::vector<std::string> &ngram);
 
-    bool search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+    void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+
+    void print_tree();
 
     size_t get_num_nodes();
 
