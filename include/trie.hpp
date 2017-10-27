@@ -55,6 +55,8 @@ private:
 
         void print(int level);
 
+        const bool has_children();
+
         trie_node &operator=(const trie_node &other);
 
         // Move assignment operator
@@ -63,8 +65,6 @@ private:
         trie_node &operator=(trie_node &&other) noexcept;
 
         friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
-
-        void print(int level);
 
     };
 
@@ -86,8 +86,6 @@ public:
     size_t get_num_nodes();
 
     size_t get_num_ngrams();
-
-    void print_tree();
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 

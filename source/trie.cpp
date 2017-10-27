@@ -114,16 +114,9 @@ bool trie::r_delete_ngram(const mstd::vector<std::string> &ngram) {
             return false;
         }
     }
-<<<<<<<
-    ss.str("");
-    ss.clear();
-    return results->empty() ? false : true;
-}
-=======
     // Successfully deleted the requested N-gram.
     return true;
 }
->>>>>>>
 
 bool trie::r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *current, int length, int level, int *found) {
     trie_node *child;

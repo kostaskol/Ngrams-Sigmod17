@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
                 while(!results.empty()){
                     succ = results.pop();
                     if (succ == "$$END$$") {
-                        logger::error("query", succ, STDOUT, false);
+                        logger::error("query", succ, STDOUT);
                     }
                     else{
                         logger::success("query", succ, STDOUT);
@@ -108,5 +108,6 @@ int main(int argc, char **argv) {
         v.clear();
     }
     results.clear();
+    t.print_tree();
     // End query file parsing
 }

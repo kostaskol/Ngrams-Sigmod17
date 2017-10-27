@@ -3,7 +3,7 @@ clean
 .idea
 cmake-build-debug
 debug/log.txt
-file.init
-file.query
+input/custom/file.init
+input/custom/file.query
 vgcore.*
 .gitignore
