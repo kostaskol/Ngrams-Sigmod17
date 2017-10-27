@@ -1,7 +1,5 @@
 #include <hash_table.hpp>
 #include "trie.hpp"
-#include "logger.hpp"
-#include "helpers.hpp"
 
 using mstd::vector;
 using std::string;
@@ -54,11 +52,11 @@ void trie::add(const vector<string> &ngram) {
     _num_ngrams++;
 }
 
-
-bool trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
+void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
     trie_node *current = _root;
+    std::stringstream ss , final_ss;
     mstd::hash_table<void *> ht;
-    std::stringstream ss;
+    bool found_one = false;
 
     for (size_t i = 0; i < ngram.size(); i++) {
         trie_node *child;
@@ -71,37 +69,110 @@ bool trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
             }
             else{
                 ss << ngram.at(j) + " ";
-                try {
-                    // If the key cannot be found in the hash table, it throws an exception
-                    // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
-                    // so we start from the beginning
-                    ht.get(ss.str());
-                    ss.str("");
-                    ss.clear();
-                    current = _root;
-                    break;
-                } catch (std::exception &e) {
-                    // If it throws, the key doesn't exist, so we add it to the hash table and continue
-                    ht.put(ss.str(), nullptr);
-                }
                 if (child->is_end_of_word()) {
-                    results->push(ss.str());
+                    try {
+                        // If the key cannot be found in the hash table, it throws an exception
+                        // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
+                        // so we start from the beginning
+                        ht.get(ss.str());
+                        ss.str("");
+                        ss.clear();
+                        current = _root;
+                        break;
+                    } catch (std::exception &e) {
+                        if (found_one) {
+                            final_ss << "| ";
+                        }
+                        // If it throws, the key doesn't exist, so we add it to the hash table and continue
+                        ht.put(ss.str(), nullptr);
+                        // results->push(ss.str());
+                        found_one = true;
+                        final_ss << ss.str();
+                    }
                 }
                 current = child;
             }
         }
     }
+    results->push(final_ss.str());
+    if (!found_one) {
+        results->push("$$END$$");
+    }
+    ss.str("");
+    ss.clear();
+    final_ss.str("");
+    final_ss.clear();
+}
+
+bool trie::r_delete_ngram(const mstd::vector<std::string> &ngram) {
+    trie_node *curr = _root;
+    int found;
+
+    if (!r_delete_helper(ngram, curr, (int)ngram.size(), 0, &found)){
+        if (!found){
+            // Didn't find the requested N-gram.
+            return false;
+        }
+    }
+<<<<<<<
     ss.str("");
     ss.clear();
     return results->empty() ? false : true;
+}
+=======
+    // Successfully deleted the requested N-gram.
+    return true;
+}
+>>>>>>>
+
+bool trie::r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *current, int length, int level, int *found) {
+    trie_node *child;
+    int ch_index;
+
+    if (length != level) {
+        // We still need to descend to the last node of the ngram.
+        if ((child = current->get_child(ngram.get((size_t) level), &ch_index)) == nullptr) {
+            // The requested N-gram does not exist on the Trie.
+            *found = 0;
+            return false;
+        }
+        if (r_delete_helper(ngram, child, length, level+1, found)) {
+            // If my child marked itself for deletion I have to remove it from my children.
+            current->remove_child(ch_index);
+            // Check if I can mark myself for deletion as well.
+            if (current->is_end_of_word()){
+                // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
+                return false;
+            } else if (current->get_children_p() != nullptr) {
+                // I have more children after my child's deletion, so I cannot be deleted.
+                return false;
+            } else {
+                // I do not satisfy any of the above conditions, so I can be deleted.
+                return true;
+            }
+        } else {
+            // If my child couldn't delete itself
+            return false;
+        }
+    } else {
+        // Base case of the algorithm. We are the end_of_word node.
+        *found = 1;
+        if (current->get_children_p() == nullptr) {
+            // The end_of_word node can be deleted, so it tells its parent to delete him.
+            return true;
+        } else {
+            // The end_of_word node cannot be deleted, so we un-check the end_of_word flag.
+            current->set_end_of_word(false);
+            return false;
+        }
+    }
+
 }
 
 void trie::print_tree() {
     _root->print(0);
 }
 
-// The following two functions *could* be used, but aren't
-// TODO: Consider removing them along with trie::_num_nodes and trie::_num_ngrams
 size_t trie::get_num_nodes() {
     return _num_nodes;
 }
@@ -166,8 +237,24 @@ trie::trie_node *trie::trie_node::add_child(int index, std::string word, bool eo
     return _children->m_insert_at(index, new_node);
 }
 
+void trie::trie_node::remove_child(int index) {
+    _children->remove_at((size_t) index);
+    if (_children->size() == 0){
+        delete _children;
+        _children = nullptr;
+    }
+}
+
 const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
     return *_children;
+}
+
+mstd::vector<trie::trie_node> *trie::trie_node::get_children_p() {
+    return  _children;
+}
+
+trie::trie_node *trie::trie_node::get_parent() {
+	return _parent;
 }
 
 trie::trie_node *trie::trie_node::get_child(int index) {
@@ -204,55 +291,60 @@ trie::trie_node *trie::trie_node::get_child(std::string &word, int *at) {
 }
 
 bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
-   if (_children->at(0)._word > word) {
-       *index = 0;
-       return false;
-   }
-   else if (_children->at(0)._word == word) {
-       *index = 0;
-       return true;
-   }
+    if (_children->at(0)._word > word) {
+        *index = 0;
+        return false;
+    }
+    else if (_children->at(0)._word == word) {
+        *index = 0;
+        return true;
+    }
 
-   if (_children->at(_children->size() - 1)._word < word) {
-       *index = (int) _children->size();
-       return false;
-   }
-   else if (_children->at(_children->size() - 1)._word == word) {
-       *index = (int) _children->size() - 1;
-       return true;
-   }
-   int left = 0;
-   int right = (int) _children->size() - 1;
-   while (left <= right) {
-       int mid = left + ((right-left) / 2);
+    if (_children->at(_children->size() - 1)._word < word) {
+        *index = (int) _children->size();
+        return false;
+    }
+    else if (_children->at(_children->size() - 1)._word == word) {
+        *index = (int)_children->size() - 1;
+        return true;
+    }
+
+    int left = 0;
+    int right = (int) _children->size() - 1;
+    while (left <= right) {
+        int mid = left + ((right-left) / 2);
 
        if (_children->at((size_t) mid)._word == word) {
            *index = mid;
            return true;
        }
 
-       if (left == right || left == right - 1) {    //mid._word != word here, so we return where the new word should be added.
-           if (_children->at((size_t) left)._word > word) {
-               *index = left;
-           }
-           else if (_children->at((size_t) right)._word < word) {
-               *index = right + 1;
-           }
-           else if (_children->at((size_t) right)._word > word) {
-               *index = right;
-           }
-           else {
-               *index = mid;
-               return true;
-           }
-           return false;
-       }
-       if (_children->at((size_t) mid)._word > word) {
-           right = mid - 1;
-       }
-       else if (_children->at((size_t) mid)._word < word) {
-           left = mid + 1;
-       }
+        if (left == right || left == right - 1) {
+            if (_children->at((size_t) left)._word > word ) {
+                *index = left;
+            }
+            else if (_children->at((size_t) right)._word < word) {
+                *index = right + 1;
+            }
+            else if (_children->at((size_t) right)._word > word) {
+                *index = right;
+            }
+            else {
+                if (_children->at((size_t) right)._word == word) {
+                    *index = right;
+                } else {
+                    *index = mid;
+                }
+                return true;
+            }
+            return false;
+        }
+        if (_children->at(mid)._word > word) {
+            right = mid - 1;
+        }
+        else if (_children->at(mid)._word < word) {
+            left = mid + 1;
+        }
     }
 }
 
@@ -295,7 +387,6 @@ void trie::trie_node::print(int level) {
     }
 }
 
-// Can't be deleted because it's required by the templated vector (still not used)
 trie::trie_node &trie::trie_node::operator=(const trie::trie_node &other) {
     _word = other._word;
     _eow = other._eow;
