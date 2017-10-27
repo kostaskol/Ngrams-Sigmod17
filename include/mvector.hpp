@@ -27,7 +27,15 @@ namespace mstd {
             delete[] _entries;
             _entries = tmp;
 
-            _capacity = _capacity << 1;
+            _capacity <<= 1;
+        }
+
+        void _shrink() {
+            auto *tmp = new T[_capacity >> 1];
+            std::copy(_entries, _entries + _size, tmp);
+            delete[] _entries;
+            _entries = tmp;
+            _capacity >>= 1;
         }
 
         void _swap(T *a, T *b) {
@@ -255,11 +263,22 @@ namespace mstd {
             if (index >= _size || index < 0) {
                 throw std::runtime_error("Bad index: " + std::to_string(index));
             }
+
             for (size_t i = index + 1; i < _size; i++) {
                 _entries[i - 1] = std::move(_entries[i]);
             }
 
             _size--;
+            // If the size of the vector ever becomes 1/4 of its capacity
+            // we shrink the vector
+            if (_size <= (_capacity >> 2)) {
+                _shrink();
+            }
+
+        }
+
+        size_t capacity() {
+            return _capacity;
         }
 
         void sort() {
