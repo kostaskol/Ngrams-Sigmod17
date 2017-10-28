@@ -121,26 +121,30 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
         }
     }
     // Now the current point to the end_of_word node of the N-gram.
-    if (current->get_children_p() == nullptr) {
-        // The end_of_word node can be deleted, so its parent will delete him.
-        parents[(int)ngram.size()-1]->remove_child(ch_indexes[(int)ngram.size()-1]);
-    }
-    else {
-        // The end_of_word node cannot be deleted, so we un-check the end_of_word flag.
-        current->set_end_of_word(false);
-        delete[] ch_indexes;
-        delete[] parents;
-        return true;
-    }
-    current = parents[(int)ngram.size()-1];
-    for (int i = (int)ngram.size()-2; i >= 0; i--) {
-        if (current->is_end_of_word()) {
-            // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
+    if (current->is_end_of_word()) {
+        if (current->get_children_p() == nullptr) {
+            // The end_of_word node can be deleted, so its parent will delete him.
+            parents[(int)ngram.size()-1]->remove_child(ch_indexes[(int)ngram.size()-1]);
+        }
+        else {
+            // The end_of_word node cannot be deleted, so we un-check the end_of_word flag.
+            current->set_end_of_word(false);
             delete[] ch_indexes;
             delete[] parents;
             return true;
         }
-        else if (current->get_children_p() != nullptr) {
+    }
+    else {
+        // The request N-gram does not exist on the Trie.
+        delete[] ch_indexes;
+        delete[] parents;
+        return false;
+    }
+    current = parents[(int)ngram.size()-1];
+    for (int i = (int)ngram.size()-2; i >= 0; i--) {
+        if (current->is_end_of_word() || current->get_children_p() != nullptr) {
+            // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
+            // OR
             // I have more children after my child's deletion, so I cannot be deleted.
             delete[] ch_indexes;
             delete[] parents;

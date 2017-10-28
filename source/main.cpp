@@ -89,6 +89,7 @@ int main(int argc, char **argv) {
                     string fail = "The N-Gram \"" + s + "\" does not exist, so it cannot be deleted!";
 //                    logger::error("query", fail, BOTH, false);
                 }
+//                t.print_tree();
                 break;
             case FINISH:
                 // Print query results
