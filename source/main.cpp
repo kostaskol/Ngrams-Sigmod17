@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
     int cmd_type;
 
     mstd::queue<std::string> results;
+    bool printed = false;
     while (true) {
         bool stop = query_parser.next_command(&v, &cmd_type);
         string s;
@@ -92,6 +93,7 @@ int main(int argc, char **argv) {
                 break;
             case FINISH:
                 // Print query results
+                printed = true;
                 string succ = "";
                 while(!results.empty()){
                     succ = results.pop();
@@ -104,10 +106,25 @@ int main(int argc, char **argv) {
                 }
                 break;
         }
-        if (stop) break;
+        if (stop) {
+            if (printed) {
+                break;
+            } else {
+                string succ = "";
+                while (!results.empty()) {
+                    succ = results.pop();
+                    if (succ == "$$END$$") {
+                        logger::error("query", succ, STDOUT);
+                    } else {
+                        logger::success("query", succ, STDOUT);
+                    }
+                }
+                break;
+            }
+        }
         v.clear();
     }
-    results.clear();
-    t.print_tree();
+    // Δεν χρειάζεται. Βγαίνει out of scope και καλείται ο destructor
+//    results.clear();
     // End query file parsing
 }

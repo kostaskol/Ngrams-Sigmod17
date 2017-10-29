@@ -166,6 +166,12 @@ void trie::print_tree() {
     _root->print(0);
 }
 
+std::string trie::to_string() {
+    std::stringstream ss;
+    _root->to_string(ss, 0);
+    return ss.str();
+}
+
 size_t trie::get_num_nodes() {
     return _num_nodes;
 }
@@ -377,6 +383,19 @@ void trie::trie_node::print(int level) {
     if (_children == nullptr) return;
     for (size_t i = 0; i < _children->size(); i++) {
         _children->get(i).print(level + 1);
+    }
+}
+
+void trie::trie_node::to_string(std::stringstream &ss, int level) {
+    for (int i = 1; i < level; i++) {
+        ss << "\t";
+    }
+    if (_word != "") {
+        ss << _word << "\n";
+    }
+    if (_children == nullptr) return;
+    for (size_t i = 0; i < _children->size(); i++) {
+        _children->get(i).to_string(ss, level + 1);
     }
 }
 

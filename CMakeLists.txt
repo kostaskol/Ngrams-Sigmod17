@@ -31,8 +31,10 @@ set(TEST_SOURCE
         ngrams-testing/basic_tests.cpp
         ngrams-testing/vector-testing.cpp
         ngrams-testing/parser-testing.cpp
+        ngrams-testing/cmd-parser-testing.cpp
+        ngrams-testing/trie-insert-testing.cpp
         source/parser.cpp
-        ngrams-testing/cmd-parser-testing.cpp)
+        source/trie.cpp)
 
 add_executable(ngrams ${SOURCE_FILES})
 
