@@ -1,7 +1,6 @@
 #ifndef QUEUE_H_
 #define QUEUE_H_
 
-#include <cstring>
 #include <stdexcept>
 
 namespace mstd {

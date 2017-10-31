@@ -237,6 +237,7 @@ std::string trie::to_string() {
     return ss.str();
 }
 
+
 size_t trie::get_num_nodes() {
     return _num_nodes;
 }

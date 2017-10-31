@@ -5,3 +5,4 @@ cmake-build-debug
 debug/log.txt
 file.init
 file.query
+googletest
