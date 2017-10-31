@@ -2,7 +2,6 @@
 #include <cmd_parser.hpp>
 #include <parser.hpp>
 #include "trie.hpp"
-#include "mqueue.hpp"
 
 using std::cout;
 using std::endl;
@@ -56,7 +55,7 @@ int main(int argc, char **argv) {
         if (v.size() == 0) break;
         string s = helpers::join(v, ' ');
         t.add(v);
-        logger::success("init", "Added N-Gram " + s);
+//        logger::success("init", "Added N-Gram " + s);
         v.clear();
         if (stop) break;
     }
@@ -75,11 +74,14 @@ int main(int argc, char **argv) {
         switch (cmd_type) {
             case INSERTION:
                 s = helpers::join(v, ' ');
-                logger::success("add", "Added N-Gram \"" + s + "\"");
                 t.add(v);
                 break;
             case QUERY:
                 t.search(v,&results);
+                break;
+            case DELETION:
+                s = helpers::join(v, ' ');
+                t.delete_ngram(v);
                 break;
             case FINISH:
                 // Print query results
@@ -87,10 +89,10 @@ int main(int argc, char **argv) {
                 while(!results.empty()){
                     succ = results.pop();
                     if (succ == "$$END$$") {
-                        logger::error("query", succ, STDOUT, false);
+                        logger::error("query", "-1", BOTH, false);
                     }
                     else{
-                        logger::success("query", succ, STDOUT);
+                        logger::success("query", succ, BOTH);
                     }
                 }
                 break;
