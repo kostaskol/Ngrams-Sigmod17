@@ -38,4 +38,3 @@ TEST_F(ParserTest, exceptionTest) {
         FAIL() << "Unknown exception thrown";
     }
 }
-

@@ -12,21 +12,17 @@ namespace mstd {
         private:
             T _entry;
             queue_node *_next;
-            queue_node *_prev;
         public:
             explicit queue_node(T ent, queue_node *next = nullptr, queue_node *prev = nullptr) {
                 _entry = ent;
                 _next = next;
-                _prev = prev;
             }
 
-            queue_node(const queue_node &other)= delete;
+            queue_node(const queue_node &other)=delete;
 
-            ~queue_node()= default;
+            ~queue_node()=default;
 
             queue_node *get_next() { return _next; }
-
-            queue_node *get_prev() { return _prev; }
 
             void set_next(queue_node *next) {
                 _next = next;
@@ -36,22 +32,9 @@ namespace mstd {
                 _next = new queue_node(next->_entry);
             }
 
-            void set_prev(queue_node *prev) {
-                _prev = prev;
-            }
-
-            void add_prev(queue_node *prev) {
-                _prev = new queue_node(prev->_entry);
-            }
-
             T &get_entry() { return _entry; }
 
-            queue_node &operator=(const queue_node &other) {
-                _entry = other._entry;
-                _next = new queue_node(other._next->_entry);
-                _prev = new queue_node(other._prev->_entry);
-                return *this;
-            }
+            queue_node &operator=(const queue_node &other)=delete;
         };
 
         queue_node *_head;
@@ -103,8 +86,6 @@ namespace mstd {
 
             T tmp = _head->get_entry();
             queue_node *curr = _head->get_next();
-            if (curr != nullptr)
-                curr->set_prev(nullptr);
             delete _head;
             _head = curr;
             _size--;

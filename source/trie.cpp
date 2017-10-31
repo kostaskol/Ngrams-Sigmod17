@@ -1,3 +1,4 @@
+#include <hash_table.hpp>
 #include "trie.hpp"
 
 using mstd::vector;
@@ -255,14 +256,8 @@ trie::trie_node::trie_node(const std::string &word, bool eow, trie_node *par)
     _children = nullptr;
 }
 
-trie::trie_node::trie_node(const trie_node &other)
-        : _word(other._word), _eow(other._eow), _parent(other._parent) {
-    if (other._children == nullptr) {
-        _children = nullptr;
-        return;
-    }
-    _children = new mstd::vector<trie_node>(*other._children);
-}
+// Deleted copy constructor here since it isn't used anywhere (just as it should be)
+// trie::trie_node::trie_node(const trie::trie_node &other)=delete;
 
 trie::trie_node::trie_node(trie_node &&other) noexcept {
     _word = other._word;
@@ -327,24 +322,30 @@ trie::trie_node *trie::trie_node::get_child(int index) {
     return _children->at_p((size_t) index);
 }
 
+const bool trie::trie_node::has_children() {
+    return _children != nullptr;
+}
+
 trie::trie_node *trie::trie_node::get_child(std::string &word, int *at) {
-    if (_children == nullptr) return nullptr;
+    // NOTE: Potential bug caught here.
+    // Avoided simply because the variable passed by trie::add was initialised to 0
+    // at was not properly set if the _children vector was null
+    if (_children == nullptr) {
+        if (at != nullptr) {
+            *at = 0;
+        }
+        return nullptr;
+    }
     int index;
     if(!_bsearch_children(word, &index)) {    // Not found
         if (at != nullptr) {
             *at = index;
-        } else {
-            // These loggings *will* appear in the current search functionality.
-            // TODO(kostas): Delete these once the proper search has been implemented
-//            mstd::logger::warn("trie::trie_node::get_child", "index request variable was null");
         }
         return nullptr;
     } else {                                 // Found
         // If the child is found, we assign -1 to the "not found index" to avoid undefined behaviour
         if (at != nullptr) {
             *at = index;
-        } else {
-//            mstd::logger::warn("trie::trie_node::get_child", "index request variable was null");
         }
         return get_child(index);
     }
@@ -374,10 +375,10 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
     while (left <= right) {
         int mid = left + ((right-left) / 2);
 
-        if (_children->at((size_t) mid)._word == word) {
-            *index = mid;
-            return true;
-        }
+       if (_children->at((size_t) mid)._word == word) {
+           *index = mid;
+           return true;
+       }
 
         if (left == right || left == right - 1) {
             if (_children->at((size_t) left)._word > word ) {
@@ -408,6 +409,7 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
     }
 }
 
+// Not used. Consider removing this
 void trie::trie_node::push_child(trie_node *node) {
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(SIZE);
@@ -415,15 +417,16 @@ void trie::trie_node::push_child(trie_node *node) {
     _children->m_push(*node);
 }
 
-bool trie::trie_node::is_end_of_word() {
+bool trie::trie_node::is_end_of_word() const {
     return _eow;
 }
 
-size_t trie::trie_node::children_size() {
+// Perhaps asteris will use this?
+size_t trie::trie_node::children_size() const {
     return _children->size();
 }
 
-std::string trie::trie_node::get_word() {
+std::string trie::trie_node::get_word() const {
     return _word;
 }
 
