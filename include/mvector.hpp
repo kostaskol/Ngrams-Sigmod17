@@ -27,7 +27,52 @@ namespace mstd {
             delete[] _entries;
             _entries = tmp;
 
-            _capacity = _capacity << 1;
+            _capacity <<= 1;
+        }
+
+        void _shrink() {
+            auto *tmp = new T[_capacity >> 1];
+            std::copy(_entries, _entries + _size, tmp);
+            delete[] _entries;
+            _entries = tmp;
+            _capacity >>= 1;
+        }
+
+        void _swap(T *a, T *b) {
+            T c = *a;
+            *a = *b;
+            *b = c;
+        }
+
+        int _partition(T *arr, int low, int high)
+        {
+            int pivot = arr[high];    // pivot
+            int i = (low - 1);  // Index of smaller element
+
+            for (int j = low; j <= high- 1; j++)
+            {
+                // If current element is smaller than or
+                // equal to pivot
+                if (arr[j] <= pivot)
+                {
+                    i++;    // increment index of smaller element
+                    _swap(&arr[i], &arr[j]);
+                }
+            }
+            _swap(&arr[i + 1], &arr[high]);
+            return (i + 1);
+        }
+
+
+        void _quick_sort(int arr[], int low, int high)
+        {
+            if (low < high)
+            {
+                int pi = _partition(arr, low, high);
+
+                _quick_sort(arr, low, pi - 1);
+                _quick_sort(arr, pi + 1, high);
+            }
         }
     public:
         explicit vector(size_t capacity = 1)
@@ -59,21 +104,8 @@ namespace mstd {
             delete[] _entries;
         }
 
-        vector sublist(size_t start, size_t length) const {
-            if (start + length > _size) {
-                throw std::runtime_error("Bad indices");
-            }
-
-            vector tmp;
-            for (auto i = (size_t) start; i <= (size_t) start + length; i++) {
-                tmp.push(_entries[i]);
-            }
-
-            return tmp;
-        }
-
         void push(const T &ent) {
-            if (_size + 1>= (size_t) _capacity) {
+            if (_size + 1 > _capacity) {
                 _enlarge();
             }
 
@@ -81,7 +113,7 @@ namespace mstd {
         }
 
         T *m_push(T &ent) {
-            if (_size + 1 >= (size_t) _capacity) _enlarge();
+            if (_size + 1 > _capacity) _enlarge();
 
             _entries[_size] = std::move(ent);
             return &_entries[_size++];
@@ -92,6 +124,13 @@ namespace mstd {
         }
 
         T *m_insert_at(int index, T &ent) {
+            // Changed: Throws an out_of_range exception if
+            // an entry is about to be placed over the size of the vector
+            // (because it would cause too many other problems)
+            if (index > _size + 1) {
+                throw std::out_of_range("Index out of range");
+            }
+
             if ((_size == 0) || (index == _size)) {
                 return m_push(ent);
             }
@@ -128,7 +167,7 @@ namespace mstd {
 
         T &at(size_t index) const {
             if (index >= (int) _size) {
-                throw std::runtime_error("Index out of range:");
+                throw std::out_of_range("Index out of range:");
             }
 
             return _entries[index];
@@ -140,10 +179,9 @@ namespace mstd {
         }
 
 
-
         T *at_p(size_t index) {
             if (index >= _size) {
-                throw std::runtime_error("Index out of range");
+                throw std::out_of_range("Index out of range");
             }
 
             return &_entries[index];
@@ -152,13 +190,6 @@ namespace mstd {
         // Method sugar
         T *get_p(size_t index) {
             return at_p(index);
-        }
-
-        int get_index(const T &ent) const {
-            for (size_t i = 0; i < _size; i++) {
-                if (_entries[i] == ent) return (int) i;
-            }
-            return -1;
         }
 
         void clear(size_t new_cap = 1) {
@@ -170,71 +201,52 @@ namespace mstd {
         }
 
         void set_at(size_t index, const T &ent) {
-            if (index < 0 || index > _size) {
-                throw std::runtime_error("Bad index: " + index);
+            if (index < 0 || index >= _size) {
+                throw std::out_of_range("Bad index: " + index);
             }
 
             _entries[index] = T(ent);
         }
 
 
-        bool remove(const T &ent) {
-            auto *tmp = new T[_capacity];
-            int j = 0;
-            bool found = false;
-            for (size_t i = 0; i < _size; i++) {
-                if (_entries[i] == ent) {
-                    found = true;
-                    continue;
-                }
-
-                tmp[j++] = _entries[i];
-            }
-
-            if (found) {
-                delete[] _entries;
-                _entries = tmp;
-
-                _size--;
-            } else {
-                delete[] tmp;
-            }
-
-            return found;
-        }
-
-        // Iterators. Allow for foreach loops
+        // Iterators. Allows for foreach loops
         // (for (int i : vec))
         T *begin() {
             return &_entries[0];
         }
 
         T *end() {
-            return &_entries[_size - 1];
+            return &_entries[_size];
         }
 
         void remove_at(size_t index) {
             if (index >= _size || index < 0) {
-                throw std::runtime_error("Bad index: " + std::to_string(index));
+                throw std::out_of_range("Bad index: " + std::to_string(index));
             }
+
             for (size_t i = index + 1; i < _size; i++) {
                 _entries[i - 1] = std::move(_entries[i]);
             }
 
             _size--;
+            // If the size of the vector ever becomes 1/4 of its capacity
+            // we shrink the vector
+            if (_size <= (_capacity >> 2)) {
+                _shrink();
+            }
+
+        }
+
+        size_t capacity() {
+            return _capacity;
+        }
+
+        void sort() {
+            _quick_sort(_entries, 0, _size - 1);
         }
 
         size_t size() const { return _size; }
 
-
-
-        T get_cpy(size_t index) const {
-            if (index >= _size) {
-                throw std::runtime_error("Index out of range");
-            }
-
-            return _entries[index];
-        }
 
         T &operator[](size_t index) const {
             return at(index);

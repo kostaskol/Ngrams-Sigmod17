@@ -25,7 +25,6 @@ void trie::add(const vector<string> &ngram) {
 
     // Go up until the previous to last part (we need to treat the last part differently)
     for (int i = 0; i < ngram.size() - 1; i++) {
-
         trie_node *child;
         int index;
         if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
@@ -38,7 +37,7 @@ void trie::add(const vector<string> &ngram) {
         }
     }
 
-    std::string last_word = ngram.get_cpy(ngram.size() - 1);
+    std::string &last_word = ngram.get(ngram.size() - 1);
     trie_node *child;
     int index = 0;
     if ((child = current->get_child(last_word, &index)) != nullptr) {
@@ -46,10 +45,8 @@ void trie::add(const vector<string> &ngram) {
         child->set_end_of_word(true);
     } else {
         // Otherwise we insert it to that node's children
-        if (index == -1) {
-            mstd::logger::warn("trie::add", "get child's index is -1");
-        }
         current->add_child(index, last_word, true);
+        _num_nodes++;
     }
     _num_ngrams++;
 }
@@ -229,6 +226,13 @@ void trie::print_tree() {
     _root->print(0);
 }
 
+std::string trie::to_string() {
+    std::stringstream ss;
+    _root->to_string(ss, 0);
+    return ss.str();
+}
+
+
 size_t trie::get_num_nodes() {
     return _num_nodes;
 }
@@ -275,6 +279,24 @@ trie::trie_node::~trie_node() {
 trie::trie_node *trie::trie_node::add_child(int index, std::string word, bool eow) {
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(SIZE);
+    }
+
+    if (index < 0) {
+        // Better to fail fast than fail safe
+        throw std::runtime_error("Index below zero");
+        // If we want a fail safe method (worse imo), uncomment the following 2 lines
+        // logger::warn("trie::trie_node::add_child", "Index below zero(" + std::to_string(index) + ")");
+        // index = 0;
+    }
+
+    if (index > _children->size()) {
+        // Better fail fast than fail safe
+        throw std::runtime_error("Index above size (Index: " + std::to_string(index)
+                                 + " & Size: " + std::to_string(_children->size()) + ")");
+        // If we want a fail safe method (worse imo), uncomment the following 3 lines
+        // logger::warn("trie::trie_node::add_child", "Index above size (Index: " + std::to_string(index)
+        //                                              + " & Size: " + std::to_string(_children->size()) + ")");
+        // index = (int) _children->size();
     }
 
     trie_node new_node(word, eow, this);
@@ -420,6 +442,19 @@ void trie::trie_node::print(int level) {
     if (_children == nullptr) return;
     for (size_t i = 0; i < _children->size(); i++) {
         _children->get(i).print(level + 1);
+    }
+}
+
+void trie::trie_node::to_string(std::stringstream &ss, int level) {
+    for (int i = 1; i < level; i++) {
+        ss << "\t";
+    }
+    if (_word != "") {
+        ss << _word << "\n";
+    }
+    if (_children == nullptr) return;
+    for (size_t i = 0; i < _children->size(); i++) {
+        _children->get(i).to_string(ss, level + 1);
     }
 }
 
