@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
         if (v.size() == 0) break;
         string s = helpers::join(v, ' ');
         t.add(v);
-        logger::success("init", "Added N-Gram " + s);
+//        logger::success("init", "Added N-Gram " + s);
         v.clear();
         if (stop) break;
     }
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
         switch (cmd_type) {
             case INSERTION:
                 s = helpers::join(v, ' ');
-                logger::success("add", "Added N-Gram \"" + s + "\"");
+//                logger::success("add", "Added N-Gram \"" + s + "\"");
                 t.add(v);
                 break;
             case QUERY:
@@ -83,13 +83,14 @@ int main(int argc, char **argv) {
                 break;
             case DELETION:
                 s = helpers::join(v, ' ');
-                if (t.r_delete_ngram(v)) {
+                if (t.delete_ngram(v)) {
                     string succ = "The N-Gram \"" + s + "\" had been deleted!";
-                    logger::success("query", succ, BOTH);
+//                    logger::success("query", succ, BOTH);
                 } else {
                     string fail = "The N-Gram \"" + s + "\" does not exist, so it cannot be deleted!";
-                    logger::error("query", fail, BOTH, false);
+//                    logger::error("query", fail, BOTH, false);
                 }
+//                t.print_tree();
                 break;
             case FINISH:
                 // Print query results
