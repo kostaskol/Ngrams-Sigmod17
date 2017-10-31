@@ -12,20 +12,21 @@ using std::endl;
 parser::parser(string file_name) : _file(file_name) {}
 
 bool parser::next_init(vector<string> *line) {
-    if (_file.is_open()) {
-        string s;
-        std::getline(_file, s);
-        const auto str_end = s.find_last_not_of('\n');
-        s.substr(0, str_end);
-        helpers::split(s, *line, ' ');
+    if (!_file.is_open()) throw std::runtime_error("File not opened");
+    if (_file.eof()) throw std::runtime_error("Already reached eof");
 
-        return _file.eof();
-    } else {
-        throw std::runtime_error("File not opened");
-    }
+    string s;
+    std::getline(_file, s);
+    const auto str_end = s.find_last_not_of('\n');
+    s.substr(0, str_end);
+    helpers::split(s, *line, ' ');
+
+    return _file.eof();
 }
 
 bool parser::next_command(vector<string> *line, int *type) {
+    if (!_file.is_open()) throw std::runtime_error("File not opened");
+    if (_file.eof()) throw std::runtime_error("Already reached eof");
     string s;
     std::getline(_file, s);
     const auto str_end = s.find_last_not_of('\n');
