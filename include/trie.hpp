@@ -68,10 +68,6 @@ private:
 
         friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 
-        void print(int level);
-
-        void to_string(std::stringstream &ss, int level);
-
     };
 
     trie_node *_root;
