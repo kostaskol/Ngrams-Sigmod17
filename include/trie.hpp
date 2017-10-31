@@ -23,7 +23,7 @@ private:
 
         trie_node(const std::string &word, bool eow, trie_node *par = nullptr);
 
-        trie_node(const trie_node &other);
+        trie_node(const trie_node &other)=delete;
 
         trie_node(trie_node &&other) noexcept;
 
@@ -45,13 +45,19 @@ private:
 
         void push_child(trie_node *node);
 
-        bool is_end_of_word();
+        bool is_end_of_word() const;
 
-        size_t children_size();
+        size_t children_size() const;
 
-        std::string get_word();
+        std::string get_word() const;
 
         void set_end_of_word(bool v);
+
+        void print(int level);
+
+        void to_string(std::stringstream &ss, int level);
+
+        const bool has_children();
 
         trie_node &operator=(const trie_node &other);
 
@@ -61,10 +67,6 @@ private:
         trie_node &operator=(trie_node &&other) noexcept;
 
         friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
-
-        void print(int level);
-
-        void to_string(std::stringstream &ss, int level);
 
     };
 

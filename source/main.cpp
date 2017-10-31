@@ -97,10 +97,12 @@ int main(int argc, char **argv) {
                 while(!results.empty()){
                     succ = results.pop();
                     if (succ == "$$END$$") {
-                        logger::error("query", "-1", STDOUT, false);
+//                        logger::error("query", "-1", STDOUT, false);
+                        cout << "-1" << endl;
                     }
                     else{
-                        logger::success("query", succ, STDOUT);
+//                        logger::success("query", succ, STDOUT);
+                        cout << succ << endl;
                     }
                 }
                 break;

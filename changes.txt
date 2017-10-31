@@ -1,2 +1,1 @@
-1. Now initialises all _children vectors with an initial size of SIZE(=3)
-2. Adds some move semantics to mstd::vector (need to recheck to make sure it's done well and gracefully)
+
