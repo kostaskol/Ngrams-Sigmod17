@@ -104,6 +104,62 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
     final_ss.clear();
 }
 
+bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
+    trie_node *current = _root;
+    auto *ch_indexes = new int[(int)ngram.size()];
+    auto **parents = new trie_node *[(int)ngram.size()];
+
+    for (int i = 0; i < ngram.size(); i++) {
+        parents[i] = current;
+        if ((current = current->get_child(ngram.get((size_t) i), &ch_indexes[i])) == nullptr) {
+            // The requested N-gram does not exist on the Trie.
+            delete[] ch_indexes;
+            delete[] parents;
+            return false;
+        }
+    }
+    // Now the current point to the end_of_word node of the N-gram.
+    if (current->is_end_of_word()) {
+        if (current->get_children_p() == nullptr) {
+            // The end_of_word node can be deleted, so its parent will delete him.
+            parents[(int)ngram.size()-1]->remove_child(ch_indexes[(int)ngram.size()-1]);
+        }
+        else {
+            // The end_of_word node cannot be deleted, so we un-check the end_of_word flag.
+            current->set_end_of_word(false);
+            delete[] ch_indexes;
+            delete[] parents;
+            return true;
+        }
+    }
+    else {
+        // The request N-gram does not exist on the Trie.
+        delete[] ch_indexes;
+        delete[] parents;
+        return false;
+    }
+    current = parents[(int)ngram.size()-1];
+    for (int i = (int)ngram.size()-2; i >= 0; i--) {
+        if (current->is_end_of_word() || current->get_children_p() != nullptr) {
+            // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
+            // OR
+            // I have more children after my child's deletion, so I cannot be deleted.
+            delete[] ch_indexes;
+            delete[] parents;
+            return true;
+        }
+        else {
+            // I do not satisfy any of the above conditions, so I can be deleted.
+            parents[i]->remove_child(ch_indexes[i]);
+            current = parents[i];
+        }
+    }
+
+    delete[] ch_indexes;
+    delete[] parents;
+    return true;
+}
+
 bool trie::r_delete_ngram(const mstd::vector<std::string> &ngram) {
     trie_node *curr = _root;
     int found;
@@ -136,24 +192,29 @@ bool trie::r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *cu
             if (current->is_end_of_word()){
                 // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
                 return false;
-            } else if (current->get_children_p() != nullptr) {
+            }
+            else if (current->get_children_p() != nullptr) {
                 // I have more children after my child's deletion, so I cannot be deleted.
                 return false;
-            } else {
+            }
+            else {
                 // I do not satisfy any of the above conditions, so I can be deleted.
                 return true;
             }
-        } else {
+        }
+        else {
             // If my child couldn't delete itself
             return false;
         }
-    } else {
+    }
+    else {
         // Base case of the algorithm. We are the end_of_word node.
         *found = 1;
         if (current->get_children_p() == nullptr) {
             // The end_of_word node can be deleted, so it tells its parent to delete him.
             return true;
-        } else {
+        }
+        else {
             // The end_of_word node cannot be deleted, so we un-check the end_of_word flag.
             current->set_end_of_word(false);
             return false;
@@ -164,6 +225,12 @@ bool trie::r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *cu
 
 void trie::print_tree() {
     _root->print(0);
+}
+
+std::string trie::to_string() {
+    std::stringstream ss;
+    _root->to_string(ss, 0);
+    return ss.str();
 }
 
 size_t trie::get_num_nodes() {
@@ -377,6 +444,19 @@ void trie::trie_node::print(int level) {
     if (_children == nullptr) return;
     for (size_t i = 0; i < _children->size(); i++) {
         _children->get(i).print(level + 1);
+    }
+}
+
+void trie::trie_node::to_string(std::stringstream &ss, int level) {
+    for (int i = 1; i < level; i++) {
+        ss << "\t";
+    }
+    if (_word != "") {
+        ss << _word << "\n";
+    }
+    if (_children == nullptr) return;
+    for (size_t i = 0; i < _children->size(); i++) {
+        _children->get(i).to_string(ss, level + 1);
     }
 }
 

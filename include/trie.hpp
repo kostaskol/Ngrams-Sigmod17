@@ -55,6 +55,8 @@ private:
 
         void print(int level);
 
+        void to_string(std::stringstream &ss, int level);
+
         const bool has_children();
 
         trie_node &operator=(const trie_node &other);
@@ -81,6 +83,8 @@ public:
 
     void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
 
+    bool delete_ngram(const mstd::vector<std::string> &ngram);
+
     bool r_delete_ngram(const mstd::vector<std::string> &ngram);
 
     size_t get_num_nodes();
@@ -90,6 +94,8 @@ public:
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 
     void print_tree();
+
+    std::string to_string();
 };
 
 #endif // TRIE

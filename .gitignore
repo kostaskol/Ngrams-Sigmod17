@@ -4,4 +4,4 @@ clean
 cmake-build-debug
 debug/log.txt
 .gitignore
-googletest
+CMakeLists.txt

@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
         if (v.size() == 0) break;
         string s = helpers::join(v, ' ');
         t.add(v);
-        logger::success("init", "Added N-Gram " + s);
+//        logger::success("init", "Added N-Gram " + s);
         v.clear();
         if (stop) break;
     }
@@ -68,13 +68,14 @@ int main(int argc, char **argv) {
     int cmd_type;
 
     mstd::queue<std::string> results;
+    bool printed = false;
     while (true) {
         bool stop = query_parser.next_command(&v, &cmd_type);
         string s;
         switch (cmd_type) {
             case INSERTION:
                 s = helpers::join(v, ' ');
-                logger::success("add", "Added N-Gram \"" + s + "\"");
+//                logger::success("add", "Added N-Gram \"" + s + "\"");
                 t.add(v);
                 break;
             case QUERY:
@@ -82,16 +83,18 @@ int main(int argc, char **argv) {
                 break;
             case DELETION:
                 s = helpers::join(v, ' ');
-                if (t.r_delete_ngram(v)) {
+                if (t.delete_ngram(v)) {
                     string succ = "The N-Gram \"" + s + "\" had been deleted!";
-                    logger::success("query", succ, BOTH);
+//                    logger::success("query", succ, BOTH);
                 } else {
                     string fail = "The N-Gram \"" + s + "\" does not exist, so it cannot be deleted!";
-                    logger::error("query", fail, BOTH, false);
+//                    logger::error("query", fail, BOTH, false);
                 }
+//                t.print_tree();
                 break;
             case FINISH:
                 // Print query results
+                printed = true;
                 string succ = "";
                 while(!results.empty()){
                     succ = results.pop();
@@ -104,10 +107,25 @@ int main(int argc, char **argv) {
                 }
                 break;
         }
-        if (stop) break;
+        if (stop) {
+            if (printed) {
+                break;
+            } else {
+                string succ = "";
+                while (!results.empty()) {
+                    succ = results.pop();
+                    if (succ == "$$END$$") {
+                        logger::error("query", succ, STDOUT);
+                    } else {
+                        logger::success("query", succ, STDOUT);
+                    }
+                }
+                break;
+            }
+        }
         v.clear();
     }
-    results.clear();
-    t.print_tree();
+    // Δεν χρειάζεται. Βγαίνει out of scope και καλείται ο destructor
+//    results.clear();
     // End query file parsing
 }
