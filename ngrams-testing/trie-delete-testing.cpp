@@ -19,6 +19,12 @@ public:
     }
 };
 
+TEST_F(TrieDeletionionTesting, deleteEmpty) {
+    v.push("a"); v.push("b"); v.push("c"); v.push("d");
+    t.delete_ngram(v);
+    SUCCEED() << "";
+}
+
 TEST_F(TrieDeletionionTesting, deleteEasy) {
     v.push("a"); v.push("b"); v.push("c"); v.push("d");
     t.add(v);
