@@ -1,17 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
 project(tries)
 
-set(gtest_SOURCE_DIR googletest/googletest)
-
-ADD_SUBDIRECTORY(googletest)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "-g -std=c++0x")
-
-include_directories(include ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
