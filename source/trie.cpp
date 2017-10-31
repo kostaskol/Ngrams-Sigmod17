@@ -68,8 +68,8 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
                 break;
             }
             else{
-                ss << ngram.at(j) + " ";
                 if (child->is_end_of_word()) {
+                    ss << ngram.at(j);
                     try {
                         // If the key cannot be found in the hash table, it throws an exception
                         // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
@@ -81,22 +81,26 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
                         break;
                     } catch (std::exception &e) {
                         if (found_one) {
-                            final_ss << "| ";
+                            final_ss << "|";
                         }
                         // If it throws, the key doesn't exist, so we add it to the hash table and continue
                         ht.put(ss.str(), nullptr);
-                        // results->push(ss.str());
                         found_one = true;
                         final_ss << ss.str();
                     }
+                }
+                else{
+                    ss << ngram.at(j) + " ";
                 }
                 current = child;
             }
         }
     }
-    results->push(final_ss.str());
     if (!found_one) {
         results->push("$$END$$");
+    }
+    else{
+        results->push(final_ss.str());
     }
     ss.str("");
     ss.clear();
