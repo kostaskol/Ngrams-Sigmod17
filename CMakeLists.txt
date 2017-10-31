@@ -36,4 +36,4 @@ set(TEST_SOURCE
 add_executable(ngrams ${SOURCE_FILES})
 
 add_executable(basic_tests ${TEST_SOURCE})
-target_link_libraries(basic_tests gtest gtest_main)
+target_link_libraries(basic_tests ${GTEST_LIBRARIES} pthread)
