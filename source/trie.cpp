@@ -255,14 +255,8 @@ trie::trie_node::trie_node(const std::string &word, bool eow, trie_node *par)
     _children = nullptr;
 }
 
-trie::trie_node::trie_node(const trie_node &other)
-        : _word(other._word), _eow(other._eow), _parent(other._parent) {
-    if (other._children == nullptr) {
-        _children = nullptr;
-        return;
-    }
-    _children = new mstd::vector<trie_node>(*other._children);
-}
+// Deleted copy constructor here since it isn't used anywhere (just as it should be)
+// trie::trie_node::trie_node(const trie::trie_node &other)=delete;
 
 trie::trie_node::trie_node(trie_node &&other) noexcept {
     _word = other._word;
