@@ -35,7 +35,7 @@ TEST_F(TrieDeletionionTesting, deleteEasy) {
 }
 
 TEST_F(TrieDeletionionTesting, deleteMed) {
-    parser p("/home/sukee/Dropbox/Project/ngrams-testing/input/medium.input");
+    parser p("../ngrams-testing/input/medium.input");
     bool stop = false;
     vector<string> v;
     while (!stop) {
@@ -67,9 +67,9 @@ TEST_F(TrieDeletionionTesting, deleteMed) {
     v.clear();
 
     string output = t.to_string();
-    std::ofstream out("/home/sukee/Dropbox/Project/ngrams-testing/output/output-d-medium.test");
+    std::ofstream out("../ngrams-testing/output/output-d-medium.test");
     out << output;
-    std::ifstream in("/home/sukee/Dropbox/Project/ngrams-testing/input/output-d-medium.proper");
+    std::ifstream in("../ngrams-testing/input/output-d-medium.proper");
     std::stringstream proper_output;
     std::string line;
     while (std::getline(in, line)) {
@@ -79,7 +79,7 @@ TEST_F(TrieDeletionionTesting, deleteMed) {
 }
 
 TEST_F(TrieDeletionionTesting, deleteLarge) {
-    parser p("/home/sukee/Dropbox/Project/ngrams-testing/input/large.input");
+    parser p("../ngrams-testing/input/large.input");
     bool stop = false;
     vector<string> v;
     while (!stop) {
@@ -109,9 +109,9 @@ TEST_F(TrieDeletionionTesting, deleteLarge) {
     v.clear();
 
     string output = t.to_string();
-    std::ofstream out("/home/sukee/Dropbox/Project/ngrams-testing/output/output-d-large.test");
+    std::ofstream out("../ngrams-testing/output/output-d-large.test");
     out << output;
-    std::ifstream in("/home/sukee/Dropbox/Project/ngrams-testing/input/output-d-large.proper");
+    std::ifstream in("../ngrams-testing/input/output-d-large.proper");
     std::stringstream proper_output;
     std::string line;
     while (std::getline(in, line)) {

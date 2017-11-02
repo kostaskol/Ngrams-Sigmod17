@@ -37,43 +37,6 @@ namespace mstd {
             _entries = tmp;
             _capacity >>= 1;
         }
-
-        void _swap(T *a, T *b) {
-            T c = *a;
-            *a = *b;
-            *b = c;
-        }
-
-        int _partition(T *arr, int low, int high)
-        {
-            int pivot = arr[high];    // pivot
-            int i = (low - 1);  // Index of smaller element
-
-            for (int j = low; j <= high- 1; j++)
-            {
-                // If current element is smaller than or
-                // equal to pivot
-                if (arr[j] <= pivot)
-                {
-                    i++;    // increment index of smaller element
-                    _swap(&arr[i], &arr[j]);
-                }
-            }
-            _swap(&arr[i + 1], &arr[high]);
-            return (i + 1);
-        }
-
-
-        void _quick_sort(int arr[], int low, int high)
-        {
-            if (low < high)
-            {
-                int pi = _partition(arr, low, high);
-
-                _quick_sort(arr, low, pi - 1);
-                _quick_sort(arr, pi + 1, high);
-            }
-        }
     public:
         explicit vector(size_t capacity = 1)
                 : _size(0), _capacity(capacity) {
@@ -239,10 +202,6 @@ namespace mstd {
 
         size_t capacity() {
             return _capacity;
-        }
-
-        void sort() {
-            _quick_sort(_entries, 0, _size - 1);
         }
 
         size_t size() const { return _size; }

@@ -73,35 +73,12 @@ TEST_F(VectorTest, removeAtTest) {
 	EXPECT_NE(v[0], 5);
 	EXPECT_EQ(v.size(), 3);
 
-	try {
-        v.remove_at(5);
-        FAIL() << "Bad index not thrown";
-    } catch (std::out_of_range &e) {
-        SUCCEED() << "Bad index thrown";
-    } catch (...) {
-        FAIL() << "Unknown exception thrown";
-    }
+    ASSERT_THROW(v.remove_at(5), std::out_of_range);
 }
 
 TEST_F(VectorTest, insertAtExceptionTest) {
     int x = 5;
-    try {
-        v.m_insert_at(5, x);
-        FAIL() << "No exception thrown";
-    } catch (std::out_of_range &e) {
-        SUCCEED() << "Out of range exception thrown";
-    } catch (...) {
-        FAIL() << "Unknown exception thrown";
-    }
-}
-
-TEST_F(VectorTest, sortTest) {
-    v.push(4); v.push(5); v.push(2); v.push(3);
-    v.sort();
-    EXPECT_EQ(v[0], 2);
-    EXPECT_EQ(v[1], 3);
-    EXPECT_EQ(v[2], 4);
-    EXPECT_EQ(v[3], 5);
+    ASSERT_THROW(v.m_insert_at(5, x), std::out_of_range);
 }
 
 TEST_F(VectorTest, copyCTest) {
@@ -132,13 +109,7 @@ TEST_F(VectorTest, moveOpTest) {
     v1 = std::move(v);
     EXPECT_EQ(v1[0], 5);
     EXPECT_EQ(v1[1], 6);
-    try {
-        v[0];
-    } catch (std::out_of_range &e) {
-        SUCCEED() << "successfully thrown out_of_range error";
-    } catch (...) {
-        FAIL() << "expected runtime error";
-    }
+    ASSERT_THROW(v[0], std::out_of_range);
 }
 
 TEST_F(VectorTest, clearTest) {
@@ -162,14 +133,7 @@ TEST_F(VectorTest, setAtTest) {
 }
 
 TEST_F(VectorTest, setAtExceptionTest) {
-    try {
-        v.set_at(0, 2);
-        FAIL() << "No exception thrown";
-    } catch (std::out_of_range &e) {
-        SUCCEED() << "out of range exception thrown";
-    } catch (...) {
-        FAIL() << "Unknown exception thrown";
-    }
+    ASSERT_THROW(v.set_at(0, 2), std::out_of_range);
 }
 
 TEST_F(VectorTest, forEachTest) {

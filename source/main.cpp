@@ -74,7 +74,6 @@ int main(int argc, char **argv) {
         string s;
         switch (cmd_type) {
             case INSERTION:
-                s = helpers::join(v, ' ');
                 t.add(v);
                 break;
             case QUERY:{
@@ -82,7 +81,6 @@ int main(int argc, char **argv) {
                 break;
             }
             case DELETION:
-                s = helpers::join(v, ' ');
                 t.delete_ngram(v);
                 break;
             case FINISH:

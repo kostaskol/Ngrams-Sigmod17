@@ -28,7 +28,7 @@ TEST_F(TrieInsertionTesting, insertEasy) {
 }
 
 TEST_F(TrieInsertionTesting, insertMed) {
-    parser p("/home/sukee/Dropbox/Project/ngrams-testing/input/medium.input");
+    parser p("/home/kostas/CLionProjects/ngrams/ngrams-testing/input/medium.input");
     bool stop = false;
     vector<string> v;
     while (!stop) {
@@ -38,9 +38,9 @@ TEST_F(TrieInsertionTesting, insertMed) {
         v.clear();
     }
     string output = t.to_string();
-    std::ofstream out("/home/sukee/Dropbox/Project/ngrams-testing/output/output-medium.test");
+    std::ofstream out("/home/kostas/CLionProjects/ngrams/ngrams-testing/output/output-medium.test");
     out << output;
-    std::ifstream in("/home/sukee/Dropbox/Project/ngrams-testing/input/output-medium.proper");
+    std::ifstream in("/home/kostas/CLionProjects/ngrams/ngrams-testing/input/output-medium.proper");
     std::stringstream proper_output;
     std::string line;
     while (std::getline(in, line)) {
@@ -50,7 +50,7 @@ TEST_F(TrieInsertionTesting, insertMed) {
 }
 
 TEST_F(TrieInsertionTesting, insertLarge) {
-    parser p("/home/sukee/Dropbox/Project/ngrams-testing/input/large.input");
+    parser p("/home/kostas/CLionProjects/ngrams/ngrams-testing/input/large.input");
     bool stop = false;
     vector<string> v;
     while (!stop) {
@@ -60,9 +60,9 @@ TEST_F(TrieInsertionTesting, insertLarge) {
         v.clear();
     }
     string output = t.to_string();
-    std::ofstream out("/home/sukee/Dropbox/Project/ngrams-testing/output/output-large.test");
+    std::ofstream out("/home/kostas/CLionProjects/ngrams/ngrams-testing/output/output-large.test");
     out << output;
-    std::ifstream in("/home/sukee/Dropbox/Project/ngrams-testing/input/output-large.proper");
+    std::ifstream in("/home/kostas/CLionProjects/ngrams/ngrams-testing/input/output-large.proper");
     std::stringstream proper_output;
     std::string line;
     while (std::getline(in, line)) {

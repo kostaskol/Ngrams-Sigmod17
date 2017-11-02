@@ -10,7 +10,7 @@ class ParserTest : public testing::Test {
 public:
     parser p;
     vector<string> outp;
-    ParserTest() : p("/home/sukee/Dropbox/Project/ngrams-testing/input/parser-tests.txt"){}
+    ParserTest() : p("/home/kostas/CLionProjects/ngrams/ngrams-testing/input/parser-tests.txt"){}
 };
 
 

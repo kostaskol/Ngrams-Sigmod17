@@ -100,13 +100,9 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
     if (!found_one) {
         results->push("$$END$$");
     }
-    else{
+    else {
         results->push(final_ss.str());
     }
-    ss.str("");
-    ss.clear();
-    final_ss.str("");
-    final_ss.clear();
 }
 
 bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
@@ -165,6 +161,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
     return true;
 }
 
+// TODO: Keep this?
 bool trie::r_delete_ngram(const mstd::vector<std::string> &ngram) {
     trie_node *curr = _root;
     int found;
@@ -198,14 +195,7 @@ bool trie::r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *cu
                 // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
                 return false;
             }
-            else if (current->get_children_p() != nullptr) {
-                // I have more children after my child's deletion, so I cannot be deleted.
-                return false;
-            }
-            else {
-                // I do not satisfy any of the above conditions, so I can be deleted.
-                return true;
-            }
+            else return current->get_children_p() == nullptr;
         }
         else {
             // If my child couldn't delete itself
@@ -239,25 +229,17 @@ std::string trie::to_string() {
 }
 
 
-size_t trie::get_num_nodes() {
-    return _num_nodes;
-}
-
-size_t trie::get_num_ngrams() {
-    return _num_ngrams;
-}
-
 /*
  * trie_node implementation
  */
 
 trie::trie_node::trie_node()
-        : _word(""), _eow(false), _parent(nullptr) {
+        : _word(""), _eow(false) {
     _children = nullptr;
 }
 
-trie::trie_node::trie_node(const std::string &word, bool eow, trie_node *par)
-        : _word(word), _eow(eow), _parent(par) {
+trie::trie_node::trie_node(const std::string &word, bool eow)
+        : _word(word), _eow(eow) {
     _children = nullptr;
 }
 
@@ -267,7 +249,6 @@ trie::trie_node::trie_node(const std::string &word, bool eow, trie_node *par)
 trie::trie_node::trie_node(trie_node &&other) noexcept {
     _word = other._word;
     _eow = other._eow;
-    _parent = other._parent;
     _children = other._children;
     other._children = nullptr;
 }
@@ -299,7 +280,7 @@ trie::trie_node *trie::trie_node::add_child(int index, std::string word, bool eo
         // index = (int) _children->size();
     }
 
-    trie_node new_node(word, eow, this);
+    trie_node new_node(word, eow);
     return _children->m_insert_at(index, new_node);
 }
 
@@ -311,24 +292,12 @@ void trie::trie_node::remove_child(int index) {
     }
 }
 
-const mstd::vector<trie::trie_node> &trie::trie_node::get_children() {
-    return *_children;
-}
-
 mstd::vector<trie::trie_node> *trie::trie_node::get_children_p() {
     return  _children;
 }
 
-trie::trie_node *trie::trie_node::get_parent() {
-	return _parent;
-}
-
 trie::trie_node *trie::trie_node::get_child(int index) {
     return _children->at_p((size_t) index);
-}
-
-const bool trie::trie_node::has_children() {
-    return _children != nullptr;
 }
 
 trie::trie_node *trie::trie_node::get_child(std::string &word, int *at) {
@@ -405,34 +374,17 @@ bool trie::trie_node::_bsearch_children(std::string &word, int *index) {
             }
             return false;
         }
-        if (_children->at(mid)._word > word) {
+        if (_children->at((size_t) mid)._word > word) {
             right = mid - 1;
         }
-        else if (_children->at(mid)._word < word) {
+        else if (_children->at((size_t) mid)._word < word) {
             left = mid + 1;
         }
     }
 }
 
-// Not used. Consider removing this
-void trie::trie_node::push_child(trie_node *node) {
-    if (_children == nullptr) {
-        _children = new mstd::vector<trie_node>(SIZE);
-    }
-    _children->m_push(*node);
-}
-
 bool trie::trie_node::is_end_of_word() const {
     return _eow;
-}
-
-// Perhaps asteris will use this?
-size_t trie::trie_node::children_size() const {
-    return _children->size();
-}
-
-std::string trie::trie_node::get_word() const {
-    return _word;
 }
 
 void trie::trie_node::set_end_of_word(bool v) {
@@ -473,7 +425,6 @@ trie::trie_node &trie::trie_node::operator=(const trie::trie_node &other) {
         delete _children;
         _children = new mstd::vector<trie_node>(*other._children);
     }
-    _parent = other._parent;
     return *this;
 }
 
@@ -485,7 +436,6 @@ trie::trie_node &trie::trie_node::operator=(trie::trie_node &&other) noexcept {
     _eow = other._eow;
     _children = other._children;
     other._children = nullptr;
-    _parent = other._parent;
     return *this;
 }
 
