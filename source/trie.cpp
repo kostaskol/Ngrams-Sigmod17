@@ -57,6 +57,7 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
     std::stringstream ss , final_ss;
     mstd::hash_table<void *> ht;
     bool found_one = false;
+    bool one_word = false;
 
     for (size_t i = 0; i < ngram.size(); i++) {
         trie_node *child;
@@ -64,22 +65,25 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
             if ((child = current->get_child(ngram.at(j),nullptr)) == nullptr) {
                 ss.str("");
                 ss.clear();
+                one_word = false;
                 current = _root;
                 break;
             }
             else{
-                if (child->is_end_of_word()) {
+                if (one_word) {
+                    ss << " " + ngram.at(j);
+                }
+                else{
                     ss << ngram.at(j);
+                    one_word = true;
+                }
+                if (child->is_end_of_word()) {
                     try {
                         // If the key cannot be found in the hash table, it throws an exception
                         // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
                         // so we start from the beginning
                         ht.get(ss.str());
-                        ss.str("");
-                        ss.clear();
-                        current = _root;
-                        break;
-                    } catch (std::exception &e) {
+                    } catch (std::runtime_error &e) {
                         if (found_one) {
                             final_ss << "|";
                         }
@@ -88,9 +92,6 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
                         found_one = true;
                         final_ss << ss.str();
                     }
-                }
-                else{
-                    ss << ngram.at(j) + " ";
                 }
                 current = child;
             }
