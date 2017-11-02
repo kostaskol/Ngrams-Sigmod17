@@ -8,7 +8,9 @@ namespace helpers {
         std::stringstream ss(s);
         std::string tmp;
         while(std::getline(ss, tmp, delim)) {
-            v.m_push(tmp);
+            if (tmp != "") {
+                v.m_push(tmp);
+            }
         }
     }
 
