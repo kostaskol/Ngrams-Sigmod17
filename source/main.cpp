@@ -2,6 +2,7 @@
 #include <cmd_parser.hpp>
 #include <parser.hpp>
 #include "trie.hpp"
+#include <unistd.h>
 
 using std::cout;
 using std::endl;
@@ -76,9 +77,10 @@ int main(int argc, char **argv) {
                 s = helpers::join(v, ' ');
                 t.add(v);
                 break;
-            case QUERY:
+            case QUERY:{
                 t.search(v,&results);
                 break;
+            }
             case DELETION:
                 s = helpers::join(v, ' ');
                 t.delete_ngram(v);
@@ -89,10 +91,10 @@ int main(int argc, char **argv) {
                 while(!results.empty()){
                     succ = results.pop();
                     if (succ == "$$END$$") {
-                        logger::error("query", "-1", BOTH, false);
+                        std::cout << "-1" << '\n';
                     }
                     else{
-                        logger::success("query", succ, BOTH);
+                        std::cout << succ << '\n';
                     }
                 }
                 break;
