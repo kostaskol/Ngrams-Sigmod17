@@ -8,3 +8,4 @@ file.query
 googletest
 .idea
 input/
+CMakeLists.txt
