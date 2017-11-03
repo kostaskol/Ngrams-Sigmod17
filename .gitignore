@@ -7,3 +7,4 @@ file.init
 file.query
 googletest
 .idea
+input/
