@@ -70,11 +70,12 @@ TEST_F(QueueTest_NoMax, emptyTest){
 TEST_F(QueueTest_NoMax, clearTest){
     q.push(1);
     q.push(2);
-    q.pop(); q.pop();
+
     q.clear();
     ASSERT_EQ(q.size(), 0);
     ASSERT_EQ(q.get_head(), nullptr);
     ASSERT_EQ(q.get_last(), nullptr);
+    ASSERT_ANY_THROW(q.get_element_at(1));
 }
 
 TEST_F(QueueTest_NoMax, peekTest){

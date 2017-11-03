@@ -74,7 +74,13 @@ namespace mstd {
         }
 
         void clear() {
-            delete _head;
+            queue_node *curr;
+            while(_head) {
+                curr = _head;
+                _head = _head->get_next();
+                delete curr;
+            }
+            _head = nullptr;
             _last = nullptr;
             _size = 0;
         }
@@ -99,6 +105,25 @@ namespace mstd {
                 throw std::runtime_error("queue is empty");
 
             return _head->get_entry();
+        }
+
+        queue_node* get_head(){ return _head; }
+
+        queue_node* get_last(){ return _last; }
+
+        /* For unit test purposes only */
+        T &get_element_at(int pos){
+            if (_head == nullptr)
+                throw std::runtime_error("queue is empty");
+            if (pos < 0 || pos > _size){
+                throw std::out_of_range("index out of range");
+            }
+
+            queue_node* aux = _head;
+            for (size_t i = 0; i < pos; i++) {
+                aux = aux->get_next();
+            }
+            return aux->get_entry();
         }
 
         bool full() {

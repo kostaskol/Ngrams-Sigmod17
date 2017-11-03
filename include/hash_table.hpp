@@ -65,16 +65,6 @@ namespace mstd {
             }
             throw std::runtime_error("Unknown key");
         }
-
-        void set(std::string key, B val) {
-            size_t index = _hash_function(key) % _size;
-            for (int i = 0; i < _entries[index].size(); i++) {
-                if (_entries[index].get(i)._key == key) {
-                    _entries[index].set_at(i, val);
-                    return;
-                }
-            }
-        }
     };
 }
 

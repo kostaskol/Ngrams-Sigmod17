@@ -61,6 +61,9 @@ int main(int argc, char **argv) {
         if (stop) break;
     }
 
+    cout << "R" << endl;
+
+    long start = time(NULL);
     // End initialisation file parsing
 
     // Begin query file parsing
@@ -71,6 +74,7 @@ int main(int argc, char **argv) {
     mstd::queue<std::string> results;
     while (true) {
         bool stop = query_parser.next_command(&v, &cmd_type);
+        if (v.size() == 0 && stop) break;
         string s;
         switch (cmd_type) {
             case INSERTION:
@@ -86,7 +90,11 @@ int main(int argc, char **argv) {
             case FINISH:
                 // Print query results
                 string succ = "";
+                if (results.empty()) {
+                    cout << "Got back empty results" << endl;
+                }
                 while(!results.empty()){
+                    cout << "Popping" << endl;
                     succ = results.pop();
                     if (succ == "$$END$$") {
                         std::cout << "-1" << '\n';
@@ -101,5 +109,8 @@ int main(int argc, char **argv) {
         v.clear();
     }
     results.clear();
+    if (debug) {
+        cout << "Time: " << (time(NULL) - start) << endl;
+    }
     // End query file parsing
 }
