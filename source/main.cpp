@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     vector<string> v;
     while (true) {
         bool stop = init_parser.next_init(&v);
-        if (v.size() == 0) break;
+        if (v.size() == 0 && stop) break;
         string s = helpers::join(v, ' ');
         t.add(v);
 //        logger::success("init", "Added N-Gram " + s);
