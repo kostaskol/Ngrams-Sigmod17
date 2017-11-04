@@ -61,8 +61,6 @@ int main(int argc, char **argv) {
         if (stop) break;
     }
 
-    cout << "R" << endl;
-
     long start = time(NULL);
     // End initialisation file parsing
 
@@ -90,11 +88,7 @@ int main(int argc, char **argv) {
             case FINISH:
                 // Print query results
                 string succ = "";
-                if (results.empty()) {
-                    cout << "Got back empty results" << endl;
-                }
                 while(!results.empty()){
-                    cout << "Popping" << endl;
                     succ = results.pop();
                     if (succ == "$$END$$") {
                         std::cout << "-1" << '\n';
