@@ -9,7 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS "-g -std=c++0x")
+set(CMAKE_CXX_FLAGS "-g -std=c++11")
 
 include_directories(include ${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
@@ -41,4 +41,4 @@ set(TEST_SOURCE
 add_executable(ngrams ${SOURCE_FILES})
 
 add_executable(basic_tests ${TEST_SOURCE})
-target_link_libraries(basic_tests gtest gtest_main)
+target_link_libraries(basic_tests gtest)

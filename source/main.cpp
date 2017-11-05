@@ -54,14 +54,12 @@ int main(int argc, char **argv) {
     while (true) {
         bool stop = init_parser.next_init(&v);
         if (v.size() == 0 && stop) break;
-        string s = helpers::join(v, ' ');
         t.add(v);
 //        logger::success("init", "Added N-Gram " + s);
         v.clear();
         if (stop) break;
     }
 
-    long start = time(NULL);
     // End initialisation file parsing
 
     // Begin query file parsing
@@ -103,8 +101,5 @@ int main(int argc, char **argv) {
         v.clear();
     }
     results.clear();
-    if (debug) {
-        cout << "Time: " << (time(NULL) - start) << endl;
-    }
     // End query file parsing
 }
