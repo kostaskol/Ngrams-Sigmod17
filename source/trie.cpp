@@ -1,13 +1,12 @@
 #include <hash_table.hpp>
 #include "trie.hpp"
+#include "constants.hpp"
 
 using mstd::vector;
 using std::string;
 using std::cout;
 using std::endl;
 using mstd::logger;
-
-#define SIZE 3
 
 /*
  * Trie Implementation
@@ -259,7 +258,7 @@ trie::trie_node::~trie_node() {
 
 trie::trie_node *trie::trie_node::add_child(int index, std::string word, bool eow) {
     if (_children == nullptr) {
-        _children = new mstd::vector<trie_node>(SIZE);
+        _children = new mstd::vector<trie_node>(CHILDREN_INITIAL_SIZE /* 3 */);
     }
 
     if (index < 0) {

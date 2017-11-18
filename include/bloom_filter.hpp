@@ -4,10 +4,7 @@
 #include "bit_vector.hpp"
 #include <string>
 #include "mvector.hpp"
-
-#define MURMUR3 0x0
-#define JENKINS_PEARSONS 0x1
-#define DEFAULT MURMUR3
+#include "constants.hpp"
 
 class bloom_filter {
 private:
@@ -16,7 +13,7 @@ private:
     size_t *_results;
     int _k;
 
-    void _hash(const std::string &s, int hash = DEFAULT);
+    void _hash(const std::string &s, int hash = DEFAULT_HASH);
 public:
     bloom_filter(size_t size, int k);
     bloom_filter(const bloom_filter &)=delete;
