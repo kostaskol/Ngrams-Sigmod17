@@ -1,0 +1,169 @@
+#include "trie_node.hpp"
+#include "mvector.hpp"
+#include "binary_search.hpp"
+#include <string>
+
+using mstd::vector;
+using std::string;
+using std::cout; using std::endl;
+
+
+/*
+ * trie node implementation
+ */
+trie_node::trie_node()
+        : _word(""), _eow(false) {
+    _children = nullptr;
+}
+
+trie_node::trie_node(const std::string &word, bool eow)
+        : _word(word), _eow(eow) {
+    _children = nullptr;
+}
+
+// Deleted copy constructor here since it isn't used anywhere (just as it should be)
+// trie::trie_node::trie_node(const trie::trie_node &other)=delete;
+
+trie_node::trie_node(trie_node &&other) noexcept {
+    _word = other._word;
+    _eow = other._eow;
+    _children = other._children;
+    other._children = nullptr;
+}
+
+trie_node::~trie_node() {
+    delete _children;
+}
+
+trie_node *trie_node::add_child(int index, std::string word, bool eow) {
+    if (_children == nullptr) {
+        _children = new mstd::vector<trie_node>(CHILDREN_INITIAL_SIZE /* 3 */);
+    }
+
+    if (index < 0) {
+        // Better to fail fast than fail safe
+        throw std::runtime_error("Index below zero");
+        // If we want a fail safe method (worse imo), uncomment the following 2 lines
+        // logger::warn("trie_node::add_child", "Index below zero(" + std::to_string(index) + ")");
+        // index = 0;
+    }
+
+    if (index > _children->size()) {
+        // Better fail fast than fail safe
+        throw std::runtime_error("Index above size (Index: " + std::to_string(index)
+                                 + " & Size: " + std::to_string(_children->size()) + ")");
+        // If we want a fail safe method (worse imo), uncomment the following 3 lines
+        // logger::warn("trie_node::add_child", "Index above size (Index: " + std::to_string(index)
+        //                                              + " & Size: " + std::to_string(_children->size()) + ")");
+        // index = (int) _children->size();
+    }
+
+    trie_node new_node(word, eow);
+    return _children->m_insert_at(index, new_node);
+}
+
+const std::string &trie_node::get_word() { return _word; }
+
+void trie_node::remove_child(int index) {
+    _children->remove_at((size_t) index);
+    if (_children->size() == 0){
+        delete _children;
+        _children = nullptr;
+    }
+}
+
+vector<trie_node> *trie_node::get_children_p() {
+    return  _children;
+}
+
+trie_node *trie_node::get_child(int index) {
+    return _children->at_p((size_t) index);
+}
+
+trie_node *trie_node::get_child(std::string &word, int *at) {
+    // NOTE: Potential bug caught here.
+    // Avoided simply because the variable passed by add was initialised to 0
+    // at was not properly set if the _children vector was null
+    if (_children == nullptr) {
+        if (at != nullptr) {
+            *at = 0;
+        }
+        return nullptr;
+    }
+    int index;
+    if(!bsearch_children(word, *_children, &index)) {    // Not found
+        if (at != nullptr) {
+            *at = index;
+        }
+        return nullptr;
+    } else {                                 // Found
+        // If the child is found, we assign -1 to the "not found index" to avoid undefined behaviour
+        if (at != nullptr) {
+            *at = index;
+        }
+        return get_child(index);
+    }
+}
+
+
+
+bool trie_node::is_end_of_word() const {
+    return _eow;
+}
+
+void trie_node::set_end_of_word(bool v) {
+    _eow = v;
+}
+
+void trie_node::print(int level) {
+    for (int i = 1; i < level; i++) {
+        cout << "\t";
+    }
+    if (_word != "") {
+        cout << "| ";
+        cout << _word << endl;
+    }
+    if (_children == nullptr) return;
+    for (size_t i = 0; i < _children->size(); i++) {
+        _children->get(i).print(level + 1);
+    }
+}
+
+void trie_node::to_string(std::stringstream &ss, int level) {
+    for (int i = 1; i < level; i++) {
+        ss << "\t";
+    }
+    if (_word != "") {
+        ss << _word << "\n";
+    }
+    if (_children == nullptr) return;
+    for (size_t i = 0; i < _children->size(); i++) {
+        _children->get(i).to_string(ss, level + 1);
+    }
+}
+
+trie_node &trie_node::operator=(const trie_node &other) {
+    _word = other._word;
+    _eow = other._eow;
+    if (other._children != nullptr) {
+        delete _children;
+        _children = new mstd::vector<trie_node>(*other._children);
+    }
+    return *this;
+}
+
+// Move assignment operator
+// "Steals" the _children pointer from the other
+// trie_node
+trie_node &trie_node::operator=(trie_node &&other) noexcept {
+    _word = other._word;
+    _eow = other._eow;
+    _children = other._children;
+    other._children = nullptr;
+    return *this;
+}
+
+std::ostream &operator<<(std::ostream &out, const trie_node &other) {
+    out << other._word;
+    return out;
+}

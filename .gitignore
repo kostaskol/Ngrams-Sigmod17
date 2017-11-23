@@ -6,3 +6,5 @@ README.txt
 googletest
 input
 ngrams.kdev4
+.project
+debug/
