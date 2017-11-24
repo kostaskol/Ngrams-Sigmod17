@@ -5,18 +5,22 @@
 #include "mvector.hpp"
 #include "logger.hpp"
 #include "mqueue.hpp"
+#include "mstack.hpp"
 #include "hash_table.hpp"
 
 
 class trie {
-private:
+protected:
     class trie_node {
-    private:
+    protected:
         std::string _word;
+
         bool _eow;
+
         mstd::vector<trie_node> *_children;
 
         bool _bsearch_children(std::string &word, int *index);
+
     public:
         trie_node();
 
@@ -26,21 +30,33 @@ private:
 
         trie_node(trie_node &&other) noexcept;
 
-        ~trie_node();
+        virtual ~trie_node();
 
-        trie_node *add_child(int index, std::string word, bool eow);
+        virtual trie_node *add_child(int index, std::string word, bool eow);
 
         void remove_child(int index);
 
         mstd::vector<trie::trie_node> *get_children_p();
 
-        trie_node *get_child(int index);
+        virtual trie_node *get_child(int index);
 
-        trie_node *get_child(std::string &word, int *at);
+        virtual trie_node *get_child(std::string &word, int *at);
 
         bool is_end_of_word() const;
 
+        std::string& get_word();
+
+        void set_word(std::string word);
+
+        virtual void add_short(std::string &word, bool eow);
+
         void set_end_of_word(bool v);
+
+        void set_children(mstd::vector<trie::trie_node> *c);
+
+        size_t get_children_size();
+
+        void push_children(mstd::stack<trie::trie_node *> *s);
 
         void print(int level);
 
@@ -57,18 +73,51 @@ private:
 
     };
 
-    trie_node *_root;
+    class static_node : public trie_node {
+    private:
+        mstd::vector<signed short> *_lenofwords;
+
+    public:
+        static_node();
+
+        static_node(const std::string &word, bool eow);
+
+        ~static_node() override;
+
+        static_node *add_child(int index, std::string word, bool eow) override;
+
+        static_node *get_child(int index) override;
+
+        static_node *get_child(std::string &word, int *at) override;
+
+        mstd::vector<signed short> *get_lenofwords_p();
+
+        void add_short(std::string &word, bool eow) override;
+
+        static_node &operator=(const static_node &other);
+
+        static_node &operator=(trie::static_node &&other) noexcept;
+
+    };
+
     size_t _num_nodes;
     size_t _num_ngrams;
 
+private:
+    trie_node *_root;
+
     bool r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *current, int length, int level, int *found);
+
 public:
     trie();
-    ~trie();
 
-    void add(const mstd::vector<std::string> &ngram);
+    virtual ~trie();
 
-    void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+    virtual void add(const mstd::vector<std::string> &ngram);
+
+    virtual void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+
+    virtual void compress();
 
     bool delete_ngram(const mstd::vector<std::string> &ngram);
 
@@ -76,9 +125,32 @@ public:
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 
-    void print_tree();
+    virtual void print_tree();
 
-    std::string to_string();
+    virtual std::string to_string();
+
+};
+
+class static_trie : public trie {
+private:
+    static_node *_root;
+
+
+public:
+    static_trie();
+
+    ~static_trie() override;
+
+    void add(const mstd::vector<std::string> &ngram) override;
+
+    //void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results) override;
+
+    void compress() override;
+
+    void print_tree() override;
+
+    std::string to_string() override;
+
 };
 
 #endif // TRIE
