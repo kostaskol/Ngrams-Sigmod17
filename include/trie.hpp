@@ -6,8 +6,9 @@
 #include "logger.hpp"
 #include "mqueue.hpp"
 #include "hash_table.hpp"
-#include "root_node.hpp"
-#include "trie_node.hpp"
+// #include "root_node.hpp"
+// #include "trie_node.hpp"
+#include "trie_nodes.hpp"
 
 class trie {
 private:

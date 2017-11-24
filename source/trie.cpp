@@ -34,7 +34,7 @@ void trie::add(const vector<string> &ngram) {
         if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
             _num_nodes++;
-            current = current->add_child(index, ngram.at(i), false);
+            current = current->add_child(ngram.at(i), false, index);
         } else {
             // Otherwise, follow that child's path
             current = child;
@@ -49,7 +49,7 @@ void trie::add(const vector<string> &ngram) {
         child->set_end_of_word(true);
     } else {
         // Otherwise we insert it to that node's children
-        current->add_child(index, last_word, true);
+        current->add_child(last_word, true, index);
         _num_nodes++;
     }
     _num_ngrams++;
@@ -61,16 +61,16 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
     std::stringstream ss , final_ss;
     bool found_one = false;
     bool one_word = false;
+    trie_node *current = _root;
 
     for (size_t i = 0; i < ngram.size(); i++) {
-        trie_node *current = _root->get_child(ngram[i]);
         trie_node *child;
         for (size_t j = i; j < ngram.size(); j++) {
             if ((child = current->get_child(ngram.at(j),nullptr)) == nullptr) {
                 ss.str("");
                 ss.clear();
                 one_word = false;
-                // current = _root; Current will be re-declared upon next iteration
+                current = _root; 
                 break;
             }
             else{

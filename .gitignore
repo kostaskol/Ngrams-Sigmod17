@@ -8,3 +8,5 @@ input
 ngrams.kdev4
 .project
 debug/
+big_file.correct
+bif_file.wrong

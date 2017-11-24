@@ -2,9 +2,9 @@
 #define TRIES_LINEAR_HASH_HPP
 #include <string>
 #include "mvector.hpp"
-#include "trie_node.hpp"
 #include "constants.hpp"
 
+class trie_node;
 
 class linear_hash {
 public:
@@ -21,6 +21,8 @@ public:
     size_t size();
     
     void print();
+    
+    std::string stats(bool v = true);
 private:
     size_t _size;
     size_t _num_items;
@@ -28,9 +30,11 @@ private:
 
     mstd::vector<trie_node> **_entries;
     
-    size_t _hash(const std::string &word);
+    int _hash(const std::string &word);
     
     void _resize();
+    
+    double _calculate_load();
 };
 
 

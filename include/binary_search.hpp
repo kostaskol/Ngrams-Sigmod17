@@ -1,4 +1,4 @@
-#include "trie_node.hpp"
+#include "trie_nodes.hpp"
 #include "mvector.hpp"
 #include <string>
 
@@ -8,6 +8,7 @@ inline bool bsearch_children(const std::string &word, const mstd::vector<trie_no
         *index = 0;
         return false;
     }
+    
     if (children[0].get_word() > word) {
         *index = 0;
         return false;
