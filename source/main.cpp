@@ -45,62 +45,82 @@ int main(int argc, char **argv) {
     delete c_parser;
     // End command line arguments parsing
 
-    trie t;
+    trie* t;
 
     // Begin initialisation file parsing
     parser init_parser(init_file);
 
     vector<string> v;
+    bool stop = init_parser.next_init(&v);
+    bool compress = false;
+
+    if (v.at(0) == "STATIC") {
+        t = new static_trie();
+        compress = true;
+    } else {
+        t = new trie();
+    }
+    v.clear();
+
     while (true) {
-        bool stop = init_parser.next_init(&v);
+        stop = init_parser.next_init(&v);
         if (v.size() == 0 && stop) break;
         string s = helpers::join(v, ' ');
-        t.add(v);
+        t->add(v);
 //        logger::success("init", "Added N-Gram " + s);
         v.clear();
         if (stop) break;
     }
 
+    t->print_tree();
+    if (compress) {
+        t->compress();
+    }
+
     // End initialisation file parsing
 
+    t->print_tree();
+
+    delete t;
+
     // Begin query file parsing
-    parser query_parser(query_file);
-
-    int cmd_type;
-
-    mstd::queue<std::string> results;
-    while (true) {
-        bool stop = query_parser.next_command(&v, &cmd_type);
-        if (v.size() == 0 && stop) break;
-        string s;
-        switch (cmd_type) {
-            case INSERTION:
-                t.add(v);
-                break;
-            case QUERY:{
-                t.search(v,&results);
-                break;
-            }
-            case DELETION:
-                t.delete_ngram(v);
-                break;
-            case FINISH:
-                // Print query results
-                string succ = "";
-                while(!results.empty()){
-                    succ = results.pop();
-                    if (succ == "$$END$$" || succ == "$$EMPTY$$") {
-                        std::cout << "-1" << '\n';
-                    }
-                    else{
-                        std::cout << succ << '\n';
-                    }
-                }
-                break;
-        }
-        if (stop) break;
-        v.clear();
-    }
-    results.clear();
+//    parser query_parser(query_file);
+//
+//    int cmd_type;
+//
+//    mstd::queue<std::string> results;
+//    while (true) {
+//        bool stop = query_parser.next_command(&v, &cmd_type);
+//        if (v.size() == 0 && stop) break;
+//        string s;
+//        switch (cmd_type) {
+//            case INSERTION:
+//                t.add(v);
+//                break;
+//            case QUERY:{
+//                t.search(v,&results);
+//                break;
+//            }
+//            case DELETION:
+//                t.delete_ngram(v);
+//                break;
+//            case FINISH:
+//                // Print query results
+//                string succ = "";
+//                while(!results.empty()){
+//                    succ = results.pop();
+//                    if (succ == "$$END$$" || succ == "$$EMPTY$$") {
+//                        std::cout << "-1" << '\n';
+//                    }
+//                    else{
+//                        std::cout << succ << '\n';
+//                    }
+//                }
+//                break;
+//        }
+//        if (stop) break;
+//        v.clear();
+//    }
+//    results.clear();
     // End query file parsing
 }

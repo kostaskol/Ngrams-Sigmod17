@@ -6,6 +6,7 @@ using std::string;
 using std::cout;
 using std::endl;
 using mstd::logger;
+using mstd::stack;
 
 #define SIZE 3
 
@@ -107,6 +108,8 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
         results->push(final_ss.str());
     }
 }
+
+void trie::compress() { return; }
 
 bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
     trie_node *current = _root;
@@ -230,7 +233,6 @@ std::string trie::to_string() {
     _root->to_string(ss, 0);
     return ss.str();
 }
-
 
 /*
  * trie_node implementation
@@ -390,8 +392,39 @@ bool trie::trie_node::is_end_of_word() const {
     return _eow;
 }
 
+std::string& trie::trie_node::get_word() {
+    return _word;
+}
+
+void trie::trie_node::set_word(std::string word) {
+    _word = word;
+}
+
+void trie::trie_node::add_short(std::string &word, bool eow) { return; }
+
 void trie::trie_node::set_end_of_word(bool v) {
     _eow = v;
+}
+
+void trie::trie_node::set_children(mstd::vector<trie::trie_node> *c) {
+    _children = c;
+}
+
+size_t trie::trie_node::get_children_size() {
+    if (_children == nullptr){
+        return 0;
+    } else {
+        return _children->size();
+    }
+
+}
+
+void trie::trie_node::push_children(mstd::stack<trie::trie_node *> *s) {
+    if (_children == nullptr) return;
+
+    for (int i = (int)_children->size()-1; i >=0; i--) {
+        s->push(_children->get_p((size_t)i));
+    }
 }
 
 void trie::trie_node::print(int level) {
@@ -445,4 +478,201 @@ trie::trie_node &trie::trie_node::operator=(trie::trie_node &&other) noexcept {
 std::ostream &operator<<(std::ostream &out, const trie::trie_node &other) {
     out << other._word;
     return out;
+}
+
+/*
+ * static_trie implementation
+ */
+
+static_trie::static_trie() : trie::trie() {
+    _root = new static_node();
+}
+
+static_trie::~static_trie(){
+    delete _root;
+}
+
+void static_trie::add(const mstd::vector<std::string> &ngram) {
+    // Start at the root
+    static_node *current = _root;
+
+    // Go up until the previous to last part (we need to treat the last part differently)
+    for (int i = 0; i < ngram.size() - 1; i++) {
+        static_node *child;
+        int index;
+        if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
+            // If the current trie_node doesn't already contain that child, add it (not as an end of word)
+            _num_nodes++;
+            current = current->add_child(index, ngram.at(i), false);
+        } else {
+            // Otherwise, follow that child's path
+            current = child;
+        }
+    }
+
+    std::string &last_word = ngram.get(ngram.size() - 1);
+    static_node *child;
+    int index = 0;
+    if ((child = current->get_child(last_word, &index)) != nullptr) {
+        // If the word already existed in the tree, we simply mark it as the end of the N-Gram
+        child->set_end_of_word(true);
+    } else {
+        // Otherwise we insert it to that node's children
+        current->add_child(index, last_word, true);
+        _num_nodes++;
+    }
+    _num_ngrams++;
+}
+
+void static_trie::compress() {
+    static_node *current, *child;
+    stack<trie_node *> s;
+    std::stringstream ss;
+
+    if (_root->get_children_p() == nullptr) return; //Empty static trie
+
+//    int old_nodes = (int)_num_nodes;
+    _num_nodes = 0;
+
+
+    _root->push_children(&s);
+
+    while (!s.empty()) {
+        current = (static_node *)s.pop();
+        if (current->get_children_p() == nullptr) {
+            _num_nodes++;
+            continue;
+        }
+        ss << current->get_word();
+        while (current->get_children_size() == 1) {
+            child = current->get_child(0);
+            ss << " "+child->get_word();
+            current->add_short(current->get_word(), current->is_end_of_word());
+            current->add_short(child->get_word(), child->is_end_of_word());
+            current->set_children(child->get_children_p());
+            child->set_children(nullptr);
+        }
+        current->set_word(ss.str());
+        ss.str("");
+        ss.clear();
+        _num_nodes++;
+        current->push_children(&s);
+    }
+    cout << _num_nodes << endl;
+}
+
+void static_trie::print_tree() {
+    _root->print(0);
+}
+
+std::string static_trie::to_string() {
+    std::stringstream ss;
+    _root->to_string(ss, 0);
+    return ss.str();
+}
+
+/*
+ * static_node implementation
+ */
+
+trie::static_node::static_node() : trie::trie_node::trie_node() {
+    _lenofwords = nullptr;
+}
+
+trie::static_node::static_node(const std::string &word, bool eow) : trie::trie_node::trie_node(word, eow) {
+    _lenofwords = nullptr;
+}
+
+trie::static_node::~static_node(){
+    delete _lenofwords;
+}
+
+trie::static_node *trie::static_node::add_child(int index, std::string word, bool eow) {
+    if (_children == nullptr) {
+        _children = new mstd::vector<trie::trie_node>(SIZE);
+    }
+
+    if (index < 0) {
+        // Better to fail fast than fail safe
+        throw std::runtime_error("Index below zero");
+    }
+
+    if (index > _children->size()) {
+        // Better fail fast than fail safe
+        throw std::runtime_error("Index above size (Index: " + std::to_string(index)
+                                 + " & Size: " + std::to_string(_children->size()) + ")");
+    }
+
+    static_node new_node(word, eow);
+    return (static_node *)_children->m_insert_at(index, new_node);
+}
+
+trie::static_node *trie::static_node::get_child(int index) {
+    return (static_node *)_children->at_p((size_t) index);
+}
+
+trie::static_node *trie::static_node::get_child(std::string &word, int *at) {
+    if (_children == nullptr) {
+        if (at != nullptr) {
+            *at = 0;
+        }
+        return nullptr;
+    }
+    int index;
+    if(!_bsearch_children(word, &index)) {    // Not found
+        if (at != nullptr) {
+            *at = index;
+        }
+        return nullptr;
+    } else {                                 // Found
+        // If the child is found, we assign -1 to the "not found index" to avoid undefined behaviour
+        if (at != nullptr) {
+            *at = index;
+        }
+        return get_child(index);
+    }
+}
+
+mstd::vector<signed short> *trie::static_node::get_lenofwords_p() {
+    return _lenofwords;
+}
+
+void trie::static_node::add_short(std::string &word, bool eow) {
+    if (_lenofwords == nullptr) {
+        _lenofwords = new mstd::vector<signed short>(SIZE);
+    }
+
+    if (eow) {
+        _lenofwords->push((signed short)word.length());
+    } else {
+        _lenofwords->push((signed short)(-word.length()));
+    }
+
+}
+
+trie::static_node &trie::static_node::operator=(const trie::static_node &other) {
+    _word = other._word;
+    _eow = other._eow;
+    if (other._children != nullptr) {
+        delete _children;
+        _children = new mstd::vector<trie_node>(*other._children);
+    }
+    if (other._lenofwords != nullptr) {
+        delete _lenofwords;
+        _lenofwords = new mstd::vector<signed short>(*other._lenofwords);
+    }
+    return *this;
+}
+
+// Move assignment operator
+// "Steals" the _children pointer and the _lenofwords pointer
+// from the other static_node
+trie::static_node &trie::static_node::operator=(trie::static_node &&other) noexcept {
+    _word = other._word;
+    _eow = other._eow;
+    _children = other._children;
+    _lenofwords = other._lenofwords;
+    other._children = nullptr;
+    other._lenofwords = nullptr;
+    return *this;
 }
