@@ -1,9 +1,11 @@
 #include "trie_nodes.hpp"
 #include "mvector.hpp"
 #include "binary_search.hpp"
+#include "logger.hpp"
 #include <string>
 
 using mstd::vector;
+using mstd::logger;
 using std::string;
 using std::cout; using std::endl;
 
@@ -105,6 +107,10 @@ trie_node *trie_node::get_child(const std::string &word, int *at) {
     }
 }
 
+bool trie_node::is_root() const {
+    return false;
+}
+
 
 
 bool trie_node::is_end_of_word() const {
@@ -142,6 +148,10 @@ void trie_node::to_string(std::stringstream &ss, int level) {
     }
 }
 
+bool trie_node::has_children() const {
+    return _children != nullptr;
+}
+
 trie_node &trie_node::operator=(const trie_node &other) {
     _word = other._word;
     _eow = other._eow;
@@ -173,15 +183,31 @@ std::ostream &operator<<(std::ostream &out, const trie_node &other) {
  */
 root_node::root_node(size_t initial_size) : _children(initial_size) { }
 
-trie_node *root_node::add_child(string &word, bool eow, int index) {
+trie_node *root_node::add_child(string &word, bool eow, /* Not actually used. Required for polymorphism > */ int index) {
+    logger::debug("root_node::add_child", "Adding child: " + word, LOGFILE);
     return _children.insert(word, eow);
 }
 
-void root_node::remove_child(int index) {
-
+void root_node::remove_child(const string &word) {
+     _children.delete_word(word);
 }
 
 trie_node *root_node::get_child(const std::string &word, int *at) {
     return _children.get(word);
 }
 
+bool root_node::is_root() const {
+    return true;
+}
+
+bool root_node::has_children() const {
+    return !_children.empty();
+}
+
+void root_node::print() {
+    _children.print();
+}
+
+bool root_node::empty() {
+    return _children.empty();
+}

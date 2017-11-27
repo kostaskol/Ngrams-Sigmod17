@@ -84,9 +84,9 @@ int main(int argc, char **argv) {
                t.search(v,&results);
                break;
            }
-//            case DELETION:
-//                t.delete_ngram(v);
-//                break;
+           case DELETION:
+               t.delete_ngram(v);
+               break;
            case FINISH:
                // Print query results
                string succ = "";

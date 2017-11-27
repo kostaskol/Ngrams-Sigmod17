@@ -33,8 +33,6 @@ TEST_F(BloomFilterTest, falsePositiveTest) {
             size++;
         }
 
-        cout << s << " file's lines = " << size << endl;
-
         inp.close();
         inp.open(DIR + s + ".bloom.wrong");
         int false_positives = 0;
@@ -44,8 +42,6 @@ TEST_F(BloomFilterTest, falsePositiveTest) {
             }
         }
 
-        cout << "FILE: " << s << " -- False positives " << false_positives << " out of "
-             << size << " (" << (((float) false_positives / (float) size) * 100) << "%)" << endl;
         inp.close();
     }
 

@@ -33,15 +33,14 @@ linear_hash::~linear_hash() {
 
 trie_node *linear_hash::insert(string &word, bool eow) {
     
-    double load = _calculate_load();
+    int load = _calculate_load();
     
     if (load > LINEAR_HASH_LOAD_FACTOR) {
-        
         // Load factor has been reached. Split at _p
-
+        
         vector<trie_node> *tmp_storage = _entries[_p]; // Keep a temporary storage 
         
-        _resize(); // resize the hash table
+        _resize(); // Allocate one more bucket at the end of the table
         
         _entries[_p] = new vector<trie_node>(LINEAR_HASH_MAX_BUCKET_SIZE); // And create a new bucket 
         
@@ -56,11 +55,11 @@ trie_node *linear_hash::insert(string &word, bool eow) {
                 int index = hash % (2 * _size);
                 int child_index;
                 if (index > _size + _p) {
-//                     logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" + to_string(_size + _p) + "). Size = " + to_string(_size) + "\tHash: " + to_string(hash) + " word = " + tmp_word);
+                    logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" + to_string(_size + _p) + "). Size = " + to_string(_size) + "\tHash: " + to_string(hash) + " word = " + tmp_word);
                 }
                 if (_entries[index] == nullptr) {
-//                     logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was null. Terminating");
-//                     exit(-1);
+                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was null. Terminating");
+                    exit(-1);
                 }
                 if (!bsearch_children(tmp_word, *_entries[index], &child_index)) {
                     _entries[index]->m_insert_at(child_index, tmp_storage->at(i));
@@ -73,8 +72,6 @@ trie_node *linear_hash::insert(string &word, bool eow) {
             
             // Delete the temporary object
             delete tmp_storage;
-        } else {
-            cerr << "tmp storage was null" << endl;
         }
         
          // Increase p after the split operation
@@ -83,9 +80,6 @@ trie_node *linear_hash::insert(string &word, bool eow) {
             // If the hash table has doubled in size, reset p and double the size
             _size *= 2;
             _p = 0;
-//             logger::debug("linear_hash::insert", "Doubling size to " + to_string(_size) + " because we are over the load factor " + to_string(load));
-        } else {
-//             logger::debug("linear_hash::insert", "Increasing size to " + to_string(_size + _p + 1) + " because we are over the load factor " + to_string(load));
         }
     }
     
@@ -128,7 +122,7 @@ trie_node *linear_hash::insert(string &word, bool eow) {
     return ret;
 }
 
-trie_node *linear_hash::get(const std::string &word) {
+trie_node *linear_hash::get(const std::string &word) const {
     int hash = _hash(word);
     int index = hash % _size;
     if (index < _p) {
@@ -143,14 +137,23 @@ trie_node *linear_hash::get(const std::string &word) {
 }
 
 void linear_hash::delete_word(const std::string &word) {
-
+    int hash = _hash(word);
+    int index = hash % _size;
+    if (index < _p) {
+        index = hash % (_size * 2);
+    }
+    
+    int child_index;
+    if (bsearch_children(word, *_entries[index], &child_index)) {
+        _entries[index]->remove_at(child_index);
+    }
 }
 
-size_t linear_hash::size() { 
+size_t linear_hash::size() const {
     return _size; 
 }
 
-void linear_hash::print() {
+void linear_hash::print() const {
     cout << "Size: " << _size << endl;
     cout << "Number of buckets: " << _size + _p << endl;
     cout << "Next split: " << _p << endl;
@@ -164,7 +167,7 @@ void linear_hash::print() {
     }
 }
 
-string linear_hash::stats(bool v) {
+string linear_hash::stats(bool v) const {
     stringstream ss;
     
     ss << "Number of buckets: " << _size + _p << "\n";
@@ -185,7 +188,13 @@ string linear_hash::stats(bool v) {
     return ss.str();
 }
 
-int linear_hash::_hash(const std::string &word) {
+
+bool linear_hash::empty() const {
+    return _num_items == 0;
+}
+
+
+int linear_hash::_hash(const std::string &word) const {
     char *cont_str = new char[word.length() + 1];
     strcpy(cont_str, word.c_str());
     char *str = cont_str;
@@ -215,6 +224,6 @@ void linear_hash::_resize() {
     _entries = tmp;
 }
 
-double linear_hash::_calculate_load() {
-    return (_num_items + 1) / (double) ((_size + _p) * LINEAR_HASH_MAX_BUCKET_SIZE) * 100;
+int linear_hash::_calculate_load() const {
+    return (int) ((_num_items + 1) / (double) ((_size + _p) * LINEAR_HASH_MAX_BUCKET_SIZE) * 100);
 }

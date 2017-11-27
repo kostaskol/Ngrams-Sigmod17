@@ -21,7 +21,7 @@ public:
     // for polymorphism
     virtual trie_node *add_child(std::string &word, bool eow, int index = -1);
 
-    virtual void remove_child(int index = -1);
+    void remove_child(int index = -1);
 
     mstd::vector<trie_node> *get_children_p();
 
@@ -38,6 +38,10 @@ public:
     void print(int level);
 
     void to_string(std::stringstream &ss, int level);
+    
+    virtual bool has_children() const;
+    
+    virtual bool is_root() const;
 
     trie_node &operator=(const trie_node &other);
 
@@ -63,9 +67,18 @@ public:
     
     trie_node *add_child(std::string &word, bool eow, int index = -1) override;
     
-    void remove_child(int index = -1) override;
+    void remove_child(const std::string &word);
+    
     
     trie_node *get_child(const std::string &word, int * at = nullptr) override;
+    
+    void print();
+    
+    bool has_children() const override;
+    
+    bool is_root() const override;
+    
+    bool empty();
     
 private:
     linear_hash _children;

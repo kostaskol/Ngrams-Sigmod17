@@ -24,11 +24,10 @@ trie::~trie() {
 
 void trie::add(const vector<string> &ngram) {
     // Start at the root
-    // Insert (if required) and get the child
-    trie_node *current = _root->add_child(ngram[0], false);
+    trie_node *current = _root;
 
     // Go up until the previous to last part (we need to treat the last part differently)
-    for (int i = 1; i < ngram.size() - 1; i++) {
+    for (int i = 0; i < ngram.size() - 1; i++) {
         trie_node *child;
         int index;
         if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
@@ -55,14 +54,89 @@ void trie::add(const vector<string> &ngram) {
     _num_ngrams++;
 }
 
+// void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
+//     bloom_filter bf(BLOOM_SIZE, BLOOM_K);
+//     mstd::hash_table<void *> ht;
+//     std::stringstream ss , final_ss;
+//     bool found_one = false;
+//     bool one_word = false;
+//     trie_node *current = _root;
+// 
+//     for (size_t i = 0; i < ngram.size(); i++) {
+//         trie_node *child;
+//         for (size_t j = i; j < ngram.size(); j++) {
+//             if ((child = current->get_child(ngram.at(j),nullptr)) == nullptr) {
+//                 ss.str("");
+//                 ss.clear();
+//                 one_word = false;
+//                 current = _root; 
+//                 break;
+//             }
+//             else{
+//                 if (one_word) {
+//                     ss << " " + ngram.at(j);
+//                 }
+//                 else{
+//                     ss << ngram.at(j);
+//                     one_word = true;
+//                 }
+//                 if (child->is_end_of_word()) {
+//                     if (__debug__) {
+//                         if (!bf.check(ss.str())) {
+//                             bf.insert(ss.str());
+//                             if (found_one) 
+//                                 final_ss << "|";
+//                             
+//                             found_one = true;
+//                             final_ss << ss.str();
+//                         }
+//                     } else {
+//                         try {
+//                             // If the key cannot be found in the hash table, it throws an exception
+//                             // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
+//                             // so we start from the beginning
+//                             ht.get(ss.str());
+//                         } catch (std::runtime_error &e) {
+//                             if (found_one) {
+//                                 final_ss << "|";
+//                             }
+//                             // If it throws, the key doesn't exist, so we add it to the hash table and continue
+//                             ht.put(ss.str(), nullptr);
+//                             found_one = true;
+//                             final_ss << ss.str();
+//                         }
+//                     }
+//                 }
+//                 current = child;
+//             }
+//         }
+//     }
+//     if (!found_one) {
+//         results->push("$$END$$");
+//     }
+//     else {
+//         results->push(final_ss.str());
+//     }
+// }
+
 void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
-    bloom_filter bf(BLOOM_SIZE, BLOOM_K);
-    mstd::hash_table<void *> ht;
+    trie_node *current = _root;
     std::stringstream ss , final_ss;
+//     mstd::hash_table<void *> ht;
+    bloom_filter bf(BLOOM_SIZE, BLOOM_K);
     bool found_one = false;
     bool one_word = false;
-    trie_node *current = _root;
+    
+    if (_root->empty()) {
+        results->push("$$EMPTY$$");
+        return;
+    }
 
+//     if (_root->get_children_p() == nullptr) {
+//         results->push("$$EMPTY$$");
+//         return;
+//     }
+    
     for (size_t i = 0; i < ngram.size(); i++) {
         trie_node *child;
         for (size_t j = i; j < ngram.size(); j++) {
@@ -70,7 +144,7 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
                 ss.str("");
                 ss.clear();
                 one_word = false;
-                current = _root; 
+                current = _root;
                 break;
             }
             else{
@@ -82,31 +156,27 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
                     one_word = true;
                 }
                 if (child->is_end_of_word()) {
-                    if (__debug__) {
-                        if (!bf.check(ss.str())) {
-                            bf.insert(ss.str());
-                            if (found_one) 
-                                final_ss << "|";
-                            
-                            found_one = true;
-                            final_ss << ss.str();
+                    if (!bf.check_and_set(ss.str())) {
+                        // Ngram did not exist
+                        if (found_one) {
+                            final_ss << "|";
                         }
-                    } else {
-                        try {
-                            // If the key cannot be found in the hash table, it throws an exception
-                            // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
-                            // so we start from the beginning
-                            ht.get(ss.str());
-                        } catch (std::runtime_error &e) {
-                            if (found_one) {
-                                final_ss << "|";
-                            }
-                            // If it throws, the key doesn't exist, so we add it to the hash table and continue
-                            ht.put(ss.str(), nullptr);
-                            found_one = true;
-                            final_ss << ss.str();
-                        }
+                        found_one = true;
+                        final_ss << ss.str();
                     }
+//                     try {
+//                         // If the key cannot be found in the hash table, it throws an exception
+//                         // if it doesn't throw, it means that the key already exists (so we have already found the ngram)
+//                         ht.get(ss.str());
+//                     } catch (std::runtime_error &e) {
+//                         if (found_one) {
+//                             final_ss << "|";
+//                         }
+//                         // If it throws, the key doesn't exist, so we add it to the hash table and continue
+//                         ht.put(ss.str(), nullptr);
+//                         found_one = true;
+//                         final_ss << ss.str();
+//                     }
                 }
                 current = child;
             }
@@ -121,7 +191,7 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
 }
 
 bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
-    trie_node *current/* = _root*/; // TODO: Factor in the trie node change
+    trie_node *current = _root; // TODO: Factor in the trie node change
     auto *ch_indexes = new int[(int)ngram.size()];
     auto **parents = new trie_node *[(int)ngram.size()];
 
@@ -136,9 +206,14 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
     }
     // Now the current point to the end_of_word node of the N-gram.
     if (current->is_end_of_word()) {
-        if (current->get_children_p() == nullptr) {
+        
+        if (!current->has_children()) {
             // The end_of_word node can be deleted, so its parent will delete him.
-            parents[(int)ngram.size()-1]->remove_child(ch_indexes[(int)ngram.size()-1]);
+            if (parents[(int) ngram.size() - 1]->is_root()) {
+                ((root_node*) parents[(int) ngram.size() - 1])->remove_child(current->get_word());
+            } else {
+                parents[(int)ngram.size()-1]->remove_child(ch_indexes[(int)ngram.size()-1]);
+            }
         }
         else {
             // The end_of_word node cannot be deleted, so we un-check the end_of_word flag.
@@ -156,7 +231,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
     }
     current = parents[(int)ngram.size()-1];
     for (int i = (int)ngram.size()-2; i >= 0; i--) {
-        if (current->is_end_of_word() || current->get_children_p() != nullptr) {
+        if (current->is_end_of_word() || current->has_children()) {
             // I am an end_of_word node for another N-gram of the Trie, so I cannot be deleted.
             // OR
             // I have more children after my child's deletion, so I cannot be deleted.
@@ -166,7 +241,12 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
         }
         else {
             // I do not satisfy any of the above conditions, so I can be deleted.
-            parents[i]->remove_child(ch_indexes[i]);
+            if (parents[i]->is_root()) {
+                // It's parent is the root node, so we need to supply the string rather than the index
+                ((root_node *) parents[i])->remove_child(current->get_word());
+            } else {
+                parents[i]->remove_child(ch_indexes[i]);
+            }
             current = parents[i];
         }
     }
@@ -236,6 +316,7 @@ bool trie::r_delete_helper(const mstd::vector<std::string> &ngram, trie_node *cu
 void trie::print_tree() {
     // Figure out how to print the tree (required by the unit tests
     //_root->print(0);
+    _root->print();
 }
 
 std::string trie::to_string() {

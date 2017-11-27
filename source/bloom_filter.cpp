@@ -51,14 +51,21 @@ void bloom_filter::insert(const vector<string> &ngram_v) {
     insert(ngram);
 }
 
+// Sets all of the hash's result indices to 1
+// Returns true if all of them were already set, false otherwise
 bool bloom_filter::check_and_set(const string &ngram) {
     _hash(ngram);
-    bool exists = false;
+    int matched = 0;
     for (int i = 0; i < _k; i++) {
-        exists = exists || _bv.check_and_set(_results[i]);
+        if (_bv.check_and_set(_results[i])) {
+            // Count the number of times a bit was set
+            matched++;
+        }
+        // exists = exists || _bv.check_and_set(_results[i]);
     }
 
-    return exists;
+    // If all of the bits were set, we return a positive (false or proper)
+    return matched == _k;
 }
 
 uint64_t fmix(uint64_t h) {

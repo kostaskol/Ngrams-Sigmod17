@@ -14,15 +14,17 @@ public:
 
     trie_node *insert(std::string &word, bool eow);
 
-    trie_node *get(const std::string &word);
+    trie_node *get(const std::string &word) const;
 
     void delete_word(const std::string &word);
 
-    size_t size();
+    size_t size() const;
     
-    void print();
+    void print() const;
     
-    std::string stats(bool v = true);
+    std::string stats(bool v = true) const;
+    
+    bool empty() const;
 private:
     size_t _size;
     size_t _num_items;
@@ -30,11 +32,11 @@ private:
 
     mstd::vector<trie_node> **_entries;
     
-    int _hash(const std::string &word);
+    int _hash(const std::string &word) const;
     
     void _resize();
     
-    double _calculate_load();
+    int _calculate_load() const;
 };
 
 

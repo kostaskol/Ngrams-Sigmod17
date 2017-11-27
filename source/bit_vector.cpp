@@ -67,27 +67,21 @@ bool bit_vector::check(size_t index) {
  */
 bool bit_vector::check_and_set(size_t index) {
     if (index >= _size || index < 0) {
-        std::stringstream ss("The requested index (");
-        ss << index << ") was out of range";
-        throw std::out_of_range(ss.str());
+        throw std::out_of_range("The requested index (" + std::to_string(index) + ") was out of range");
     }
 
     size_t byte_index = index / 8;
     auto inner_index = (byte) (index % 8);
     auto offset = (byte) (7 - inner_index);
     byte b = _entries[byte_index];
-//    return _test(b, offset) || _set(b, offset);
 
     if (_test(b, offset)) {
         return true;
     }
 
     _set(_entries[byte_index], offset);
-    if (index < 247 && check(247)) {
-        cout << "247 was set while setting " << index << endl;
-    }
+
     return false;
-    // return (_test(b, offset) || _set(byte_index, offset));
 }
 
 void bit_vector::print() {
