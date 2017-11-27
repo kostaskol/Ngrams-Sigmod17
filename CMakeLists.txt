@@ -48,8 +48,21 @@ set(SOURCE_FILES
         include/parser.hpp
         source/parser.cpp
         include/date_time.hpp
+        include/constants.hpp
+        source/linear_hash.cpp
+        source/bit_vector.cpp
+        include/bit_vector.hpp
+        include/bloom_filter.hpp
+        source/bloom_filter.cpp
+        include/binary_search.hpp
+        source/logger.cpp
         include/helpers.hpp
-        include/mqueue.hpp)
+        include/mqueue.hpp
+        include/mstack.hpp
+        include/linear_hash.hpp
+        include/trie_nodes.hpp
+        source/trie_nodes.cpp
+        )
 
 set(TEST_SOURCE
         ngrams-testing/basic_tests.cpp
@@ -59,10 +72,18 @@ set(TEST_SOURCE
         ngrams-testing/trie-insert-testing.cpp
         ngrams-testing/trie-delete-testing.cpp
         ngrams-testing/trie-search-testing.cpp
+        ngrams-testing/static-insert--testing.cpp
         ngrams-testing/queue-testing.cpp
+        ngrams-testing/stack-testing.cpp
         include/mqueue.hpp
         source/parser.cpp
-        source/trie.cpp)
+        source/trie.cpp
+        source/trie_nodes.cpp
+        source/linear_hash.cpp
+        source/logger.cpp
+        source/bloom_filter.cpp
+        source/bit_vector.cpp
+        )
 
 add_executable(ngrams ${SOURCE_FILES})
 

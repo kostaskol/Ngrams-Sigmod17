@@ -1,19 +1,22 @@
+#include "trie.hpp"
+#include "constants.hpp"
 #include <iostream>
 #include <cmd_parser.hpp>
 #include <parser.hpp>
-#include "trie.hpp"
 #include <unistd.h>
+#include <fstream>
+
 
 using std::cout;
 using std::endl;
 using std::string;
 using mstd::vector;
 using mstd::logger;
+using std::ifstream;
 
-std::string mstd::logger::file;
+bool __debug__;
 
 int main(int argc, char **argv) {
-    logger::file = "../debug/log.txt";
     // Start command line arguments parsing
     string legal = " -i <init-file> -q <query-file> [--debug]";
     if (argc < 3) {
@@ -36,91 +39,87 @@ int main(int argc, char **argv) {
         init_file = c_parser->get_string("-i");
         query_file = c_parser->get_string("-q");
     } catch (std::runtime_error &e) {
-        logger::error("main", "User has not provided both -i and -q. Exiting..", BOTH);
+        logger::error("main", "User has not provided both -i and -q. Exiting..");
         return -1;
     }
 
     debug = c_parser->is_set("--debug");
+    __debug__ = debug;
 
     delete c_parser;
     // End command line arguments parsing
 
+    vector<string> v;
     trie* t;
 
     // Begin initialisation file parsing
     parser init_parser(init_file);
 
-    vector<string> v;
     bool stop = init_parser.next_init(&v);
     bool compress = false;
-
-    if (v.at(0) == "STATIC") {
+    if (v.get(0) == "STATIC") {
         t = new static_trie();
         compress = true;
-    } else {
+    } else if (v.get(0) == "DYNAMIC") {
         t = new trie();
     }
-    v.clear();
 
     while (true) {
         stop = init_parser.next_init(&v);
         if (v.size() == 0 && stop) break;
-        string s = helpers::join(v, ' ');
         t->add(v);
 //        logger::success("init", "Added N-Gram " + s);
         v.clear();
         if (stop) break;
     }
 
-    t->print_tree();
     if (compress) {
         t->compress();
     }
 
+
+
     // End initialisation file parsing
 
-    t->print_tree();
-
-    delete t;
-
     // Begin query file parsing
-//    parser query_parser(query_file);
-//
-//    int cmd_type;
-//
-//    mstd::queue<std::string> results;
-//    while (true) {
-//        bool stop = query_parser.next_command(&v, &cmd_type);
-//        if (v.size() == 0 && stop) break;
-//        string s;
-//        switch (cmd_type) {
-//            case INSERTION:
-//                t.add(v);
-//                break;
-//            case QUERY:{
-//                t.search(v,&results);
-//                break;
-//            }
-//            case DELETION:
-//                t.delete_ngram(v);
-//                break;
-//            case FINISH:
-//                // Print query results
-//                string succ = "";
-//                while(!results.empty()){
-//                    succ = results.pop();
-//                    if (succ == "$$END$$" || succ == "$$EMPTY$$") {
-//                        std::cout << "-1" << '\n';
-//                    }
-//                    else{
-//                        std::cout << succ << '\n';
-//                    }
-//                }
-//                break;
-//        }
-//        if (stop) break;
-//        v.clear();
-//    }
-//    results.clear();
+    parser query_parser(query_file);
+
+    int cmd_type;
+
+    mstd::queue<std::string> results;
+    while (true) {
+        stop = query_parser.next_command(&v, &cmd_type);
+        if (v.size() == 0 && stop) break;
+        string s;
+        switch (cmd_type) {
+            case INSERTION:
+                t->add(v);
+                break;
+            case QUERY:
+                t->search(v,&results);
+                break;
+            case DELETION:
+                t->delete_ngram(v);
+                break;
+            case FINISH: {
+                // Print query results
+                string succ;
+                while (!results.empty()) {
+                    succ = results.pop();
+                    if (succ == "$$END$$") {
+                        std::cout << "-1" << '\n';
+                    } else {
+                        std::cout << succ << '\n';
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        if (stop) break;
+        v.clear();
+    }
+    results.clear();
     // End query file parsing
 }

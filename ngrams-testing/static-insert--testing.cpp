@@ -22,8 +22,9 @@ public:
 TEST_F(StaticInsertionTesting, insertEasy) {
     v.push("a"); v.push("b"); v.push("c"); v.push("d");
     t.add(v);
+    t.compress();
     string trie_str = t.to_string();
-    string proper = "a\n\tb\n\t\tc\n\t\t\td\n";
+    string proper = "a b c d\n";
     EXPECT_EQ(trie_str, proper);
 }
 
