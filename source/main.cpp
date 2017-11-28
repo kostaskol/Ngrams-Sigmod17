@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
                string succ = "";
                while(!results.empty()){
                    succ = results.pop();
-                   if (succ == "$$END$$") {
+                   if (succ == "$$END$$" || succ == "$$EMPTY$$") {
                        std::cout << "-1" << '\n';
                    }
                    else{
