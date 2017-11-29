@@ -280,6 +280,27 @@ size_t static_node::get_children_size() {
 
 }
 
+const std::string& static_node::get_word() {
+    return _word;
+}
+
+bool static_node::end_of_word(int index) {
+    return _lenofwords->at((size_t)index) > 0;
+}
+
+std::string static_node::get_word(int index) {
+    int sum = 0;
+    for (int i = 0; i < index; i++) {
+        sum += abs(_lenofwords->at((size_t)i));
+    }
+    return _word.substr((size_t)sum, (size_t)abs(_lenofwords->at((size_t)index)));
+}
+
+size_t static_node::lenofwords_size() {
+    if (_lenofwords == nullptr) return 0;
+    return _lenofwords->size();
+}
+
 void trie_node::print(int level) {
     for (int i = 1; i < level; i++) {
         cout << "\t";

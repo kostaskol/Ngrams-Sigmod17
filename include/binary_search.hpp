@@ -66,3 +66,33 @@ inline bool bsearch_children(const std::string &word, const mstd::vector<T> &chi
         }
     }
 }
+
+
+inline static_node* static_bsearch(const std::string &word, const mstd::vector<static_node> &children) {
+    if (children.size() == 0) {
+        return nullptr;
+    }
+
+    if (word < children.at(0).get_word(0)) {
+        return nullptr;
+    }
+
+    if (word > children.at(children.size()-1).get_word(0)) {
+        return nullptr;
+    }
+
+    int left = 0;
+    int right = (int) children.size() - 1;
+    while (left <= right) {
+        int mid = left + ((right-left) / 2);
+        std::string tmp = children.at(mid).get_word(0);
+        if (tmp == word) {
+            return  &children.at(mid);
+        } else if (tmp < word) {
+            right = mid;
+        } else {
+            left = mid;
+        }
+    }
+    return  nullptr;
+}

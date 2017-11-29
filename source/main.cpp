@@ -75,8 +75,6 @@ int main(int argc, char **argv) {
     }
     if (compress) {
         t->compress();
-//        delete t;
-        return 1;
     }
 
 

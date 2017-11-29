@@ -38,7 +38,7 @@ public:
 
     bool is_end_of_word() const;
 
-    const std::string& get_word();
+    virtual const std::string& get_word();
 
     void set_word(const std::string &word);
 
@@ -94,6 +94,14 @@ public:
      virtual void push_children(mstd::stack<static_node *> *s);
 
     size_t get_children_size();
+
+    const std::string& get_word() override;
+
+    bool end_of_word(int index);
+
+    std::string get_word(int index);
+
+    size_t lenofwords_size();
 
     void print_shorts();
 

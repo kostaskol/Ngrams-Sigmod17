@@ -18,7 +18,7 @@
 #define JENKINS_PEARSONS 0x1
 #define DEFAULT_HASH MURMUR3
 
-#define BLOOM_SIZE 24576
+#define BLOOM_SIZE 524288
 #define BLOOM_K 3
 
 /*
