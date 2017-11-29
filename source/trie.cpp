@@ -233,15 +233,82 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
         current->add_child(last_word, true, index);
         _num_nodes++;
     }
+
     _num_ngrams++;
+}
+
+void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
+    trie_node *current = _root;
+    std::stringstream ss , final_ss;
+    bloom_filter bf(BLOOM_SIZE, BLOOM_K);
+    bool found_one = false;
+    bool one_word = false;
+    mstd::hash_table<void *> ht;
+
+    if (_root->get_st_children_p() == nullptr) {
+        results->push("$$EMPTY$$");
+        return;
+    }
+
+    for (size_t i = 0; i < ngram.size(); i++) {
+        trie_node *child;
+        for (size_t j = i; j < ngram.size(); j++) {
+            if ((child = current->get_child(ngram.at(j),nullptr)) == nullptr) {
+                ss.str("");
+                ss.clear();
+                one_word = false;
+                current = _root;
+                break;
+            }
+            else{
+                if (one_word) {
+                    ss << " " + ngram.at(j);
+                }
+                else{
+                    ss << ngram.at(j);
+                    one_word = true;
+                }
+                if (child->is_end_of_word()) {
+//                    if (!bf.check_and_set(ss.str())) {
+//                        // Ngram did not exist
+//                        if (found_one) {
+//                            final_ss << "|";
+//                        }
+//                        found_one = true;
+//                        final_ss << ss.str();
+//                    }
+                    try {
+                        ht.get(ss.str());
+                    } catch (...){
+                        ht.put(ss.str(), nullptr);
+                        if (found_one) {
+                            final_ss << "|";
+                        }
+                        found_one = true;
+                        final_ss << ss.str();
+                    }
+                }
+                current = child;
+            }
+        }
+    }
+    if (!found_one) {
+        results->push("$$END$$");
+    }
+    else {
+        results->push(final_ss.str());
+    }
 }
 
 void static_trie::compress() {
     static_node *current, *child;
-    stack<trie_node *> s;
+    stack<static_node *> s;
     std::stringstream ss;
 
-    if (_root->get_children_p() == nullptr) return; //Empty static trie
+    if (_root->get_st_children_p() == nullptr) {
+//        cout << "MALAKAS" << endl;
+        return;
+    } //Empty static trie
 
 //    int old_nodes = (int)_num_nodes;
     _num_nodes = 0;
@@ -249,25 +316,35 @@ void static_trie::compress() {
 
     _root->push_children(&s);
     while (!s.empty()) {
-        current = (static_node *)s.pop();
-        if (current->get_children_p() == nullptr) {
+        current = s.pop();
+        if (current->get_st_children_p() == nullptr) {
+            current->add_short(current->get_word(), current->is_end_of_word());
             _num_nodes++;
             continue;
         }
         ss << current->get_word();
+        current->add_short(current->get_word(), current->is_end_of_word());
+
         while (current->get_children_size() == 1) {
             child = current->get_child(0);
-            ss << " "+child->get_word();
-            current->add_short(current->get_word(), current->is_end_of_word());
+            ss << child->get_word();
             current->add_short(child->get_word(), child->is_end_of_word());
-            current->steal_children(child->get_children_p());
+            current->steal_children(child->get_st_children_p());
         }
         current->set_word(ss.str());
         ss.str("");
         ss.clear();
+//        current->print_shorts();
         _num_nodes++;
         current->push_children(&s);
     }
+    cout << _num_nodes << endl;
+}
+
+void trie::print_tree() {}
+
+void static_trie::print_tree() {
+    _root->print(0);
 }
 
 std::string static_trie::to_string() {

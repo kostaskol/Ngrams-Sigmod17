@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
     } else if (v.get(0) == "DYNAMIC") {
         t = new trie();
     }
+    v.clear();
 
     while (true) {
         stop = init_parser.next_init(&v);
@@ -72,9 +73,11 @@ int main(int argc, char **argv) {
         v.clear();
         if (stop) break;
     }
-
     if (compress) {
         t->compress();
+        t->print_tree();
+        delete t;
+        return 1;
     }
 
 

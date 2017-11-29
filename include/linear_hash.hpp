@@ -5,16 +5,16 @@
 #include "constants.hpp"
 
 class trie_node;
-
+template <typename T>
 class linear_hash {
 public:
     explicit linear_hash(size_t initial_size = LINEAR_HASH_INITIAL_SIZE);
 
     ~linear_hash();
 
-    trie_node *insert(std::string &word, bool eow);
+    T *insert(std::string &word, bool eow);
 
-    trie_node *get(const std::string &word) const;
+    T *get(const std::string &word) const;
 
     void delete_word(const std::string &word);
 
@@ -30,7 +30,7 @@ private:
     size_t _num_items;
     size_t _p;
 
-    mstd::vector<trie_node> **_entries;
+    mstd::vector<T> **_entries;
 
     int _hash(const std::string &word) const;
 

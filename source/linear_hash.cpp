@@ -6,7 +6,6 @@
 #include <cstring>
 #include <sstream>
 
-class trie_node;
 
 using mstd::vector;
 using mstd::logger;
@@ -17,32 +16,36 @@ using std::cout;
 using std::endl;
 using std::cerr;
 
-linear_hash::linear_hash(size_t initial_size) : _size(initial_size), _num_items(0), _p(0) {
-    _entries = new vector<trie_node>*[_size];
+template <typename T>
+
+
+linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size), _num_items(0), _p(0) {
+    _entries = new vector<T>*[_size];
     for (int i = 0; i < initial_size; i++) {
-        _entries[i] = new vector<trie_node>(LINEAR_HASH_MAX_BUCKET_SIZE);
+        _entries[i] = new vector<T>(LINEAR_HASH_MAX_BUCKET_SIZE);
     }
 }
 
-linear_hash::~linear_hash() {
+template <typename T>
+linear_hash<T>::~linear_hash() {
     for (int i = 0; i < _size + _p; i++) {
         delete _entries[i];
     }
     delete[] _entries;
 }
 
-trie_node *linear_hash::insert(string &word, bool eow) {
-
+template <typename T>
+T *linear_hash<T>::insert(string &word, bool eow) {
     int load = _calculate_load();
 
     if (load > LINEAR_HASH_LOAD_FACTOR) {
         // Load factor has been reached. Split at _p
 
-        vector<trie_node> *tmp_storage = _entries[_p]; // Keep a temporary storage
+        vector<T> *tmp_storage = _entries[_p]; // Keep a temporary storage
 
         _resize(); // Allocate one more bucket at the end of the table
 
-        _entries[_p] = new vector<trie_node>(LINEAR_HASH_MAX_BUCKET_SIZE); // And create a new bucket
+        _entries[_p] = new vector<T>(LINEAR_HASH_MAX_BUCKET_SIZE); // And create a new bucket
 
         // Allocate a new bucket at the end
 
@@ -83,7 +86,7 @@ trie_node *linear_hash::insert(string &word, bool eow) {
         }
     }
 
-    trie_node new_node(word, eow);
+    T new_node(word, eow);
     size_t hash = _hash(word);
 
 
@@ -95,11 +98,11 @@ trie_node *linear_hash::insert(string &word, bool eow) {
         // rehash it to the next
         index = hash % (2 * _size);
     }
-    trie_node *ret = nullptr;
+    T *ret = nullptr;
 
 
 
-    vector<trie_node> *v = _entries[index];
+    vector<T> *v = _entries[index];
 
     // Perform binary search and insert the element
     if (v == nullptr) {
@@ -122,7 +125,8 @@ trie_node *linear_hash::insert(string &word, bool eow) {
     return ret;
 }
 
-trie_node *linear_hash::get(const std::string &word) const {
+template <typename T>
+T *linear_hash<T>::get(const std::string &word) const {
     int hash = _hash(word);
     int index = hash % _size;
     if (index < _p) {
@@ -136,7 +140,8 @@ trie_node *linear_hash::get(const std::string &word) const {
     return nullptr;
 }
 
-void linear_hash::delete_word(const std::string &word) {
+template <typename T>
+void linear_hash<T>::delete_word(const std::string &word) {
     int hash = _hash(word);
     int index = hash % _size;
     if (index < _p) {
@@ -149,11 +154,13 @@ void linear_hash::delete_word(const std::string &word) {
     }
 }
 
-size_t linear_hash::size() const {
+template <typename T>
+size_t linear_hash<T>::size() const {
     return _size;
 }
 
-void linear_hash::print() const {
+template <typename T>
+void linear_hash<T>::print() const {
     cout << "Size: " << _size << endl;
     cout << "Number of buckets: " << _size + _p << endl;
     cout << "Next split: " << _p << endl;
@@ -167,7 +174,8 @@ void linear_hash::print() const {
     }
 }
 
-string linear_hash::stats(bool v) const {
+template <typename T>
+string linear_hash<T>::stats(bool v) const {
     stringstream ss;
 
     ss << "Number of buckets: " << _size + _p << "\n";
@@ -189,12 +197,14 @@ string linear_hash::stats(bool v) const {
 }
 
 
-bool linear_hash::empty() const {
+template <typename T>
+bool linear_hash<T>::empty() const {
     return _num_items == 0;
 }
 
 
-int linear_hash::_hash(const std::string &word) const {
+template <typename T>
+int linear_hash<T>::_hash(const std::string &word) const {
     char *cont_str = new char[word.length() + 1];
     strcpy(cont_str, word.c_str());
     char *str = cont_str;
@@ -210,20 +220,25 @@ int linear_hash::_hash(const std::string &word) const {
     return hash >= 0 ? hash : -hash;
 }
 
-void linear_hash::_resize() {
-    auto tmp = new vector<trie_node>*[_size + _p + 1];
+template <typename T>
+void linear_hash<T>::_resize() {
+    auto tmp = new vector<T>*[_size + _p + 1];
     for (size_t i = 0; i < _size + _p; i++) {
         if (i == _p) continue; // No need to copy the bucket that is going to be split
         tmp[i] = _entries[i];
     }
 
     // Initialise the newly created bucket
-    tmp[_size + _p] = new vector<trie_node>(LINEAR_HASH_MAX_BUCKET_SIZE);
+    tmp[_size + _p] = new vector<T>(LINEAR_HASH_MAX_BUCKET_SIZE);
 
     delete[] _entries;
     _entries = tmp;
 }
 
-int linear_hash::_calculate_load() const {
+template <typename T>
+int linear_hash<T>::_calculate_load() const {
     return (int) ((_num_items + 1) / (double) ((_size + _p) * LINEAR_HASH_MAX_BUCKET_SIZE) * 100);
 }
+
+template class linear_hash<trie_node>;
+template class linear_hash<static_node>;

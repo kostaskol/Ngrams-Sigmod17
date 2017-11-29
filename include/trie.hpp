@@ -25,7 +25,7 @@ public:
 
     virtual void add(const mstd::vector<std::string> &ngram);
 
-    void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+    virtual void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
 
     virtual void compress();
 
@@ -34,6 +34,8 @@ public:
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
 
     virtual std::string to_string();
+
+    virtual void print_tree();
 
 };
 
@@ -49,9 +51,11 @@ public:
 
     void add(const mstd::vector<std::string> &ngram) override;
 
-    //void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results) override;
+    void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results) override;
 
     void compress() override;
+
+    void print_tree() override;
 
     std::string to_string() override;
 

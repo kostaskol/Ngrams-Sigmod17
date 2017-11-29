@@ -2,7 +2,8 @@
 #include "mvector.hpp"
 #include <string>
 
-inline bool bsearch_children(const std::string &word, const mstd::vector<trie_node> &children, int *index) {
+template <typename T>  //works for vector of trie_nodes / static_nodes / pairs
+inline bool bsearch_children(const std::string &word, const mstd::vector<T> &children, int *index) {
     // New insertion
     if (children.size() == 0) {
         *index = 0;

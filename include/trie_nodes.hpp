@@ -12,6 +12,8 @@ protected:
 
     bool _eow;
 
+private:
+
     mstd::vector<trie_node> *_children;
 
 public:
@@ -49,15 +51,9 @@ public:
 
     void set_end_of_word(bool v);
 
-    void steal_children(mstd::vector<trie_node> *c);
-
-    size_t get_children_size();
-
-    void push_children(mstd::stack<trie_node *> *s);
-
-    void print(int level);
-
     void to_string(std::stringstream &ss, int level);
+
+    virtual void print(int level);
 
     trie_node &operator=(const trie_node &other);
 
@@ -72,6 +68,8 @@ public:
 
 class static_node : public trie_node {
 private:
+    mstd::vector<static_node> *_children;
+
     mstd::vector<signed short> *_lenofwords;
 
 public:
@@ -87,7 +85,19 @@ public:
 
     static_node *get_child(const std::string &word, int *at) override;
 
+    mstd::vector<static_node> *get_st_children_p();
+
     mstd::vector<signed short> *get_lenofwords_p();
+
+    void steal_children(mstd::vector<static_node> *c);
+
+    void push_children(mstd::stack<static_node *> *s);
+
+    size_t get_children_size();
+
+    void print_shorts();
+
+    void print(int level) override;
 
     void add_short(const std::string &word, bool eow) override;
 
@@ -99,7 +109,7 @@ public:
 
 class root_node : public trie_node {
 private:
-    linear_hash _children;
+    linear_hash<trie_node> _children;
 
 public:
 
