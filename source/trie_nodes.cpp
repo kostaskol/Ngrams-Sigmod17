@@ -331,7 +331,7 @@ void static_node::add_short(const std::string &word, bool eow) {
 void static_node::print_shorts() {
     cout << _word;
     for (int i = 0; i < _lenofwords->size(); i++){
-        cout << " " <<  _lenofwords->get((size_t)i);
+        cout << _lenofwords->get((size_t)i) << " ";
     }
     cout << endl;
 }
@@ -395,4 +395,30 @@ void root_node::print() {
 
 bool root_node::empty() {
     return _children.empty();
+}
+
+/*
+ * static_root node implementation
+ */
+
+static_root_node::static_root_node(size_t initial_size) : _children(initial_size) { }
+
+static_node *static_root_node::add_child(std::string &word, bool eow, int index) {
+    return _children.insert(word, eow);
+}
+
+static_node *static_root_node::get_child(const std::string &word, int *at) {
+    return _children.get(word);
+}
+
+bool static_root_node::empty() {
+    return _children.empty();
+}
+
+void static_root_node::push_children(mstd::stack<static_node *> *s) {
+    _children.push_to_stack(s);
+}
+
+void static_root_node::print() {
+    _children.print();
 }

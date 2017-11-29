@@ -3,6 +3,7 @@
 #include <string>
 #include "mvector.hpp"
 #include "constants.hpp"
+#include "mstack.hpp"
 
 class trie_node;
 template <typename T>
@@ -21,6 +22,8 @@ public:
     size_t size() const;
 
     void print() const;
+
+    void push_to_stack(mstd::stack<T*> *s);
 
     std::string stats(bool v = true) const;
 

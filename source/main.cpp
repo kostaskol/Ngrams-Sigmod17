@@ -75,8 +75,7 @@ int main(int argc, char **argv) {
     }
     if (compress) {
         t->compress();
-        t->print_tree();
-        delete t;
+//        delete t;
         return 1;
     }
 

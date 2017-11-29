@@ -175,6 +175,15 @@ void linear_hash<T>::print() const {
 }
 
 template <typename T>
+void linear_hash<T>::push_to_stack(mstd::stack<T *> *s) {
+    for (int i = 0; i < _size + _p; i++) {
+        for (int j = 0; j < _entries[i]->size(); j++) {
+            s->push(_entries[i]->get_p((size_t)j));
+        }
+    }
+}
+
+template <typename T>
 string linear_hash<T>::stats(bool v) const {
     stringstream ss;
 

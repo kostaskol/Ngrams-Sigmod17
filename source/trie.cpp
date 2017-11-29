@@ -86,24 +86,24 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
                     one_word = true;
                 }
                 if (child->is_end_of_word()) {
-                    if (!bf.check_and_set(ss.str())) {
-                        // Ngram did not exist
-                        if (found_one) {
-                            final_ss << "|";
-                        }
-                        found_one = true;
-                        final_ss << ss.str();
-                    }
-//                    try {
-//                        ht.get(ss.str());
-//                    } catch (...){
-//                        ht.put(ss.str(), nullptr);
+//                    if (!bf.check_and_set(ss.str())) {
+//                        // Ngram did not exist
 //                        if (found_one) {
 //                            final_ss << "|";
 //                        }
 //                        found_one = true;
 //                        final_ss << ss.str();
 //                    }
+                    try {
+                        ht.get(ss.str());
+                    } catch (...){
+                        ht.put(ss.str(), nullptr);
+                        if (found_one) {
+                            final_ss << "|";
+                        }
+                        found_one = true;
+                        final_ss << ss.str();
+                    }
                 }
                 current = child;
             }
@@ -197,7 +197,7 @@ std::string trie::to_string() {
  */
 
 static_trie::static_trie() : trie::trie() {
-    _root = new static_node();
+    _root = new static_root_node();
 }
 
 static_trie::~static_trie(){
@@ -245,7 +245,7 @@ void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *
     bool one_word = false;
     mstd::hash_table<void *> ht;
 
-    if (_root->get_st_children_p() == nullptr) {
+    if (_root->empty()) {
         results->push("$$EMPTY$$");
         return;
     }
@@ -305,10 +305,7 @@ void static_trie::compress() {
     stack<static_node *> s;
     std::stringstream ss;
 
-    if (_root->get_st_children_p() == nullptr) {
-//        cout << "MALAKAS" << endl;
-        return;
-    } //Empty static trie
+    if (_root->empty()) return; //Empty static trie
 
 //    int old_nodes = (int)_num_nodes;
     _num_nodes = 0;
@@ -319,6 +316,7 @@ void static_trie::compress() {
         current = s.pop();
         if (current->get_st_children_p() == nullptr) {
             current->add_short(current->get_word(), current->is_end_of_word());
+            current->print_shorts();
             _num_nodes++;
             continue;
         }
@@ -334,7 +332,7 @@ void static_trie::compress() {
         current->set_word(ss.str());
         ss.str("");
         ss.clear();
-//        current->print_shorts();
+        current->print_shorts();
         _num_nodes++;
         current->push_children(&s);
     }
@@ -344,7 +342,7 @@ void static_trie::compress() {
 void trie::print_tree() {}
 
 void static_trie::print_tree() {
-    _root->print(0);
+    _root->print();
 }
 
 std::string static_trie::to_string() {

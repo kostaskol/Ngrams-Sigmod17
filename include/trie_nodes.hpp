@@ -2,7 +2,6 @@
 #define TRIE_NODES
 #include "mvector.hpp"
 #include "linear_hash.hpp"
-#include "mstack.hpp"
 #include <string>
 
 
@@ -70,6 +69,7 @@ class static_node : public trie_node {
 private:
     mstd::vector<static_node> *_children;
 
+protected:
     mstd::vector<signed short> *_lenofwords;
 
 public:
@@ -91,7 +91,7 @@ public:
 
     void steal_children(mstd::vector<static_node> *c);
 
-    void push_children(mstd::stack<static_node *> *s);
+     virtual void push_children(mstd::stack<static_node *> *s);
 
     size_t get_children_size();
 
@@ -119,7 +119,6 @@ public:
 
     trie_node *add_child(std::string &word, bool eow, int index) override;
 
-
     void remove_child(const std::string &word);
 
     trie_node *get_child(const std::string &word, int * at) override;
@@ -133,4 +132,24 @@ public:
     bool empty();
 };
 
+class static_root_node : public static_node {
+private:
+    linear_hash<static_node> _children;
+
+public:
+    explicit static_root_node(size_t initial_size = LINEAR_HASH_INITIAL_SIZE);
+
+    ~static_root_node() override = default;
+
+    static_node *add_child(std::string &word, bool eow, int index) override;
+
+    static_node *get_child(const std::string &word, int * at) override;
+
+    bool empty();
+
+    void print();
+
+    void push_children(mstd::stack<static_node *> *s) override;
+
+};
 #endif // TRIE_NODES

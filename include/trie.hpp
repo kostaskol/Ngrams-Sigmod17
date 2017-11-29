@@ -41,9 +41,8 @@ public:
 
 class static_trie : public trie {
 private:
-    static_node *_root;
-
-
+//    static_node *_root;
+    static_root_node*_root;
 public:
     static_trie();
 
