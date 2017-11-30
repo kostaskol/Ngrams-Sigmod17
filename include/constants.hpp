@@ -1,4 +1,3 @@
-
 #ifndef CONSTANTS
 #define CONSTANTS
 
@@ -14,12 +13,8 @@
 /*
  * bloom_filter constants
  */
-#define MURMUR3 0x0
-#define JENKINS_PEARSONS 0x1
-#define DEFAULT_HASH MURMUR3
-
-#define BLOOM_SIZE 524288
-#define BLOOM_K 3
+#define BLOOM_SIZE 34816
+#define BLOOM_K 23
 
 /*
  * trie constants

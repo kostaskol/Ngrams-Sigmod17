@@ -80,7 +80,6 @@ bool bit_vector::check_and_set(size_t index) {
     }
 
     _set(_entries[byte_index], offset);
-
     return false;
 }
 
