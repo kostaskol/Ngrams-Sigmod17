@@ -35,7 +35,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS "-g -std=c++0x -I../include -Iinclude")
+set(CMAKE_CXX_FLAGS "-g -std=c++0x -O3 -I../include -Iinclude")
 
 set(SOURCE_FILES
         source/main.cpp
