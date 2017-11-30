@@ -40,6 +40,8 @@ public:
 
     virtual const std::string& get_word();
 
+    virtual std::string get_word(int index);
+
     void set_word(const std::string &word);
 
     virtual bool is_root() const;
@@ -85,13 +87,15 @@ public:
 
     static_node *get_child(const std::string &word, int *at) override;
 
+    virtual static_node *search_static_child(const std::string &word);
+
     mstd::vector<static_node> *get_st_children_p();
 
     mstd::vector<signed short> *get_lenofwords_p();
 
     void steal_children(mstd::vector<static_node> *c);
 
-     virtual void push_children(mstd::stack<static_node *> *s);
+    virtual void push_children(mstd::stack<static_node *> *s);
 
     size_t get_children_size();
 
@@ -99,11 +103,13 @@ public:
 
     bool end_of_word(int index);
 
-    std::string get_word(int index);
+    std::string get_word(int index) override;
 
     size_t lenofwords_size();
 
     void print_shorts();
+
+    bool has_children() const override;
 
     void print(int level) override;
 
@@ -152,6 +158,10 @@ public:
     static_node *add_child(std::string &word, bool eow, int index) override;
 
     static_node *get_child(const std::string &word, int * at) override;
+
+    static_node *search_static_child(const std::string &word) override;
+
+    bool has_children() const override;
 
     bool empty();
 

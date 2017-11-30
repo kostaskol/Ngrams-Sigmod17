@@ -67,6 +67,8 @@ trie_node *trie_node::add_child(std::string &word, bool eow, int index) {
 
 const std::string &trie_node::get_word() { return _word; }
 
+std::string trie_node::get_word(int index) { return _word; }
+
 void trie_node::set_word(const std::string &word) {
     _word = word;
 }
@@ -243,6 +245,12 @@ static_node *static_node::get_child(const std::string &word, int *at) {
     }
 }
 
+static_node *static_node::search_static_child(const std::string &word) {
+    if (_children == nullptr) return nullptr;
+
+    return static_bsearch(word, *_children);
+}
+
 mstd::vector<static_node> *static_node::get_st_children_p(){
     return _children;
 }
@@ -301,6 +309,10 @@ size_t static_node::lenofwords_size() {
     return _lenofwords->size();
 }
 
+bool static_node::has_children() const {
+    return _children != nullptr && _children->size() > 0;
+}
+
 void trie_node::print(int level) {
     for (int i = 1; i < level; i++) {
         cout << "\t";
@@ -350,7 +362,7 @@ void static_node::add_short(const std::string &word, bool eow) {
 }
 
 void static_node::print_shorts() {
-    cout << _word;
+    cout << _word << "    ";
     for (int i = 0; i < _lenofwords->size(); i++){
         cout << _lenofwords->get((size_t)i) << " ";
     }
@@ -430,6 +442,15 @@ static_node *static_root_node::add_child(std::string &word, bool eow, int index)
 
 static_node *static_root_node::get_child(const std::string &word, int *at) {
     return _children.get(word);
+}
+
+static_node *static_root_node::search_static_child(const std::string &word) {
+//    cout << "Searching for " + word << endl;
+    return _children.get_static(word);
+}
+
+bool static_root_node::has_children() const {
+    return !_children.empty();
 }
 
 bool static_root_node::empty() {

@@ -67,8 +67,9 @@ inline bool bsearch_children(const std::string &word, const mstd::vector<T> &chi
     }
 }
 
+template <typename T>  //works for vector of trie_nodes / static_nodes / pairs
+inline T* static_bsearch(const std::string &word, const mstd::vector<T> &children) {
 
-inline static_node* static_bsearch(const std::string &word, const mstd::vector<static_node> &children) {
     if (children.size() == 0) {
         return nullptr;
     }
@@ -83,16 +84,40 @@ inline static_node* static_bsearch(const std::string &word, const mstd::vector<s
 
     int left = 0;
     int right = (int) children.size() - 1;
+
     while (left <= right) {
         int mid = left + ((right-left) / 2);
-        std::string tmp = children.at(mid).get_word(0);
-        if (tmp == word) {
-            return  &children.at(mid);
-        } else if (tmp < word) {
-            right = mid;
-        } else {
-            left = mid;
+
+        if (children[(size_t) mid].get_word(0) == word) {
+            return &children.get((size_t) mid);
+        }
+
+//        if (left == right || left == right - 1) {
+//            if (children[(size_t) left].get_word(0) > word ) {
+//                // pass
+//            }
+//            else if (children[(size_t) right].get_word(0)< word) {
+//                // pass
+//            }
+//            else if (children[(size_t) right].get_word(0) > word) {
+//                // pass
+//            }
+//            else {
+//                if (children[(size_t) right].get_word(0) == word) {
+//                    return &children[right];
+//                } else {
+//                    return &children[mid];
+//                }
+//            }
+//            return nullptr;
+//        }
+        if (children[(size_t) mid].get_word(0) > word) {
+            right = mid - 1;
+        }
+        else if (children[(size_t) mid].get_word(0) < word) {
+            left = mid + 1;
         }
     }
+
     return  nullptr;
 }

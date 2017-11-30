@@ -141,6 +141,18 @@ T *linear_hash<T>::get(const std::string &word) const {
 }
 
 template <typename T>
+T *linear_hash<T>::get_static(const std::string &word) const {
+    int hash = _hash(word);
+    int index = hash % _size;
+    if (index < _p) {
+        index = hash % (_size * 2);
+    }
+
+
+    return static_bsearch(word, *_entries[index]);
+}
+
+template <typename T>
 void linear_hash<T>::delete_word(const std::string &word) {
     int hash = _hash(word);
     int index = hash % _size;
@@ -151,6 +163,7 @@ void linear_hash<T>::delete_word(const std::string &word) {
     int child_index;
     if (bsearch_children(word, *_entries[index], &child_index)) {
         _entries[index]->remove_at(child_index);
+        _num_items--;
     }
 }
 
@@ -181,6 +194,13 @@ void linear_hash<T>::push_to_stack(mstd::stack<T *> *s) {
             s->push(_entries[i]->get_p((size_t)j));
         }
     }
+}
+
+template <typename T>
+vector<T> *linear_hash<T>::get_bucket(int i) const {
+    if (i >= _size + _p || i < 0) throw std::out_of_range("Bucket undex (" + std::to_string(i) + " was out of range");
+
+    return _entries[i];
 }
 
 template <typename T>
