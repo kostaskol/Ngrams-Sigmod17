@@ -16,7 +16,7 @@ public:
 
     T *insert(std::string &word, bool eow);
 
-    T *get(const std::string &word) const;
+    T *get(const std::string &word, int *hash = nullptr, int *index = nullptr) const;
 
     T *get_static(const std::string &word) const;
 

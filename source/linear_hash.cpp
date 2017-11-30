@@ -36,9 +36,17 @@ linear_hash<T>::~linear_hash() {
 
 template <typename T>
 T *linear_hash<T>::insert(string &word, bool eow) {
+    int hash;
+    int inner_index;
+    T *entry = get(word, &hash, &inner_index);
+
+    if (entry != nullptr) return entry;
+
     int load = _calculate_load();
 
+    bool split = false;
     if (load > LINEAR_HASH_LOAD_FACTOR) {
+        split = true;
         // Load factor has been reached. Split at _p
 
         vector<T> *tmp_storage = _entries[_p]; // Keep a temporary storage
@@ -46,8 +54,6 @@ T *linear_hash<T>::insert(string &word, bool eow) {
         _resize(); // Allocate one more bucket at the end of the table
 
         _entries[_p] = new vector<T>(LINEAR_HASH_MAX_BUCKET_SIZE); // And create a new bucket
-
-        // Allocate a new bucket at the end
 
         // Rehash each element in tmp_storage to either _p or _size + _p
         if (tmp_storage != nullptr) {
@@ -58,10 +64,13 @@ T *linear_hash<T>::insert(string &word, bool eow) {
                 int index = hash % (2 * _size);
                 int child_index;
                 if (index > _size + _p) {
-                    logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" + to_string(_size + _p) + "). Size = " + to_string(_size) + "\tHash: " + to_string(hash) + " word = " + tmp_word);
+                    logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" +
+                                                        to_string(_size + _p) + "). Size = " + to_string(_size) + "\tHash: " +
+                                                        to_string(hash) + " word = " + tmp_word);
                 }
                 if (_entries[index] == nullptr) {
-                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was null. Terminating");
+                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was \
+                                    null.Terminating");
                     exit(-1);
                 }
                 if (!bsearch_children(tmp_word, *_entries[index], &child_index)) {
@@ -69,7 +78,6 @@ T *linear_hash<T>::insert(string &word, bool eow) {
                 } else {
                     // Sanity check
                     logger::error("linear_hash::insert", "Entry already existed within bucket after bucket split");
-//                     cerr << "linear_hash::insert : Entry already existed within bucket right after bucket split!" << endl;
                 }
             }
 
@@ -86,58 +94,62 @@ T *linear_hash<T>::insert(string &word, bool eow) {
         }
     }
 
-    T new_node(word, eow);
-    size_t hash = _hash(word);
-
-
 
     size_t index = hash % _size;
     if (index < _p) {
-        // If the index is before the bucket pointer, that bucket has already been split
-        // so we need to find a different index for it
-        // rehash it to the next
         index = hash % (2 * _size);
     }
+
+    T new_node(word, eow);
+
     T *ret = nullptr;
-
-
 
     vector<T> *v = _entries[index];
 
-    // Perform binary search and insert the element
-    if (v == nullptr) {
-        cerr << "v was null" << endl;
-        exit(-1);
-    }
-
-    int child_index;
-    if (!bsearch_children(word, *v, &child_index)) {
-        // Child does not exist, so we must add it at index <child_index>
+    if (!split) {
+        // If the bucket hasn't split
+        // We can use the vector's index provided by linear_hash::get
+        ret = v->m_insert_at(inner_index, new_node);
         _num_items++;
-        ret = v->m_insert_at(child_index, new_node);
     } else {
-        // Child exists. Simply return it
-        ret = v->get_p(child_index);
+        // Otherwise, we need to search the bucket again
+        int child_index;
+        if (!bsearch_children(word, *v, &child_index)) {
+            // Child does not exist, so we must add it at index <child_index>
+            _num_items++;
+            ret = v->m_insert_at(child_index, new_node);
+        } else /* TODO: Is this a possibility? */{
+            // Child exists. Simply return it
+            ret = v->get_p(child_index);
+        }
     }
-
-    if (ret == nullptr) throw std::runtime_error("Returning nullptr");
 
     return ret;
 }
 
 template <typename T>
-T *linear_hash<T>::get(const std::string &word) const {
-    int hash = _hash(word);
-    int index = hash % _size;
-    if (index < _p) {
-        index = hash % (_size * 2);
+T *linear_hash<T>::get(const std::string &word, int *hash, int *index) const {
+
+    int mhash = _hash(word);
+    if (hash != nullptr) {
+        // The caller has requested the hash value
+        *hash = mhash;
+    }
+    size_t mindex = mhash % _size;
+    if (mindex < _p) {
+        mindex = mhash % (_size * 2);
     }
 
     int child_index;
-    if (bsearch_children(word, *_entries[index], &child_index)) {
-        return &_entries[index]->at(child_index);
+    T *ret = nullptr;
+    if (bsearch_children(word, *_entries[mindex], &child_index)) {
+        ret = &_entries[mindex]->at(child_index);
     }
-    return nullptr;
+    if (index != nullptr) {
+        *index = child_index;
+    }
+
+    return ret;
 }
 
 template <typename T>
