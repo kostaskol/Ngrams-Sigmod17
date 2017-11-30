@@ -1,0 +1,11 @@
+.idea
+build/*
+cmake-build-debug
+CMakeLists.txt
+README.txt
+googletest
+input
+ngrams.kdev4
+.project
+debug/
+.gitignore
