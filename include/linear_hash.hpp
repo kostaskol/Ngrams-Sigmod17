@@ -10,7 +10,7 @@ class static_node;
 template <typename T>
 class linear_hash {
 public:
-    explicit linear_hash(size_t initial_size = LINEAR_HASH_INITIAL_SIZE);
+    explicit linear_hash(size_t initial_size = constants::LH_INIT_SIZE);
 
     ~linear_hash();
 

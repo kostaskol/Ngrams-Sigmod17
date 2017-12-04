@@ -40,7 +40,7 @@ trie_node::~trie_node() {
 trie_node *trie_node::add_child(std::string &word, bool eow, int index) {
 //    cout << "DYNAMC ADD" << endl;
     if (_children == nullptr) {
-        _children = new mstd::vector<trie_node>(CHILDREN_INITIAL_SIZE /* 3 */);
+        _children = new mstd::vector<trie_node>(constants::TRIE_CHILDREN_INIT_SIZE /* 3 */);
     }
 
     if (index < 0) {
@@ -194,7 +194,7 @@ static_node::~static_node(){
 
 static_node *static_node::add_child(std::string &word, bool eow, int index) {
     if (_children == nullptr) {
-        _children = new mstd::vector<static_node>(CHILDREN_INITIAL_SIZE /* 3 */);
+        _children = new mstd::vector<static_node>(constants::TRIE_CHILDREN_INIT_SIZE /* 3 */);
     }
 
     if (index < 0) {
@@ -351,7 +351,7 @@ void static_node::print(int level) {
 
 void static_node::add_short(const std::string &word, bool eow) {
     if (_lenofwords == nullptr) {
-        _lenofwords = new mstd::vector<signed short>(CHILDREN_INITIAL_SIZE /* 3 */);
+        _lenofwords = new mstd::vector<signed short>(constants::TRIE_CHILDREN_INIT_SIZE /* 3 */);
     }
 
     if (eow) {
@@ -402,7 +402,6 @@ static_node &static_node::operator=(static_node &&other) noexcept {
 root_node::root_node(size_t initial_size) : _children(initial_size) { }
 
 trie_node *root_node::add_child(string &word, bool eow, /* Not actually used. Required for polymorphism > */ int index) {
-    logger::debug("root_node::add_child", "Adding child: " + word, LOGFILE);
     return _children.insert(word, eow);
 }
 

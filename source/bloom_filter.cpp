@@ -70,6 +70,7 @@ uint64_t fmix(uint64_t h) {
 
 // Hashes the given string and
 // populates an array of indices (_results)
+// Uses the murmur 3 hash
 void bloom_filter::_hash(const string &str) {
     auto *s = new char[str.length() + 1];
     strcpy(s, str.c_str());

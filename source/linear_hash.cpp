@@ -22,7 +22,7 @@ template <typename T>
 linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size), _num_items(0), _p(0) {
     _entries = new vector<T>*[_size];
     for (int i = 0; i < initial_size; i++) {
-        _entries[i] = new vector<T>(LINEAR_HASH_MAX_BUCKET_SIZE);
+        _entries[i] = new vector<T>(constants::LH_MAX_BUCKET_SIZE);
     }
 }
 
@@ -45,7 +45,7 @@ T *linear_hash<T>::insert(string &word, bool eow) {
     int load = _calculate_load();
 
     bool split = false;
-    if (load > LINEAR_HASH_LOAD_FACTOR) {
+    if (load > constants::LH_LOAD_FACTOR) {
         split = true;
         // Load factor has been reached. Split at _p
 
@@ -53,7 +53,7 @@ T *linear_hash<T>::insert(string &word, bool eow) {
 
         _resize(); // Allocate one more bucket at the end of the table
 
-        _entries[_p] = new vector<T>(LINEAR_HASH_MAX_BUCKET_SIZE); // And create a new bucket
+        _entries[_p] = new vector<T>(constants::LH_MAX_BUCKET_SIZE); // And create a new bucket
 
         // Rehash each element in tmp_storage to either _p or _size + _p
         if (tmp_storage != nullptr) {
@@ -65,12 +65,13 @@ T *linear_hash<T>::insert(string &word, bool eow) {
                 int child_index;
                 if (index > _size + _p) {
                     logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" +
-                                                        to_string(_size + _p) + "). Size = " + to_string(_size) + "\tHash: " +
+                                                        to_string(_size + _p) + "). Size = " + to_string(_size)
+                                                        + "\tHash: " +
                                                         to_string(hash) + " word = " + tmp_word);
                 }
                 if (_entries[index] == nullptr) {
-                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was \
-                                    null.Terminating");
+                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was "
+                                                                                                    "null.Terminating");
                     exit(-1);
                 }
                 if (!bsearch_children(tmp_word, *_entries[index], &child_index)) {
@@ -270,7 +271,7 @@ void linear_hash<T>::_resize() {
     }
 
     // Initialise the newly created bucket
-    tmp[_size + _p] = new vector<T>(LINEAR_HASH_MAX_BUCKET_SIZE);
+    tmp[_size + _p] = new vector<T>(constants::LH_MAX_BUCKET_SIZE);
 
     delete[] _entries;
     _entries = tmp;
@@ -278,7 +279,7 @@ void linear_hash<T>::_resize() {
 
 template <typename T>
 int linear_hash<T>::_calculate_load() const {
-    return (int) ((_num_items + 1) / (double) ((_size + _p) * LINEAR_HASH_MAX_BUCKET_SIZE) * 100);
+    return (int) ((_num_items + 1) / (double) ((_size + _p) * constants::LH_MAX_BUCKET_SIZE) * 100);
 }
 
 template class linear_hash<trie_node>;

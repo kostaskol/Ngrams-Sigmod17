@@ -127,7 +127,7 @@ private:
 
 public:
 
-    explicit root_node(size_t initial_size = LINEAR_HASH_INITIAL_SIZE);
+    explicit root_node(size_t initial_size = constants::LH_INIT_SIZE);
 
     ~root_node() override =default;
 
@@ -151,7 +151,7 @@ private:
     linear_hash<static_node> _children;
 
 public:
-    explicit static_root_node(size_t initial_size = LINEAR_HASH_INITIAL_SIZE);
+    explicit static_root_node(size_t initial_size = constants::LH_INIT_SIZE);
 
     ~static_root_node() override = default;
 

@@ -58,7 +58,7 @@ void trie::add(const vector<string> &ngram) {
 void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
     trie_node *current = _root;
     std::stringstream ss , final_ss;
-    bloom_filter bf(BLOOM_SIZE, BLOOM_K);
+    bloom_filter bf(constants::BLOOM_SIZE, constants::BLOOM_K);
     bool found_one = false;
     bool one_word = false;
     mstd::hash_table<void *> ht;
@@ -231,7 +231,7 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
 void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
     static_node *current = _root;
     std::stringstream ss , final_ss;
-    bloom_filter bf(BLOOM_SIZE, BLOOM_K);
+    bloom_filter bf(constants::BLOOM_SIZE, constants::BLOOM_K);
     bool found_one = false;
     bool one_word = false;
     mstd::hash_table<void *> ht;

@@ -15,11 +15,11 @@ void mstd::logger::debug(const std::string &context, const std::string &message,
     }
     std::string outp_str = mstd::date_time::now()() + " - [DEBUG] \t-- "
                            + context + " : " + message;
-    if (type == STDOUT || type == BOTH_STREAMS) {
+    if (type == constants::STDOUT || type == constants::BOTH_STREAMS) {
         std::cout << outp_str << std::endl;
     }
 
-    if (type == LOGFILE || type == BOTH_STREAMS) {
+    if (type == constants::LOGFILE || type == constants::BOTH_STREAMS) {
         std::ofstream outp(file.c_str(), std::ios::app);
         outp << outp_str << std::endl;
         outp.flush();
@@ -33,12 +33,12 @@ void mstd::logger::warn(const std::string &context, const std::string &message, 
         _run = true;
     }
     mstd::date_time now;
-    if (type == STDOUT || type == BOTH_STREAMS) {
+    if (type == constants::STDOUT || type == constants::BOTH_STREAMS) {
         std::cout << "\033[1;33m " << now()
                   << " - [WARNING] \t-- " << context << " : " << message << "\033[0m" << std::endl;
     }
 
-    if (type == LOGFILE || type == BOTH_STREAMS) {
+    if (type == constants::LOGFILE || type == constants::BOTH_STREAMS) {
         std::ofstream outp(file.c_str(), std::ios::app);
         outp << now.to_string()
              << " - [WARNING] \t-- " << context << " : " << message << std::endl;
@@ -53,12 +53,12 @@ void mstd::logger::success(const std::string &context, const std::string &messag
         _run = true;
     }
     mstd::date_time now;
-    if (type == STDOUT || type == BOTH_STREAMS) {
+    if (type == constants::STDOUT || type == constants::BOTH_STREAMS) {
         std::cout << "\033[1;32m " << now()
                   << " - [SUCCESS] \t-- " << context << " : " << message << "\033[0m" << std::endl;
     }
 
-    if (type == LOGFILE || type == BOTH_STREAMS) {
+    if (type == constants::LOGFILE || type == constants::BOTH_STREAMS) {
         std::ofstream outp(file.c_str(), std::ios::app);
         outp << now()
              << " - [SUCCESS] \t-- " << context << " : " << message << std::endl;
@@ -74,7 +74,7 @@ void mstd::logger::error(const std::string &context, const std::string &message,
         _run = true;
     }
     mstd::date_time now;
-    if (type == STDOUT || type == BOTH_STREAMS) {
+    if (type == constants::STDOUT || type == constants::BOTH_STREAMS) {
         std::ostream *outp;
         if (stderr) {
             outp = &std::cerr;
@@ -85,7 +85,7 @@ void mstd::logger::error(const std::string &context, const std::string &message,
               << message << "\033[0m" << std::endl;
     }
 
-    if (type == LOGFILE || type == BOTH_STREAMS) {
+    if (type == constants::LOGFILE || type == constants::BOTH_STREAMS) {
         std::ofstream outp(file.c_str(), std::ios::app);
         outp << now() << " - [ERROR] \t-- " << context << " : " << message << std::endl;
         outp.flush();
