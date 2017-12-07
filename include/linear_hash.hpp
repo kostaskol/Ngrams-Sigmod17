@@ -16,24 +16,22 @@ public:
 
     T *insert(std::string &word, bool eow);
 
+    // If we're searching for plain trie nodes, we use bsearch_children
     T *get(const std::string &word, int *hash = nullptr, int *index = nullptr) const;
 
+    // If we're searching for static nodes, we use static_bsearch
     T *get_static(const std::string &word) const;
 
     void delete_word(const std::string &word);
 
     size_t size() const;
 
-    void print() const;
-
-    void push_to_stack(mstd::stack<T*> *s);
-
-    mstd::vector<T> *get_bucket(int i) const;
-
-    std::string stats(bool v = true) const;
+    void push_to_stack(mstd::stack<T*> *s) const;
 
     bool empty() const;
 private:
+    // We do not keep a <current size> variable, since we can always calculate it as the
+    // size of the table at the start of each run + p (the next bucket to be split)
     size_t _size;
     size_t _num_items;
     size_t _p;

@@ -177,16 +177,9 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
     return true;
 }
 
-std::string trie::to_string() {
-    std::stringstream ss;
-    _root->to_string(ss, 0);
-    return ss.str();
-}
-
 /*
  * static_trie implementation
  */
-
 static_trie::static_trie() : trie::trie() {
     _root = new static_root_node();
 }
@@ -243,9 +236,17 @@ void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *
 
     for (size_t i = 0; i < ngram.size(); i++) {
         static_node *child = nullptr;
-        int k = 0;
+        int k = 0; // Holds the current word index of the current node
         for (size_t j = i; j < ngram.size(); j++) {
-            if (!k) {
+            // If k exceeds the number of words in the current node
+            // we reset it and continue to its child
+            if (child != nullptr && k >= child->lenofwords_size()) {
+                k = 0;
+                current = child;
+            }
+
+            if (k == 0) {
+                // If this is the first word of a node, we perform binary search
                 if ((child = current->search_static_child(ngram[j])) == nullptr) {
                     break;
                 } else {
@@ -256,6 +257,7 @@ void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *
                         ss << ngram.at(j);
                         one_word = true;
                     }
+
                     if (child->end_of_word(k)) {
                         if (!bf.check_and_set(ss.str())) {
                             // Ngram did not exist
@@ -266,6 +268,8 @@ void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *
                             final_ss << ss.str();
                         }
                     }
+
+                    // If the current node has more than one word
                     if (child->lenofwords_size() > 1){
                         k++;
                     } else {
@@ -274,37 +278,33 @@ void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *
                     }
                 }
             } else {
-                //Traversing in the same node.
-                if (k >= child->lenofwords_size()) {
-                    k = 0;
-                    current = child;
-                } else {
-                    if (child->get_word(k) == ngram.at(j)) {
-                        if (one_word) {
-                            ss << " " + ngram.at(j);
-                        } else {
-                            ss << ngram.at(j);
-                            one_word = true;
-                        }
-
-                        if (child->end_of_word(k)) {
-                            if (!bf.check_and_set(ss.str())) {
-                                // Ngram did not exist
-                                if (found_one) {
-                                    final_ss << "|";
-                                }
-                                found_one = true;
-                                final_ss << ss.str();
-                            }
-                        }
-                        k++;
-                        if (k >= child->lenofwords_size()) {
-                            k = 0;
-                            current = child;
-                        }
+                //Traversing the same node.
+                if (child->get_word(k) == ngram.at(j)) {
+                    if (one_word) {
+                        ss << " " + ngram.at(j);
                     } else {
-                        break;
+                        ss << ngram.at(j);
+                        one_word = true;
                     }
+
+                    if (child->end_of_word(k)) {
+                        // Found an ngram
+                        if (!bf.check_and_set(ss.str())) {
+                            // Ngram did not exist
+                            if (found_one) {
+                                final_ss << "|";
+                            }
+                            found_one = true;
+                            final_ss << ss.str();
+                        }
+                    }
+
+                    if (++k >= child->lenofwords_size()) {
+                        k = 0;
+                        current = child;
+                    }
+                } else {
+                    break;
                 }
             }
         }
@@ -355,16 +355,4 @@ void static_trie::compress() {
         _num_nodes++;
         current->push_children(&s);
     }
-}
-
-void trie::print_tree() {}
-
-void static_trie::print_tree() {
-    _root->print();
-}
-
-std::string static_trie::to_string() {
-    std::stringstream ss;
-    _root->to_string(ss, 0);
-    return ss.str();
 }

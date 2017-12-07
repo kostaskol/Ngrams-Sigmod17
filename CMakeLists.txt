@@ -42,26 +42,20 @@ set(SOURCE_FILES
         source/trie.cpp
         include/trie.hpp
         include/mvector.hpp
-        include/logger.hpp
+        include/logger.hpp source/logger.cpp
         include/cmd_parser.hpp
         include/hash_table.hpp
-        include/parser.hpp
-        source/parser.cpp
+        include/parser.hpp source/parser.cpp
         include/date_time.hpp
         include/constants.hpp
-        source/linear_hash.cpp
-        source/bit_vector.cpp
-        include/bit_vector.hpp
-        include/bloom_filter.hpp
-        source/bloom_filter.cpp
+        include/linear_hash.hpp source/linear_hash.cpp
+        include/bit_vector.hpp source/bit_vector.cpp
+        include/bloom_filter.hpp source/bloom_filter.cpp
         include/binary_search.hpp
-        source/logger.cpp
         include/helpers.hpp
         include/mqueue.hpp
         include/mstack.hpp
-        include/linear_hash.hpp
-        include/trie_nodes.hpp
-        source/trie_nodes.cpp
+        include/trie_nodes.hpp source/trie_nodes.cpp
         )
 
 set(TEST_SOURCE
@@ -69,12 +63,16 @@ set(TEST_SOURCE
         ngrams-testing/vector-testing.cpp
         ngrams-testing/parser-testing.cpp
         ngrams-testing/cmd-parser-testing.cpp
-        ngrams-testing/trie-insert-testing.cpp
+#        ngrams-testing/trie-insert-testing.cpp
         ngrams-testing/trie-delete-testing.cpp
         ngrams-testing/trie-search-testing.cpp
-        ngrams-testing/static-insert--testing.cpp
+#        ngrams-testing/static-insert--testing.cpp
         ngrams-testing/queue-testing.cpp
         ngrams-testing/stack-testing.cpp
+        ngrams-testing/linear-hash-testing.cpp
+        ngrams-testing/bloom-filter-testing.cpp
+        ngrams-testing/bit-vector-testing.cpp
+        ngrams-testing/trie-node-testing.cpp
         include/mqueue.hpp
         source/parser.cpp
         source/trie.cpp

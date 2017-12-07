@@ -141,4 +141,6 @@ void bloom_filter::_hash(const string &str) {
     for (int i = 0; i < _k; i++) {
         _results[i] = (h1 + i * h2 + i*i) % _size;
     }
+
+    delete[] s;
 }

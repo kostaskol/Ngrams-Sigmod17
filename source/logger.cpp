@@ -4,13 +4,15 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 bool mstd::logger::_run = false;
 std::string mstd::logger::file = "../debug/log.txt";
 
 void mstd::logger::debug(const std::string &context, const std::string &message, int type) {
     if (!_run) {
-        new_run();
+        _new_run();
         _run = true;
     }
     std::string outp_str = mstd::date_time::now()() + " - [DEBUG] \t-- "
@@ -29,7 +31,7 @@ void mstd::logger::debug(const std::string &context, const std::string &message,
 
 void mstd::logger::warn(const std::string &context, const std::string &message, int type) {
     if (!_run) {
-        new_run();
+        _new_run();
         _run = true;
     }
     mstd::date_time now;
@@ -49,7 +51,7 @@ void mstd::logger::warn(const std::string &context, const std::string &message, 
 
 void mstd::logger::success(const std::string &context, const std::string &message, int type) {
     if (!_run) {
-        new_run();
+        _new_run();
         _run = true;
     }
     mstd::date_time now;
@@ -70,7 +72,7 @@ void mstd::logger::success(const std::string &context, const std::string &messag
 
 void mstd::logger::error(const std::string &context, const std::string &message, int type, bool stderr) {
     if (!mstd::logger::_run) {
-        new_run();
+        _new_run();
         _run = true;
     }
     mstd::date_time now;
@@ -93,10 +95,15 @@ void mstd::logger::error(const std::string &context, const std::string &message,
     }
 }
 
-void mstd::logger::new_run() {
+void mstd::logger::_new_run() {
+    _mkdir();
     std::ofstream outp(file.c_str(), std::ios::app);
     // There *must* be a better way to make new runs obvious -_-
     outp << "====================================================================================" << std::endl;
     outp.flush();
     outp.close();
+}
+
+void mstd::logger::_mkdir() {
+    int status = mkdir("../debug", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }

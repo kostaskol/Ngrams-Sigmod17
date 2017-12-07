@@ -14,9 +14,14 @@ using std::endl;
 
 class LinearHashTest : public ::testing::Test {
 public:
-	linear_hash lh;
+	linear_hash<trie_node> lh;
 	LinearHashTest() { }
 };
+
+TEST_F(LinearHashTest, SearchEmptyTest) {
+    EXPECT_EQ(lh.get("test"), nullptr);
+}
+
 
 TEST_F(LinearHashTest, InsertAndGetTest) {
     string s = "some";
@@ -154,6 +159,10 @@ TEST_F(LinearHashTest, BigFileHardFalsePositiveTest) {
     
     correct_in.close();
     wrong_in.close();
+}
+
+TEST_F(LinearHashTest, DeleteEmptyTest) {
+    lh.delete_word("test");
 }
 
 TEST_F(LinearHashTest, BasicDeletionTest) {

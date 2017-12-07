@@ -34,7 +34,6 @@ int main(int argc, char **argv) {
 
     string init_file;
     string query_file;
-    bool debug;
     try {
         init_file = c_parser->get_string("-i");
         query_file = c_parser->get_string("-q");
@@ -43,13 +42,12 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    debug = c_parser->is_set("--debug");
-    __debug__ = debug;
+    __debug__ = c_parser->is_set("--debug");
 
     delete c_parser;
     // End command line arguments parsing
 
-    vector<string> v;
+    vector<string> v(100);
     trie* t;
 
     // Begin initialisation file parsing
@@ -63,14 +61,14 @@ int main(int argc, char **argv) {
     } else if (v.get(0) == "DYNAMIC") {
         t = new trie();
     }
-    v.clear();
+    v.clear(100);
 
     while (true) {
         stop = init_parser.next_init(&v);
         if (v.size() == 0 && stop) break;
         t->add(v);
 //        logger::success("init", "Added N-Gram " + s);
-        v.clear();
+        v.clear(100);
         if (stop) break;
     }
     if (compress) {
@@ -118,8 +116,9 @@ int main(int argc, char **argv) {
                 break;
         }
         if (stop) break;
-        v.clear();
+        v.clear(100);
     }
     results.clear();
     // End query file parsing
+    delete t;
 }

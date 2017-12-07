@@ -421,10 +421,6 @@ bool root_node::has_children() const {
     return !_children.empty();
 }
 
-void root_node::print() {
-    _children.print();
-}
-
 bool root_node::empty() {
     return _children.empty();
 }
@@ -458,8 +454,4 @@ bool static_root_node::empty() {
 
 void static_root_node::push_children(mstd::stack<static_node *> *s) {
     _children.push_to_stack(s);
-}
-
-void static_root_node::print() {
-    _children.print();
 }

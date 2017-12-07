@@ -32,11 +32,6 @@ public:
     bool delete_ngram(const mstd::vector<std::string> &ngram);
 
     friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
-
-    virtual std::string to_string();
-
-    virtual void print_tree();
-
 };
 
 class static_trie : public trie {
@@ -53,11 +48,6 @@ public:
     void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results) override;
 
     void compress() override;
-
-    void print_tree() override;
-
-    std::string to_string() override;
-
 };
 
 #endif // TRIE

@@ -26,7 +26,7 @@ public:
 
     virtual ~trie_node();
 
-    virtual trie_node *add_child(std::string &word, bool eow, int index = -1);
+    virtual trie_node *add_child(std::string &word, bool eow, int index);
 
     void remove_child(int index);
 
@@ -137,8 +137,6 @@ public:
 
     trie_node *get_child(const std::string &word, int * at) override;
 
-    void print();
-
     bool has_children() const override;
 
     bool is_root() const override;
@@ -164,8 +162,6 @@ public:
     bool has_children() const override;
 
     bool empty();
-
-    void print();
 
     void push_children(mstd::stack<static_node *> *s) override;
 

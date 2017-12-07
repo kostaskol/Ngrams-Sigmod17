@@ -38,10 +38,13 @@ template <typename T>
 T *linear_hash<T>::insert(string &word, bool eow) {
     int hash;
     int inner_index;
+    // Use linear_hash::get to check if the entry already exists...
     T *entry = get(word, &hash, &inner_index);
 
+    // ...in which case, simply return it
     if (entry != nullptr) return entry;
 
+    // otherwise, insert it
     int load = _calculate_load();
 
     bool split = false;
@@ -121,6 +124,9 @@ T *linear_hash<T>::insert(string &word, bool eow) {
             ret = v->m_insert_at(child_index, new_node);
         } else /* TODO: Is this a possibility? */{
             // Child exists. Simply return it
+            logger::warn("linear_hash::insert", "Found that child exists during insertion and not search",
+                         constants::LOGFILE);
+
             ret = v->get_p(child_index);
         }
     }
@@ -156,11 +162,10 @@ T *linear_hash<T>::get(const std::string &word, int *hash, int *index) const {
 template <typename T>
 T *linear_hash<T>::get_static(const std::string &word) const {
     int hash = _hash(word);
-    int index = hash % _size;
+    size_t index = hash % _size;
     if (index < _p) {
         index = hash % (_size * 2);
     }
-
 
     return static_bsearch(word, *_entries[index]);
 }
@@ -168,76 +173,33 @@ T *linear_hash<T>::get_static(const std::string &word) const {
 template <typename T>
 void linear_hash<T>::delete_word(const std::string &word) {
     int hash = _hash(word);
-    int index = hash % _size;
+    size_t index = hash % _size;
     if (index < _p) {
         index = hash % (_size * 2);
     }
 
     int child_index;
     if (bsearch_children(word, *_entries[index], &child_index)) {
-        _entries[index]->remove_at(child_index);
+        _entries[index]->remove_at((size_t) child_index);
         _num_items--;
     }
 }
 
+// FIXME: Should this return _size or _size + _p?
 template <typename T>
 size_t linear_hash<T>::size() const {
     return _size;
 }
 
-template <typename T>
-void linear_hash<T>::print() const {
-    cout << "Size: " << _size << endl;
-    cout << "Number of buckets: " << _size + _p << endl;
-    cout << "Next split: " << _p << endl;
-    for (int i = 0; i < _size + _p; i++) {
-        cout << "Printing entry at index " << i << endl;
-        for (int j = 0; j < _entries[i]->size(); j++) {
-            cout << _entries[i]->at(j).get_word() << "|";
-        }
-
-        cout << endl;
-    }
-}
 
 template <typename T>
-void linear_hash<T>::push_to_stack(mstd::stack<T *> *s) {
+void linear_hash<T>::push_to_stack(mstd::stack<T *> *s) const {
     for (int i = 0; i < _size + _p; i++) {
         for (int j = 0; j < _entries[i]->size(); j++) {
             s->push(_entries[i]->get_p((size_t)j));
         }
     }
 }
-
-template <typename T>
-vector<T> *linear_hash<T>::get_bucket(int i) const {
-    if (i >= _size + _p || i < 0) throw std::out_of_range("Bucket undex (" + std::to_string(i) + " was out of range");
-
-    return _entries[i];
-}
-
-template <typename T>
-string linear_hash<T>::stats(bool v) const {
-    stringstream ss;
-
-    ss << "Number of buckets: " << _size + _p << "\n";
-    ss << "Size of table: " << _size << "\n";
-    ss << "Number of elements within table: " << _num_items << "\n";
-    if (v) {
-        ss << "Elements per bucket: \n";
-    }
-    size_t avg = 0;
-    for (int i = 0; i < _size + _p; i++) {
-        avg += _entries[i]->size();
-        if (v) {
-            ss << "Bucket #" << i << ": " << _entries[i]->size() << "\n";
-        }
-    }
-    ss << "Average elements per bucket : " << ((double) avg / (_size + _p)) << "\n";
-
-    return ss.str();
-}
-
 
 template <typename T>
 bool linear_hash<T>::empty() const {

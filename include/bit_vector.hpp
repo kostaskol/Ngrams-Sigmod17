@@ -18,8 +18,6 @@ public:
     bit_vector(const bit_vector &);
     ~bit_vector();
 
-    void print();
-
     void set(size_t index);
 
     bool check(size_t index);

@@ -1,10 +1,10 @@
-.idea
 build/*
 cmake-build-debug
-README.txt
+debug
 googletest
+.idea
 input
-ngrams.kdev4
-.project
-debug/
-.gitignore
+output
+README.pdf
+run_checks.sh
+take_timings.fish

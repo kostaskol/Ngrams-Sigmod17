@@ -8,6 +8,7 @@ using std::cout;
 using std::endl;
 
 bit_vector::bit_vector(size_t size) {
+    // Since we're allocating bytes, the number of bits should be a multiple of 8
     if (size % 8 != 0) throw std::runtime_error("size should be a multiple of 8");
     size_t actual = size >> 3;
     //                          v Important! Initialises array to 0
@@ -50,9 +51,7 @@ void bit_vector::set(size_t index) {
 
 bool bit_vector::check(size_t index) {
     if (index >= _size || index < 0) {
-        std::stringstream ss("The requested index (");
-        ss << index << ") was out of range";
-        throw std::out_of_range(ss.str());
+        throw std::out_of_range("The requested index (" + std::to_string(index) + ") was out of range");
     }
     size_t byte_index = index / 8;
     auto inner_index = (byte) (index % 8);
@@ -81,13 +80,6 @@ bool bit_vector::check_and_set(size_t index) {
 
     _set(_entries[byte_index], offset);
     return false;
-}
-
-void bit_vector::print() {
-    for (int i = 0; i < _size; i++) {
-        cout << "[" << i << "]:" << check(i) << " ";
-    }
-    cout << endl;
 }
 
 bit_vector &bit_vector::operator=(const bit_vector &other) {

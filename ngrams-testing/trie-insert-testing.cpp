@@ -7,7 +7,9 @@
 #include <iostream>
 
 using mstd::vector;
+using mstd::queue;
 using std::string;
+using std::cout; using std::endl;
 
 class TrieInsertionTesting : public ::testing::Test {
 public:
@@ -22,9 +24,21 @@ public:
 TEST_F(TrieInsertionTesting, insertEasy) {
     v.push("a"); v.push("b"); v.push("c"); v.push("d");
     t.add(v);
-    string trie_str = t.to_string();
-    string proper = "a\n\tb\n\t\tc\n\t\t\td\n";
-    EXPECT_EQ(trie_str, proper);
+    queue<string> results;
+    t.search(v, &results);
+    EXPECT_EQ(results.pop(), "a b c d");
+}
+
+TEST_F(TrieInsertionTesting, insertEasyF) {
+    v.push("a"); v.push("b"); v.push("c"); v.push("d");
+    t.add(v);
+    queue<string> results;
+    v.remove_at(v.size() - 1);
+    for (const string &s : v) {
+        cout << s << endl;
+    }
+    t.search(v, &results);
+    EXPECT_EQ(results.pop(), "$$END$$");
 }
 
 TEST_F(TrieInsertionTesting, insertMed) {
@@ -37,16 +51,7 @@ TEST_F(TrieInsertionTesting, insertMed) {
         t.add(v);
         v.clear();
     }
-    string output = t.to_string();
-    std::ofstream out("../ngrams-testing/output/output-medium.test");
-    out << output;
-    std::ifstream in("../ngrams-testing/input/output-medium.proper");
-    std::stringstream proper_output;
-    std::string line;
-    while (std::getline(in, line)) {
-        proper_output << line << "\n";
-    }
-    EXPECT_EQ(proper_output.str(), output);
+
 }
 
 TEST_F(TrieInsertionTesting, insertLarge) {

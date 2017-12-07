@@ -22,7 +22,9 @@ namespace mstd {
     private:
         static bool _run;
 
-        static void new_run();
+        static void _mkdir();
+
+        static void _new_run();
     };
 }
 
