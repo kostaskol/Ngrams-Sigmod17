@@ -61,7 +61,6 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
     bloom_filter bf(constants::BLOOM_SIZE, constants::BLOOM_K);
     bool found_one = false;
     bool one_word = false;
-    mstd::hash_table<void *> ht;
 
     if (_root->empty()) {
         results->push("$$EMPTY$$");

@@ -8,10 +8,6 @@
 
 // Simple resizable array template class
 // that includes some of std::vector's basic operations
-
-
-// NOTE: mstd::vector<T*> takes ownership of the passed pointers instead of copying them
-// That means that if the pointers are deleted elsewhere, the program will *hopefully* crash
 namespace mstd {
     template <typename T>
     class vector {
@@ -48,6 +44,12 @@ namespace mstd {
                   _capacity(other._capacity) {
             _entries = new T[_capacity];
             std::copy(other._entries, other._entries + other._size, _entries);
+        }
+
+        vector(T *arr, size_t arr_size)
+                : _capacity(arr_size), _size(arr_size) {
+            _entries = new T[_capacity];
+            std::copy(arr, arr + arr_size, _entries);
         }
 
         vector(const vector &other, size_t start, size_t end) {

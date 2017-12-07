@@ -56,6 +56,8 @@ set(SOURCE_FILES
         include/mqueue.hpp
         include/mstack.hpp
         include/trie_nodes.hpp source/trie_nodes.cpp
+        include/pair.hpp
+        include/minHeap.hpp
         )
 
 set(TEST_SOURCE

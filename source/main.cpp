@@ -1,5 +1,6 @@
 #include "trie.hpp"
 #include "constants.hpp"
+#include "minHeap.hpp"
 #include <iostream>
 #include <cmd_parser.hpp>
 #include <parser.hpp>
@@ -14,11 +15,11 @@ using mstd::vector;
 using mstd::logger;
 using std::ifstream;
 
-bool __debug__;
+void print_and_topk(mstd::queue<std::string> *results, size_t topk);
 
 int main(int argc, char **argv) {
     // Start command line arguments parsing
-    string legal = " -i <init-file> -q <query-file> [--debug]";
+    string legal = " -i <init-file> -q <query-file>";
     if (argc < 3) {
         cout << "Invalid number of arguments. Usage: " << argv[0] << legal << endl;
         return 1;
@@ -27,7 +28,6 @@ int main(int argc, char **argv) {
     auto *ht = new mstd::hash_table<string>(3);
     ht->put("-i", "<b>");
     ht->put("-q", "<b>");
-    ht->put("--debug", "<u>");
     auto *c_parser = new mstd::cmd_parser(true, std::move(legal));
     c_parser->parse(argc, argv, *ht);
     delete ht;
@@ -41,8 +41,6 @@ int main(int argc, char **argv) {
         logger::error("main", "User has not provided both -i and -q. Exiting..");
         return -1;
     }
-
-    __debug__ = c_parser->is_set("--debug");
 
     delete c_parser;
     // End command line arguments parsing
@@ -67,16 +65,12 @@ int main(int argc, char **argv) {
         stop = init_parser.next_init(&v);
         if (v.size() == 0 && stop) break;
         t->add(v);
-//        logger::success("init", "Added N-Gram " + s);
         v.clear(100);
         if (stop) break;
     }
     if (compress) {
         t->compress();
     }
-
-
-
     // End initialisation file parsing
 
     // Begin query file parsing
@@ -101,19 +95,15 @@ int main(int argc, char **argv) {
                 break;
             case FINISH: {
                 // Print query results
-                string succ;
-                while (!results.empty()) {
-                    succ = results.pop();
-                    if (succ == "$$END$$") {
-                        std::cout << "-1" << '\n';
-                    } else {
-                        std::cout << succ << '\n';
-                    }
+                size_t k = 0;
+                if (v.size() == 1) {
+                    k = helpers::to_int(v[0]);
                 }
+                print_and_topk(&results, k);
                 break;
             }
-            default:
-                break;
+        default:
+            break;
         }
         if (stop) break;
         v.clear(100);
@@ -121,4 +111,53 @@ int main(int argc, char **argv) {
     results.clear();
     // End query file parsing
     delete t;
+}
+
+void print_and_topk(mstd::queue<std::string> *results, size_t topk){
+    string succ = "";
+    linear_hash_int hashmap;
+
+    while(!results->empty()){
+        succ = results->pop();
+        if (succ == "$$END$$" || succ == "$$EMPTY$$") {
+            std::cout << "-1" << '\n';
+        }
+        else{
+            std::cout << succ << '\n';
+            if (topk) {                                    // if topk == 0, no topk operation
+                vector<string> answers;
+                helpers::split(succ, answers, '|');
+                for (size_t i = 0; i < answers.size(); i++) {
+                    hashmap.insert(answers[i]);
+                }
+            }
+        }
+    }
+    if ((topk > 0) && (!hashmap.empty())) {  //gia na sigoureutoume oti den brhke mono -1 stis apanthseis
+        std::cout << "Top: ";
+
+        size_t max_freq = hashmap.get_max();
+        vector<pair> *array = new vector<pair>[max_freq];
+
+        hashmap.fill_with_items(array);
+
+        int counter = 0;
+        bool one_word = false;
+        for (int i = max_freq-1; i >= 0 && counter != topk; i--) {
+            minHeap heap(array[i]);
+            heap.heapSort();
+            for (int j = 0; j < array[i].size() && counter != topk; j++) {
+                counter++;
+                if (one_word) {
+                    std::cout << "|";
+                }
+                std::cout << array[i].at(j).get_word();
+                one_word = true;
+            }
+        }
+        std::cout << '\n';
+
+        delete[] array;
+    }
+
 }
