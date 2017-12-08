@@ -1,5 +1,3 @@
 .gitignore
 build/*
 CmakeLists.txt.in
-README.pdf
-run_checks.sh
