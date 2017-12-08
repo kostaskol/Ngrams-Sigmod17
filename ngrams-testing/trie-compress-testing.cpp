@@ -38,7 +38,7 @@ TEST_F(TrieCompressTesting, compressAtRoot) {
 }
 
 TEST_F(TrieCompressTesting, compressExample) {
-    parser p("../input/static.init");
+    parser p("../ngrams-testing/input/static_init.input");
     bool stop = false;
     vector<string> v;
     while (!stop) {
