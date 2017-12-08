@@ -65,10 +65,8 @@ set(TEST_SOURCE
         ngrams-testing/vector-testing.cpp
         ngrams-testing/parser-testing.cpp
         ngrams-testing/cmd-parser-testing.cpp
-#        ngrams-testing/trie-insert-testing.cpp
-        ngrams-testing/trie-delete-testing.cpp
-        ngrams-testing/trie-search-testing.cpp
-#        ngrams-testing/static-insert--testing.cpp
+        ngrams-testing/trie-testing.cpp
+        ngrams-testing/trie-compress-testing.cpp
         ngrams-testing/queue-testing.cpp
         ngrams-testing/stack-testing.cpp
         ngrams-testing/linear-hash-testing.cpp

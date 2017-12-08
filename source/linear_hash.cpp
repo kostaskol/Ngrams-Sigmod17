@@ -183,10 +183,9 @@ void linear_hash<T>::delete_word(const std::string &word) {
     }
 }
 
-// FIXME: Should this return _size or _size + _p?
 template <typename T>
 size_t linear_hash<T>::size() const {
-    return _size;
+    return _size + _p;
 }
 
 
