@@ -355,3 +355,11 @@ void static_trie::compress() {
         current->push_children(&s);
     }
 }
+
+size_t static_trie::get_num_nodes() {
+    return _num_nodes;
+}
+
+size_t static_trie::get_num_ngrams() {
+    return _num_ngrams;
+}

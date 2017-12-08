@@ -48,6 +48,10 @@ public:
     void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results) override;
 
     void compress() override;
+
+    size_t get_num_nodes();
+
+    size_t get_num_ngrams();
 };
 
 #endif // TRIE
