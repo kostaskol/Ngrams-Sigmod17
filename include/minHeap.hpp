@@ -81,7 +81,7 @@ public:
         }
     }
 
-    pair _getMin() {
+    pair &getMin() {
         return _array->at(0);
     }
 
@@ -108,6 +108,15 @@ public:
         }
         _heapified = false;
         return;
+    }
+
+    /*----------------------------for unit testing----------------------------*/
+    vector<pair> *get_Array() {
+        return _array;
+    }
+
+    bool is_heapified(){
+        return _heapified;
     }
 };
 
