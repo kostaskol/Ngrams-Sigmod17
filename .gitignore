@@ -1,10 +1,3 @@
+.gitignore
 build/*
-cmake-build-debug
-debug
-googletest
-.idea
-input
-output
-README.pdf
-run_checks.sh
-take_timings.fish
+CmakeLists.txt.in
