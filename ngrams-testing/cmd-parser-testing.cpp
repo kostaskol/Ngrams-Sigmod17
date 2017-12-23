@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <string>
-#include "hash_table.hpp"
 #include "cmd_parser.hpp"
 
 using mstd::cmd_parser;
@@ -29,16 +28,5 @@ TEST_F(CmdParserTest, basicParsing) {
     strcpy(argv[4], "query");
     // worst thing ever ends
 
-    hash_table<string> ht;
-    ht.put("-i", "<b>");
-    ht.put("-q", "<b>");
-    ht.put("--debug", "<u>");
-    p.parse(argc, argv, ht);
-    ASSERT_EQ(p.get_string("-i"), "init");
-    ASSERT_EQ(p.get_string("-q"), "query");
-    ASSERT_EQ(p.is_set("--debug"), false);
-    for (int i = 0; i < 5; i++) {
-        delete[] argv[i];
-    }
-    delete[] argv;
+
 }

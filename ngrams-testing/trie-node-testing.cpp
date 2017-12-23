@@ -45,5 +45,3 @@ TEST_F(TrieNodeTest, deleteTest) {
     EXPECT_EQ(node.get_child(s, &index), nullptr);
     EXPECT_EQ(index, 0);
 }
-
-TEST_F(TrieNodeTest, )

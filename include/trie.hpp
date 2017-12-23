@@ -5,19 +5,10 @@
 #include "mvector.hpp"
 #include "logger.hpp"
 #include "mqueue.hpp"
-#include "hash_table.hpp"
 #include "trie_nodes.hpp"
 
 
 class trie {
-protected:
-    size_t _num_nodes;
-
-    size_t _num_ngrams;
-
-private:
-    root_node *_root;
-
 public:
     trie();
 
@@ -25,29 +16,26 @@ public:
 
     virtual void add(const mstd::vector<std::string> &ngram);
 
-    virtual void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
-
-    virtual void compress();
+    std::string search(const mstd::vector<std::string> &ngram, int version);
 
     bool delete_ngram(const mstd::vector<std::string> &ngram);
 
-    friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
+private:
+    root_node *_root;
 };
 
 class static_trie : public trie {
-private:
-//    static_node *_root;
-    static_root_node*_root;
 public:
     static_trie();
-
     ~static_trie() override;
 
     void add(const mstd::vector<std::string> &ngram) override;
 
-    void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results) override;
+    std::string search(const mstd::vector<std::string> &ngram);
 
-    void compress() override;
+    void compress();
+private:
+    static_root_node*_root;
 };
 
 #endif // TRIE

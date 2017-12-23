@@ -1,21 +1,27 @@
 #include "trie.hpp"
 #include "constants.hpp"
 #include "minHeap.hpp"
+#include "task.hpp"
 #include <iostream>
 #include <cmd_parser.hpp>
 #include <parser.hpp>
 #include <unistd.h>
 #include <fstream>
+#include <helpers.hpp>
+#include <thread_pool.hpp>
 
 
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::string;
 using mstd::vector;
 using mstd::logger;
 using std::ifstream;
 
-void print_and_topk(mstd::queue<std::string> *results, size_t topk);
+void print_and_topk(string *results, int size, size_t topk);
+
+extern void print_help(char *);
 
 int main(int argc, char **argv) {
     // Start command line arguments parsing
@@ -25,25 +31,23 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    auto *ht = new mstd::hash_table<string>(3);
-    ht->put("-i", "<b>");
-    ht->put("-q", "<b>");
-    auto *c_parser = new mstd::cmd_parser(true, std::move(legal));
-    c_parser->parse(argc, argv, *ht);
-    delete ht;
+    parser::cmd_args args = parser::parse(argc, argv);
 
-    string init_file;
-    string query_file;
-    try {
-        init_file = c_parser->get_string("-i");
-        query_file = c_parser->get_string("-q");
-    } catch (std::runtime_error &e) {
-        logger::error("main", "User has not provided both -i and -q. Exiting..");
-        return -1;
+    string init_file = args.init_file;
+    string query_file = args.query_file;
+    int num_threads = args.num_threads == -1 ? constants::NUM_THREADS : args.num_threads;
+
+    if (init_file.empty()) {
+        cerr << "Initialisation file not provided. Exiting" << endl;
+        print_help(argv[0]);
+        exit(-1);
     }
 
-    delete c_parser;
-    // End command line arguments parsing
+    if (query_file.empty()) {
+        cerr << "Work file not provided. Exiting" << endl;
+        print_help(argv[0]);
+        exit(-1);
+    }
 
     vector<string> v(100);
     trie* t;
@@ -69,7 +73,7 @@ int main(int argc, char **argv) {
         if (stop) break;
     }
     if (compress) {
-        t->compress();
+        (reinterpret_cast<static_trie *>(t))->compress();
     }
     // End initialisation file parsing
 
@@ -78,7 +82,9 @@ int main(int argc, char **argv) {
 
     int cmd_type;
 
-    mstd::queue<std::string> results;
+    vector<query> queries(200);
+    int version = 1;
+    thread_pool tp(num_threads);
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
         if (v.size() == 0 && stop) break;
@@ -87,19 +93,27 @@ int main(int argc, char **argv) {
             case INSERTION:
                 t->add(v);
                 break;
-            case QUERY:
-                t->search(v,&results);
+            case QUERY: {
+                query q(v, version);
+                queries.push(q);
                 break;
+            }
             case DELETION:
                 t->delete_ngram(v);
                 break;
             case FINISH: {
+                string *results = new string[queries.size()];
+
+                for (int i = 0; i < queries.size(); i++) {
+                    tp.add_task(new search_task(t, queries.at(i), i, results));
+                }
                 // Print query results
+                tp.wait_all();
                 size_t k = 0;
                 if (v.size() == 1) {
-                    k = helpers::to_int(v[0]);
+                    k = (size_t) helpers::to_int(v[0]);
                 }
-                print_and_topk(&results, k);
+                print_and_topk(results, (int) queries.size(), k);
                 break;
             }
         default:
@@ -107,18 +121,19 @@ int main(int argc, char **argv) {
         }
         if (stop) break;
         v.clear(100);
+        version++;
     }
-    results.clear();
+    tp.finish();
     // End query file parsing
     delete t;
 }
 
-void print_and_topk(mstd::queue<std::string> *results, size_t topk){
-    string succ = "";
+void print_and_topk(string *results, int size, size_t topk){
+    string succ;
     linear_hash_int hashmap;
 
-    while(!results->empty()){
-        succ = results->pop();
+    for (int i = 0; i < size; i++) {
+        succ = results[i];
         if (succ == "$$END$$" || succ == "$$EMPTY$$") {
             std::cout << "-1" << '\n';
         }

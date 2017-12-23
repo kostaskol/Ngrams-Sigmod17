@@ -1,4 +1,3 @@
-#include <hash_table.hpp>
 #include <binary_search.hpp>
 #include "trie.hpp"
 #include "bloom_filter.hpp"
@@ -10,12 +9,10 @@ using std::endl;
 using mstd::logger;
 using mstd::stack;
 
-extern bool __debug__;
-
 /*
  * Trie Implementation
  */
-trie::trie() : _num_ngrams(0), _num_nodes(0) {
+trie::trie() {
     _root = new root_node();
 }
 
@@ -33,7 +30,6 @@ void trie::add(const vector<string> &ngram) {
         int index;
         if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
-            _num_nodes++;
             current = current->add_child(ngram.at(i), false, index);
         } else {
             // Otherwise, follow that child's path
@@ -50,12 +46,10 @@ void trie::add(const vector<string> &ngram) {
     } else {
         // Otherwise we insert it to that node's children
         current->add_child(last_word, true, index);
-        _num_nodes++;
     }
-    _num_ngrams++;
 }
 
-void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
+string trie::search(const vector<string> &ngram, int version) {
     trie_node *current = _root;
     std::stringstream ss , final_ss;
     bloom_filter bf(constants::BLOOM_SIZE, constants::BLOOM_K);
@@ -63,8 +57,7 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
     bool one_word = false;
 
     if (_root->empty()) {
-        results->push("$$EMPTY$$");
-        return;
+        return "$$EMPTY$$";
     }
 
     for (size_t i = 0; i < ngram.size(); i++) {
@@ -100,15 +93,12 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
         current = _root;
     }
     if (!found_one) {
-        results->push("$$END$$");
+        return "$$END$$";
     }
     else {
-        results->push(final_ss.str());
+        return final_ss.str();
     }
 }
-
-
-void trie::compress() { return; }
 
 bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
     trie_node *current = _root; // TODO: Factor in the trie node change
@@ -176,6 +166,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram) {
     return true;
 }
 
+
 /*
  * static_trie implementation
  */
@@ -197,7 +188,6 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
         int index;
         if ((child = current->get_child(ngram.at(i), &index)) == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
-            _num_nodes++;
             current = current->add_child(ngram.at(i), false, index);
         } else {
             // Otherwise, follow that child's path
@@ -214,23 +204,19 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
     } else {
         // Otherwise we insert it to that node's children
         current->add_child(last_word, true, index);
-        _num_nodes++;
     }
 
-    _num_ngrams++;
 }
 
-void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *results) {
+std::string static_trie::search(const vector<string> &ngram) {
     static_node *current = _root;
     std::stringstream ss , final_ss;
     bloom_filter bf(constants::BLOOM_SIZE, constants::BLOOM_K);
     bool found_one = false;
     bool one_word = false;
-    mstd::hash_table<void *> ht;
 
     if (_root->empty()) {
-        results->push("$$EMPTY$$");
-        return;
+        return "$$EMPTY$$";
     }
 
     for (size_t i = 0; i < ngram.size(); i++) {
@@ -313,10 +299,10 @@ void static_trie::search(const vector<string> &ngram, mstd::queue<std::string> *
         current = _root;
     }
     if (!found_one) {
-        results->push("$$END$$");
+        return "$$END$$";
     }
     else {
-        results->push(final_ss.str());
+        return final_ss.str();
     }
 }
 
@@ -327,15 +313,12 @@ void static_trie::compress() {
 
     if (_root->empty()) return; //Empty static trie
 
-    _num_nodes = 0;
-
     _root->push_children(&s);
     while (!s.empty()) {
         current = s.pop();
         if (current->get_st_children_p() == nullptr) {
             current->add_short(((trie_node*)current)->get_word(), current->is_end_of_word());
 //            current->print_shorts();
-            _num_nodes++;
             continue;
         }
         ss << ((trie_node*)current)->get_word();
@@ -351,7 +334,6 @@ void static_trie::compress() {
         ss.str("");
         ss.clear();
 //        current->print_shorts();
-        _num_nodes++;
         current->push_children(&s);
     }
 }

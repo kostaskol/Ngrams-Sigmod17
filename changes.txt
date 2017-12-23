@@ -1,0 +1,9 @@
+1. Αλλαγή cmd_parser. Χρησιμοποιεί getopt_long (thanks Γιάννη!), έφτιαξα ένα struct να κρατάει τα arguments και μπήκαν όλα αυτά στο namespace parser. Αντίστοιχα άλλαξε εννοείται και η main
+2. Η trie::compress δεν υπάρχει πια. Όλες οι virtual συναρτήσεις του trie (εκτός της add), είναι πλέον απλές.
+3. Για τον έλεγχο αν το trie είναι static ή όχι, εκτελείται ο ακόλουθος κώδικας
+	static_trie *t2 = dynamic_cast<static_trie *>(t);
+	if (t2 == nullptr) {
+		// Το t είναι trie
+	} else {
+		// Το t είναι static trie
+	}

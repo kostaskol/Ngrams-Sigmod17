@@ -8,13 +8,9 @@
 class trie_node {
 protected:
     std::string _word;
-
     bool _eow;
-
 private:
-
     mstd::vector<trie_node> *_children;
-
 public:
     trie_node();
 
