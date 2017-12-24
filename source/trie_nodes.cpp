@@ -18,8 +18,8 @@ trie_node::trie_node()
     _children = nullptr;
 }
 
-trie_node::trie_node(const std::string &word, bool eow)
-        : _word(word), _eow(eow) {
+trie_node::trie_node(const std::string &word, bool eow, int version)
+        : _word(word), _eow(eow), _ver_added(version), _ver_deleted(-1) {
     _children = nullptr;
 }
 
@@ -30,6 +30,8 @@ trie_node::trie_node(trie_node &&other) noexcept {
     _word = other._word;
     _eow = other._eow;
     _children = other._children;
+    _ver_added = other._ver_added;
+    _ver_deleted = other._ver_deleted;
     other._children = nullptr;
 }
 
@@ -37,7 +39,7 @@ trie_node::~trie_node() {
     delete _children;
 }
 
-trie_node *trie_node::add_child(std::string &word, bool eow, int index) {
+trie_node *trie_node::add_child(std::string &word, bool eow, int index, int version) {
 //    cout << "DYNAMC ADD" << endl;
     if (_children == nullptr) {
         _children = new mstd::vector<trie_node>(constants::TRIE_CHILDREN_INIT_SIZE /* 3 */);
@@ -61,28 +63,22 @@ trie_node *trie_node::add_child(std::string &word, bool eow, int index) {
         // index = (int) _children->size();
     }
 
-    trie_node new_node(word, eow);
+    trie_node new_node(word, eow, version);
     return _children->m_insert_at(index, new_node);
 }
 
 const std::string &trie_node::get_word() { return _word; }
 
-std::string trie_node::get_word(int index) { return _word; }
-
-void trie_node::set_word(const std::string &word) {
-    _word = word;
+void trie_node::remove_child(int index, int version) {
+    _children->get((size_t) index).set_del_version(version);
 }
 
-void trie_node::remove_child(int index) {
+void trie_node::delete_child(int index) {
     _children->remove_at((size_t) index);
     if (_children->size() == 0){
         delete _children;
         _children = nullptr;
     }
-}
-
-vector<trie_node> *trie_node::get_children_p() {
-    return  _children;
 }
 
 trie_node *trie_node::get_child(int index) {
@@ -114,33 +110,28 @@ trie_node *trie_node::get_child(const std::string &word, int *at) {
     }
 }
 
-bool trie_node::is_root() const {
-    return false;
-}
-
-
-
 bool trie_node::is_end_of_word() const {
     return _eow;
 }
-
-void trie_node::add_short(const std::string &word, bool eow) { return; }
 
 void trie_node::set_end_of_word(bool v) {
     _eow = v;
 }
 
-void trie_node::to_string(std::stringstream &ss, int level) {
-    for (int i = 1; i < level; i++) {
-        ss << "\t";
-    }
-    if (_word != "") {
-        ss << _word << "\n";
-    }
-    if (_children == nullptr) return;
-    for (size_t i = 0; i < _children->size(); i++) {
-        _children->get(i).to_string(ss, level + 1);
-    }
+void trie_node::set_add_version(int version) {
+    _ver_added = version;
+}
+
+void trie_node::set_del_version(int version) {
+    _ver_deleted = version;
+}
+
+int trie_node::get_add_version() {
+    return _ver_added;
+}
+
+int trie_node::get_del_version() {
+    return _ver_deleted;
 }
 
 bool trie_node::has_children() const {
@@ -166,11 +157,6 @@ trie_node &trie_node::operator=(trie_node &&other) noexcept {
     _children = other._children;
     other._children = nullptr;
     return *this;
-}
-
-std::ostream &operator<<(std::ostream &out, const trie_node &other) {
-    out << other._word;
-    return out;
 }
 
 /*
@@ -288,10 +274,6 @@ size_t static_node::get_children_size() {
 
 }
 
-const std::string& static_node::get_word() {
-    return _word;
-}
-
 bool static_node::end_of_word(int index) {
     return _lenofwords->at((size_t)index) > 0;
 }
@@ -304,6 +286,10 @@ std::string static_node::get_word(int index) {
     return _word.substr((size_t)sum, (size_t)abs(_lenofwords->at((size_t)index)));
 }
 
+void static_node::set_word(string s) {
+    _word = std::move(s);
+}
+
 size_t static_node::lenofwords_size() {
     if (_lenofwords == nullptr) return 0;
     return _lenofwords->size();
@@ -313,40 +299,12 @@ bool static_node::has_children() const {
     return _children != nullptr && _children->size() > 0;
 }
 
-void trie_node::print(int level) {
-    for (int i = 1; i < level; i++) {
-        cout << "\t";
-    }
-    if (_word != "") {
-        cout << "| ";
-        cout << _word << endl;
-    }
-    if (_children == nullptr){
-        return;
-    }
-    for (size_t i = 0; i < _children->size(); i++) {
-        _children->get(i).print(level + 1);
-    }
+void static_node::set_end_of_word(bool v) {
+    _eow = v;
 }
 
-void static_node::print(int level) {
-    for (int i = 1; i < level; i++) {
-        cout << "\t";
-    }
-    if (_word != "") {
-        cout << "| ";
-        cout << _word << endl;
-        for (int i = 0; i < get_lenofwords_p()->size(); i++){
-            cout << get_lenofwords_p()->get((size_t)i);
-        }
-        cout << endl;
-    }
-    if (_children == nullptr){
-        return;
-    }
-    for (size_t i = 0; i < _children->size(); i++) {
-        _children->get(i).print(level + 1);
-    }
+bool static_node::is_end_of_word() {
+    return _eow;
 }
 
 void static_node::add_short(const std::string &word, bool eow) {
@@ -401,20 +359,21 @@ static_node &static_node::operator=(static_node &&other) noexcept {
  */
 root_node::root_node(size_t initial_size) : _children(initial_size) { }
 
-trie_node *root_node::add_child(string &word, bool eow, /* Not actually used. Required for polymorphism > */ int index) {
-    return _children.insert(word, eow);
+trie_node *root_node::add_child(string &word, bool eow, int version) {
+    trie_node new_node(word, eow, version);
+    return _children.insert(new_node);
 }
 
-void root_node::remove_child(const string &word) {
+void root_node::remove_child(const string &word, int version) {
+    _children.get(word)->set_del_version(version);
+}
+
+void root_node::delete_child(const string &word) {
     _children.delete_word(word);
 }
 
-trie_node *root_node::get_child(const std::string &word, int *at) {
+trie_node *root_node::get_child(const std::string &word) {
     return _children.get(word);
-}
-
-bool root_node::is_root() const {
-    return true;
 }
 
 bool root_node::has_children() const {
@@ -431,16 +390,16 @@ bool root_node::empty() {
 
 static_root_node::static_root_node(size_t initial_size) : _children(initial_size) { }
 
-static_node *static_root_node::add_child(std::string &word, bool eow, int index) {
-    return _children.insert(word, eow);
+static_node *static_root_node::add_child(std::string &word, bool eow) {
+    static_node new_node(word, eow);
+    return _children.insert(new_node);
 }
 
-static_node *static_root_node::get_child(const std::string &word, int *at) {
+static_node *static_root_node::get_child(const std::string &word) {
     return _children.get(word);
 }
 
 static_node *static_root_node::search_static_child(const std::string &word) {
-//    cout << "Searching for " + word << endl;
     return _children.get_static(word);
 }
 

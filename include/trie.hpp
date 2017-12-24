@@ -14,11 +14,11 @@ public:
 
     virtual ~trie();
 
-    virtual void add(const mstd::vector<std::string> &ngram);
+    void add(const mstd::vector<std::string> &ngram, int version);
 
     std::string search(const mstd::vector<std::string> &ngram, int version);
 
-    bool delete_ngram(const mstd::vector<std::string> &ngram);
+    bool delete_ngram(const mstd::vector<std::string> &ngram, int version);
 
 private:
     root_node *_root;
@@ -29,7 +29,7 @@ public:
     static_trie();
     ~static_trie() override;
 
-    void add(const mstd::vector<std::string> &ngram) override;
+    void add(const mstd::vector<std::string> &ngram);
 
     std::string search(const mstd::vector<std::string> &ngram);
 

@@ -9,7 +9,7 @@ thread_pool::thread_pool(int num_threads) {
     pthread_mutex_init(&_finished_mtx, nullptr);
 
     for (int i = 0; i < num_threads; i++) {
-        _threads.push_back(new worker(_wq, &_finished_mtx, &_finished_cond));
+        _threads.push(new worker(_wq, &_finished_mtx, &_finished_cond));
         _threads.back()->start();
     }
 
@@ -32,7 +32,7 @@ void thread_pool::add_task(std::function<void (void)> f) {
 }
 
 void thread_pool::finish() {
-    int size = _threads.size();
+    size_t size = _threads.size();
     for (size_t i = 0; i < size; i++) {
         // Inserting null tasks kills the thread that tries to run it
         _wq.add_task(nullptr);
@@ -49,6 +49,9 @@ void thread_pool::finish() {
 
 
 void thread_pool::wait_all() {
+    if (_wq.size() == 0) {
+        return;
+    }
     // The thread that executes the last job in the queue,
     // will also signal us that we're done with everything
     pthread_mutex_lock(&_finished_mtx);

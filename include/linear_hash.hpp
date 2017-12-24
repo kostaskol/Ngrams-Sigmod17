@@ -14,7 +14,7 @@ public:
 
     ~linear_hash();
 
-    T *insert(std::string &word, bool eow);
+    T *insert(T &new_node);
 
     // If we're searching for plain trie nodes, we use bsearch_children
     T *get(const std::string &word, int *hash = nullptr, int *index = nullptr) const;

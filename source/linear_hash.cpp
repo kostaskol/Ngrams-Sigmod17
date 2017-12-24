@@ -33,11 +33,11 @@ linear_hash<T>::~linear_hash() {
 }
 
 template <typename T>
-T *linear_hash<T>::insert(string &word, bool eow) {
+T *linear_hash<T>::insert(T &new_node) {
     int hash;
     int inner_index;
     // Use linear_hash::get to check if the entry already exists...
-    T *entry = get(word, &hash, &inner_index);
+    T *entry = get(new_node.get_word(), &hash, &inner_index);
 
     // ...in which case, simply return it
     if (entry != nullptr) return entry;
@@ -102,8 +102,6 @@ T *linear_hash<T>::insert(string &word, bool eow) {
         index = hash % (2 * _size);
     }
 
-    T new_node(word, eow);
-
     T *ret = nullptr;
 
     vector<T> *v = _entries[index];
@@ -116,16 +114,10 @@ T *linear_hash<T>::insert(string &word, bool eow) {
     } else {
         // Otherwise, we need to search the bucket again
         int child_index;
-        if (!bsearch_children(word, *v, &child_index)) {
+        if (!bsearch_children(new_node.get_word(), *v, &child_index)) {
             // Child does not exist, so we must add it at index <child_index>
             _num_items++;
             ret = v->m_insert_at(child_index, new_node);
-        } else /* TODO: Is this a possibility? */{
-            // Child exists. Simply return it
-            logger::warn("linear_hash::insert", "Found that child exists during insertion and not search",
-                         constants::LOGFILE);
-
-            ret = v->get_p(child_index);
         }
     }
 

@@ -77,6 +77,18 @@ namespace mstd {
             _entries[_size++] = T(ent);
         }
 
+        void push(T &&ent) {
+            if (_size + 1 > _capacity) {
+                _enlarge();
+            }
+
+            _entries[_size++] = ent;
+        }
+
+        T &back() {
+            return _entries[size - 1];
+        }
+
         T *m_push(T &ent) {
             if (_size + 1 > _capacity) _enlarge();
 

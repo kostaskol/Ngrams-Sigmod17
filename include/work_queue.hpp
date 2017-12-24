@@ -1,7 +1,7 @@
 #ifndef WORK_QUEUE_H
 #define WORK_QUEUE_H
 
-#include <queue>
+#include "mqueue.hpp"
 #include <pthread.h>
 #include "task.hpp"
 
@@ -16,7 +16,7 @@ class work_queue {
 
         int size();
     private:
-        std::queue<task *> tasks;
+        mstd::queue<task *> tasks;
         pthread_mutex_t q_mtx;
         pthread_cond_t q_cond;
 };

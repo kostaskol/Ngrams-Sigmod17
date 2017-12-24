@@ -18,8 +18,7 @@ task *work_queue::next_task() {
         pthread_cond_wait(&q_cond, &q_mtx);
     }
 
-    t = tasks.front();
-    tasks.pop();
+    t = tasks.pop();
 
     pthread_mutex_unlock(&q_mtx);
 
@@ -39,7 +38,7 @@ void work_queue::add_task(task *t) {
 int work_queue::size() {
     pthread_mutex_lock(&q_mtx);
 
-    int size = tasks.size();
+    auto size = (int) tasks.size();
 
     pthread_mutex_unlock(&q_mtx);
 
