@@ -86,7 +86,17 @@ namespace mstd {
         }
 
         T &back() {
-            return _entries[size - 1];
+            return _entries[_size - 1];
+        }
+
+        void pop_back() {
+            if (_size == 0) {
+                return;
+            }
+            
+            if (--_size <= (_capacity >> 2)) {
+                _shrink();
+            }
         }
 
         T *m_push(T &ent) {

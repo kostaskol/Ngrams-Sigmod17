@@ -51,7 +51,7 @@ TEST_F(TrieTesting, findOne){
 
 TEST_F(TrieTesting, searchAlreadyFound){
     string ret;
-    parser p("../ngrams-testing/input/medium.input");
+    cmd_parser p("../ngrams-testing/input/medium.input");
     bool stop = false;
     vector<string> v;
     while (!stop) {

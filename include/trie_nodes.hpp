@@ -2,8 +2,8 @@
 #define TRIE_NODES
 #include "mvector.hpp"
 #include "linear_hash.hpp"
+#include "pair.hpp"
 #include <string>
-
 
 class trie_node {
 private:
@@ -26,9 +26,11 @@ public:
 
     trie_node *add_child(std::string &word, bool eow, int index, int version = 0);
 
-    void remove_child(int index, int version);
+    void set_child_del_version(int index, int version);
 
     void delete_child(int index);
+
+    virtual void delete_child(const std::string &w);
 
     virtual trie_node *get_child(int index);
 
@@ -36,9 +38,11 @@ public:
 
     bool is_end_of_word() const;
 
-    const std::string& get_word();
+    const std::string& get_word() const;
 
     virtual bool has_children() const;
+
+    virtual size_t get_children_size() const;
 
     void set_end_of_word(bool v);
 
@@ -49,6 +53,10 @@ public:
     int get_add_version();
 
     int get_del_version();
+
+    virtual void push_children(mstd::stack<trie_node *> *s);
+
+    void push_children(mstd::stack<tuple<trie_node *, int>> *s);
 
     trie_node &operator=(const trie_node &other);
 
@@ -67,13 +75,19 @@ public:
 
     trie_node *add_child(std::string &word, bool eow, int version);
 
-    void remove_child(const std::string &word, int version);
+    void set_child_del_version(const std::string &word, int version);
 
-    void delete_child(const std::string &word);
+    void delete_child(const std::string &word) override;
 
     trie_node *get_child(const std::string &word);
 
+    void push_children(mstd::stack<trie_node *> *s) override;
+
     bool has_children() const override;
+
+    size_t get_children_size() const override;
+
+    trie_node *next_branch();
 
     bool empty();
 
@@ -115,7 +129,9 @@ public:
 
     size_t get_children_size();
 
-    std::string get_word(int index = 0);
+    std::string get_word(int index);
+
+    std::string get_word();
 
     void set_word(std::string word);
 
@@ -158,6 +174,10 @@ public:
     bool empty();
 
     void push_children(mstd::stack<static_node *> *s) override;
+
+    void print() {
+        _children.print_table();
+    }
 private:
     linear_hash<static_node> _children;
 };

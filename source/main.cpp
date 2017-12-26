@@ -21,17 +21,16 @@ using std::ifstream;
 
 void print_and_topk(string *results, int size, size_t topk);
 
-extern void print_help(char *);
-
 int main(int argc, char **argv) {
     // Start command line arguments parsing
-    string legal = " -i <init-file> -q <query-file>";
+
     if (argc < 3) {
-        cout << "Invalid number of arguments. Usage: " << argv[0] << legal << endl;
+        cout << "Invalid number of arguments" << endl;
+        cmd_parser::print_help(argv[0]);
         return 1;
     }
 
-    parser::cmd_args args = parser::parse(argc, argv);
+    cmd_parser::cmd_args args = cmd_parser::parse(argc, argv);
 
     string init_file = args.init_file;
     string query_file = args.query_file;
@@ -39,13 +38,13 @@ int main(int argc, char **argv) {
 
     if (init_file.empty()) {
         cerr << "Initialisation file not provided. Exiting" << endl;
-        print_help(argv[0]);
+        cmd_parser::print_help(argv[0]);
         exit(-1);
     }
 
     if (query_file.empty()) {
         cerr << "Work file not provided. Exiting" << endl;
-        print_help(argv[0]);
+        cmd_parser::print_help(argv[0]);
         exit(-1);
     }
 
@@ -68,12 +67,18 @@ int main(int argc, char **argv) {
     while (true) {
         stop = init_parser.next_init(&v);
         if (v.size() == 0 && stop) break;
-        t->add(v);
+        if (compress) {
+            (dynamic_cast<static_trie *>(t))->add(v);
+        } else {
+            t->add(v);
+        }
+
         v.clear(100);
         if (stop) break;
     }
+
     if (compress) {
-        (reinterpret_cast<static_trie *>(t))->compress();
+        (dynamic_cast<static_trie *>(t))->compress();
     }
     // End initialisation file parsing
 
@@ -84,6 +89,7 @@ int main(int argc, char **argv) {
 
     vector<query> queries(200);
     int version = 1;
+    int query_num = 0;
     thread_pool tp(num_threads);
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
@@ -91,7 +97,7 @@ int main(int argc, char **argv) {
         string s;
         switch (cmd_type) {
             case INSERTION:
-                t->add(v);
+                t->add(v, version);
                 break;
             case QUERY: {
                 query q(v, version);
@@ -99,30 +105,59 @@ int main(int argc, char **argv) {
                 break;
             }
             case DELETION:
-                t->delete_ngram(v);
+                t->delete_ngram(v, version);
                 break;
             case FINISH: {
-                string *results = new string[queries.size()];
+                /*
+                 * TODO: Αν κάνουμε και τα add και delete παράλληλα χρειαζόμαστε ένα wait_all
+                    tp.wait_all();
+                 */
+                auto *results = new string[queries.size()];
+
 
                 for (int i = 0; i < queries.size(); i++) {
-                    tp.add_task(new search_task(t, queries.at(i), i, results));
+                     tp.add_task(new search_task(t, queries.at(i), i, results));
                 }
                 // Print query results
                 tp.wait_all();
+
+//                for (int i = 0; i < queries.size(); i++) {
+//                    cout << results[i] << endl; //                } 
                 size_t k = 0;
                 if (v.size() == 1) {
                     k = (size_t) helpers::to_int(v[0]);
                 }
+
+                if (!compress) {
+                    trie_node *next_branch;
+                    while ((next_branch = t->next_branch()) != nullptr) {
+                        // Create tasks to clean up all branches
+//                        tp.add_task(new clean_up_task(t, next_branch));
+                        t->clean_up(next_branch);
+                        /* Haven't tested it. Should work with lambdas as well */
+                        // tp.add_task([t, next_branch] { t->clean_up(next_branch); });
+                    }
+                }
+
+
+
                 print_and_topk(results, (int) queries.size(), k);
+                tp.wait_all();
+
+                delete[] results;
+                version = 1;
+                query_num += queries.size();
+                queries.clear(200);
                 break;
             }
         default:
             break;
         }
-        if (stop) break;
-        v.clear(100);
         version++;
+        v.clear(100);
+        if (stop) break;
     }
+
     tp.finish();
     // End query file parsing
     delete t;
@@ -137,7 +172,7 @@ void print_and_topk(string *results, int size, size_t topk){
         if (succ == "$$END$$" || succ == "$$EMPTY$$") {
             std::cout << "-1" << '\n';
         }
-        else{
+        else {
             std::cout << succ << '\n';
             if (topk) {                                    // if topk == 0, no topk operation
                 vector<string> answers;

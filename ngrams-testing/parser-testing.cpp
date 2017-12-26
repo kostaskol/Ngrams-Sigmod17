@@ -8,7 +8,7 @@ using std::string;
 
 class ParserTest : public testing::Test {
 public:
-    parser p;
+    cmd_parser p;
     vector<string> outp;
     ParserTest() : p("../ngrams-testing/input/parser-tests.txt"){}
 };

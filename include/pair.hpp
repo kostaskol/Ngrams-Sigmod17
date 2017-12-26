@@ -51,4 +51,14 @@ public:
 
 };
 
+template <typename T, typename V>
+class tuple {
+public:
+    T a;
+    V b;
+
+    tuple() { }
+    tuple(T a, V b) : a(a), b(b) { }
+};
+
 #endif //PAIR_HPP

@@ -1,5 +1,6 @@
 #include "trie_nodes.hpp"
 #include "mvector.hpp"
+#include "logger.hpp"
 #include <string>
 
 template <typename T>  //works for vector of trie_nodes
@@ -67,12 +68,12 @@ inline bool bsearch_children(const std::string &word, const mstd::vector<T> &chi
     }
 }
 
-template <typename T>  //works for vector of static_nodes
-inline T* static_bsearch(const std::string &word, const mstd::vector<T> &children) {
+inline static_node* static_bsearch(const std::string &word, const mstd::vector<static_node> &children) {
 
     if (children.size() == 0) {
         return nullptr;
     }
+
 
     if (word < children.at(0).get_word(0)) {
         return nullptr;

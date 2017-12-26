@@ -17,7 +17,12 @@ using std::endl;
 using std::cerr;
 
 template <typename T>
-linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size), _num_items(0), _p(0) {
+linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size),
+                                                   _num_items(0),
+                                                   _p(0),
+                                                   _current_branch(0),
+                                                   _current_bucket(0) {
+    pthread_mutex_init(&_del_mtx, nullptr);
     _entries = new vector<T>*[_size];
     for (int i = 0; i < initial_size; i++) {
         _entries[i] = new vector<T>(constants::LH_MAX_BUCKET_SIZE);
@@ -68,8 +73,7 @@ T *linear_hash<T>::insert(T &new_node) {
                     logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" +
                                                         to_string(_size + _p) + "). Size = " + to_string(_size)
                                                         + "\tHash: " +
-                                                        to_string(hash) + " word = " + tmp_word);
-                }
+                                                        to_string(hash) + " word = " + tmp_word); }
                 if (_entries[index] == nullptr) {
                     logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was "
                                                                                                     "null.Terminating");
@@ -140,7 +144,7 @@ T *linear_hash<T>::get(const std::string &word, int *hash, int *index) const {
     int child_index;
     T *ret = nullptr;
     if (bsearch_children(word, *_entries[mindex], &child_index)) {
-        ret = &_entries[mindex]->at(child_index);
+        ret = &_entries[mindex]->at((size_t) child_index);
     }
     if (index != nullptr) {
         *index = child_index;
@@ -149,8 +153,9 @@ T *linear_hash<T>::get(const std::string &word, int *hash, int *index) const {
     return ret;
 }
 
-template <typename T>
-T *linear_hash<T>::get_static(const std::string &word) const {
+// template <typename T>
+template <>
+static_node *linear_hash<static_node>::get_static(const std::string &word) const {
     int hash = _hash(word);
     size_t index = hash % _size;
     if (index < _p) {
@@ -162,6 +167,8 @@ T *linear_hash<T>::get_static(const std::string &word) const {
 
 template <typename T>
 void linear_hash<T>::delete_word(const std::string &word) {
+
+    pthread_mutex_lock(&_del_mtx);
     int hash = _hash(word);
     size_t index = hash % _size;
     if (index < _p) {
@@ -169,10 +176,54 @@ void linear_hash<T>::delete_word(const std::string &word) {
     }
 
     int child_index;
+
     if (bsearch_children(word, *_entries[index], &child_index)) {
         _entries[index]->remove_at((size_t) child_index);
         _num_items--;
     }
+    pthread_mutex_unlock(&_del_mtx);
+}
+
+template <typename T>
+T *linear_hash<T>::next_branch() {
+    if (_current_bucket == _size + _p) {
+        return nullptr;
+    }
+    if (_current_branch >= _entries[_current_bucket]->size()) {
+        _current_branch = 0;
+        while (++_current_bucket < _size + _p) {
+            // Find the next bucket that contains nodes
+           if (_entries[_current_bucket]->size() != 0) {
+               break;
+           } 
+        }
+    }
+
+    // We reached the end of the hash table
+    // so there are no more branches
+    if (_current_bucket == _size + _p) {
+        return nullptr;
+    }
+
+    if (_current_bucket >= _size + _p) {
+        logger::warn("linear_hash::next_branch", "_current_bucket (" 
+                + std::to_string(_current_bucket) + ") greater than _size + _p ("
+                + std::to_string(_size + _p) + ")");
+    }
+
+    if (_current_branch >= _entries[_current_bucket]->size()) {
+        logger::warn("linear_hash::next_branch", "_current_branch (" 
+                + std::to_string(_current_branch) + ") greater than current bucket's size ("
+                + std::to_string(_entries[_current_bucket]->size()) + ")");
+
+    }
+
+    return _entries[_current_bucket]->get_p(_current_branch++); 
+}
+
+template <typename T>
+size_t linear_hash<T>::get_num_items() const {
+    return _num_items;
 }
 
 template <typename T>

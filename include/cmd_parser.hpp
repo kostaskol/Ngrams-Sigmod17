@@ -5,18 +5,18 @@
 #include <iostream>
 #include <getopt.h>
 
-namespace parser {
+namespace cmd_parser {
     struct cmd_args {
         std::string init_file;
         std::string query_file;
         int num_threads;
 
-        cmd_args() : init_file(""), query_file(""), num_thread(-1) { }
+        cmd_args() : init_file(""), query_file(""), num_threads(-1) { }
 
         cmd_args &operator=(const cmd_args &other)=default;
     };
 
-    void print_help(char *name) {
+    void print_help(const char *name) {
         std::cout << "Printing help for " << name << "\n"
                   << "[Required Arguments]\n"
                   << "\t--init|-i\t: The trie initialisation file\n"
@@ -39,7 +39,7 @@ namespace parser {
 
         int c,
             index;
-        while ((c = getopt_long(argc, argv, short_opts.c_str(), long_opts, &index))) {
+        while ((c = getopt_long(argc, argv, short_opts.c_str(), long_opts, &index)) != -1) {
             switch (c) {
                 case 'i':
                     args.init_file = optarg;

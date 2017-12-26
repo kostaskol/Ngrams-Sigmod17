@@ -2,6 +2,7 @@
 #define TASK_H
 
 #include "mvector.hpp"
+#include "trie_nodes.hpp"
 #include <string>
 
 class trie;
@@ -15,10 +16,20 @@ public:
 };
 
 struct query {
+    query()=default;
     query(mstd::vector<std::string> &v, int version) : v(std::move(v)), version(version) { }
-    query(query &other) : v(std::move(other.v)), version(other.version) { }
+    query(const query &other)=default;
+    query(query &&other) noexcept : v(std::move(other.v)), version(other.version) { }
 
     ~query()=default;
+
+    query &operator=(const query &other)=default;
+
+    query &operator=(query &&other) noexcept {
+        v = std::move(other.v);
+        version = other.version;
+        return *this;
+    }
 
     mstd::vector<std::string> v;
     int version;
@@ -28,12 +39,55 @@ class search_task : public task {
 public:
     search_task(trie *t, query &q, int i, std::string *r);
 
-    virtual void run() override;
+    void run() override;
 private:
-    trie *t;
-    query q;
-    int index;
-    std::string *results;
+    trie *_t;
+    query _q;
+    int _index;
+    std::string *_results;
+};
+
+class clean_up_task : public task {
+public:
+    clean_up_task(trie *t, trie_node *branch);
+
+    void run() override;
+
+private:
+    trie *_t;
+    trie_node *_branch;
+};
+
+class insert_task : public task {
+public:
+    insert_task(trie *t, mstd::vector<std::string> &v, int version);
+
+    insert_task(const insert_task &other)=delete;
+
+    insert_task(insert_task &&other) noexcept;
+
+    void run() override;
+
+private:
+    trie *_t;
+    mstd::vector<std::string> _v;
+    int _version;
+};
+
+class deletion_task : public task {
+public:
+    deletion_task(trie *t, mstd::vector<std::string> &v, int version);
+
+    deletion_task(const deletion_task &other)=delete;
+
+    deletion_task(deletion_task &&other) noexcept;
+
+    void run() override;
+
+private:
+    trie *_t;
+    mstd::vector<std::string> _v;
+    int _version;
 };
 
 #endif // TASK_H

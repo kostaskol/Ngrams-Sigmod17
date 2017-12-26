@@ -41,7 +41,7 @@ TEST_F(TrieNodeTest, deleteTest) {
     node.add_child(s, false, index);
     EXPECT_NE(node.get_child(s, &index), nullptr);
 
-    node.remove_child(index);
+    node.set_child_del_version(index);
     EXPECT_EQ(node.get_child(s, &index), nullptr);
     EXPECT_EQ(index, 0);
 }

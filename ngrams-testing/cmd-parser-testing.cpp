@@ -2,8 +2,6 @@
 #include <string>
 #include "cmd_parser.hpp"
 
-using mstd::cmd_parser;
-using mstd::hash_table;
 using std::string;
 
 class CmdParserTest : public ::testing::Test {

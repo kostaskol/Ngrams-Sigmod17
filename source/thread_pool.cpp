@@ -1,15 +1,20 @@
 #include "thread_pool.hpp"
+#include "logger.hpp"
 #include <iostream>
 #include <cmath>
 
 using namespace std;
+using mstd::logger;
 
-thread_pool::thread_pool(int num_threads) {
-    pthread_cond_init(&_finished_cond, nullptr);
+thread_pool::thread_pool(int num_threads) : _num_finished(0), _num_assigned(0) {
     pthread_mutex_init(&_finished_mtx, nullptr);
+    pthread_cond_init(&_finished_cond, nullptr);
 
     for (int i = 0; i < num_threads; i++) {
-        _threads.push(new worker(_wq, &_finished_mtx, &_finished_cond));
+        _threads.push(new worker(_wq,
+                                 &_finished_mtx,
+                                 &_finished_cond,
+                                 &_num_finished));
         _threads.back()->start();
     }
 
@@ -23,10 +28,12 @@ thread_pool::~thread_pool() {
 }
 
 void thread_pool::add_task(task *t) {
+    _num_assigned++;
     _wq.add_task(t);
 }
 
 void thread_pool::add_task(std::function<void (void)> f) {
+    _num_assigned++;
     task *t = new _raw_task_(f);
     _wq.add_task(t);
 }
@@ -49,21 +56,39 @@ void thread_pool::finish() {
 
 
 void thread_pool::wait_all() {
-    if (_wq.size() == 0) {
-        return;
-    }
-    // The thread that executes the last job in the queue,
-    // will also signal us that we're done with everything
     pthread_mutex_lock(&_finished_mtx);
-    pthread_cond_wait(&_finished_cond, &_finished_mtx);
-    pthread_mutex_unlock(&_finished_mtx);
+    if (_num_finished == _num_assigned) {
+        pthread_mutex_unlock(&_finished_mtx);
+    } else {
+        while (_num_finished != _num_assigned) {
+            pthread_cond_wait(&_finished_cond, &_finished_mtx);
+        }
+
+        _num_finished = 0;
+        pthread_mutex_unlock(&_finished_mtx);
+
+        _num_assigned = 0;
+    }
+//    pthread_mutex_lock(&);
+//
+//    if (_finished) {
+//        _finished = false;
+//        pthread_mutex_unlock(&_wait_all_mtx);
+//    } else {
+//        while (!_finished) {
+//            pthread_cond_wait(&_wait_all_cond, &_wait_all_mtx);
+//        }
+//
+//        _finished = false;
+//        pthread_mutex_unlock(&_wait_all_mtx);
+//    }
 }
 
 
 
 /* -- Raw Task -- */
 
-thread_pool::_raw_task_::_raw_task_(std::function<void ()> f) : _f(f) { }
+thread_pool::_raw_task_::_raw_task_(std::function<void ()> f) : _f(std::move(f)) { }
 
 void thread_pool::_raw_task_::run() {
     _f();
