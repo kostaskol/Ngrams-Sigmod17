@@ -19,7 +19,7 @@ namespace constants {
     /*
      * bloom_filter constants
      */
-    const size_t BLOOM_SIZE = 64816;
+    const size_t BLOOM_SIZE = 34816;
     const size_t BLOOM_K = 23;
 
     /*

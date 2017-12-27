@@ -15,7 +15,7 @@ namespace helpers {
 
     inline std::string join(const mstd::vector<std::string> &v, char on) {
         std::string s;
-        for (int i = 0; i < v.size() - 1; i++) {
+        for (int i = 0; i < (int) v.size() - 1; i++) {
             s += v[i] + on;
         }
         s += v[v.size() - 1];

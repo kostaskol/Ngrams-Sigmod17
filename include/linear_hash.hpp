@@ -29,6 +29,8 @@ public:
 
     T *next_branch();
 
+    void reset_branch();
+
     size_t size() const;
 
     void push_to_stack(mstd::stack<T*> *s) const;

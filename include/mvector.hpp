@@ -189,7 +189,7 @@ namespace mstd {
 
         void set_at(size_t index, const T &ent) {
             if (index < 0 || index >= _size) {
-                throw std::out_of_range("Bad index: " + index);
+                throw std::out_of_range("Bad index: " + std::to_string(index));
             }
 
             _entries[index] = T(ent);
@@ -218,10 +218,10 @@ namespace mstd {
             _size--;
             // If the size of the vector ever becomes 1/4 of its capacity
             // we shrink the vector
-            if (_size <= (_capacity >> 2)) {
-                _shrink();
-            }
-
+//            if (_size <= (_capacity >> 2)) {
+//                _shrink();
+//            }
+//
         }
 
         size_t capacity() {

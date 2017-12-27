@@ -24,14 +24,14 @@ linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size),
                                                    _current_bucket(0) {
     pthread_mutex_init(&_del_mtx, nullptr);
     _entries = new vector<T>*[_size];
-    for (int i = 0; i < initial_size; i++) {
+    for (size_t i = 0; i < initial_size; i++) {
         _entries[i] = new vector<T>(constants::LH_MAX_BUCKET_SIZE);
     }
 }
 
 template <typename T>
 linear_hash<T>::~linear_hash() {
-    for (int i = 0; i < _size + _p; i++) {
+    for (size_t i = 0; i < _size + _p; i++) {
         delete _entries[i];
     }
     delete[] _entries;
@@ -63,13 +63,13 @@ T *linear_hash<T>::insert(T &new_node) {
 
         // Rehash each element in tmp_storage to either _p or _size + _p
         if (tmp_storage != nullptr) {
-            for (int i = 0; i < tmp_storage->size(); i++) {
+            for (int i = 0; i < (int) tmp_storage->size(); i++) {
                 string tmp_word = tmp_storage->at(i).get_word();
                 int hash = _hash(tmp_word);
 
                 int index = hash % (2 * _size);
                 int child_index;
-                if (index > _size + _p) {
+                if (index > (int) (_size + _p)) {
                     logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" +
                                                         to_string(_size + _p) + "). Size = " + to_string(_size)
                                                         + "\tHash: " +
@@ -219,6 +219,12 @@ T *linear_hash<T>::next_branch() {
     }
 
     return _entries[_current_bucket]->get_p(_current_branch++); 
+}
+
+template <typename T>
+void linear_hash<T>::reset_branch() {
+    _current_branch = 0;
+    _current_bucket = 0;
 }
 
 template <typename T>

@@ -1,6 +1,7 @@
 #ifndef PAIR_HPP
 #define PAIR_HPP
 #include <string>
+#include <iostream>
 
 class pair {
 private:

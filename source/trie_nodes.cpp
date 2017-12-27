@@ -53,7 +53,7 @@ trie_node *trie_node::add_child(std::string &word, bool eow, int index, int vers
         // index = 0;
     }
 
-    if (index > _children->size()) {
+    if (index > (int) _children->size()) {
         // Better fail fast than fail safe
         throw std::runtime_error("Index above size (Index: " + std::to_string(index)
                                  + " & Size: " + std::to_string(_children->size()) + ")");
@@ -92,7 +92,7 @@ void trie_node::delete_child(const string &word) {
 }
 
 trie_node *trie_node::get_child(int index) {
-    if (_children == nullptr || index >= _children->size()) {
+    if (_children == nullptr || (size_t) index >= _children->size()) {
         return nullptr;
     }
 
@@ -100,10 +100,7 @@ trie_node *trie_node::get_child(int index) {
 }
 
 trie_node *trie_node::get_child(const std::string &word, int *at) {
-    // NOTE: Potential bug caught here.
-    // Avoided simply because the variable passed by add was initialised to 0
-    // at was not properly set if the _children vector was null
-    if (_children == nullptr) {
+   if (_children == nullptr) {
         if (at != nullptr) {
             *at = 0;
         }
@@ -148,10 +145,6 @@ int trie_node::get_del_version() {
     return _ver_deleted;
 }
 
-bool trie_node::has_children() const {
-    return _children != nullptr;
-}
-
 size_t trie_node::get_children_size() const {
     return _children != nullptr ? _children->size() : 0;
 }
@@ -178,6 +171,8 @@ void trie_node::push_children(mstd::stack<tuple<trie_node *, int>> *s) {
 trie_node &trie_node::operator=(const trie_node &other) {
     _word = other._word;
     _eow = other._eow;
+    _ver_added = other._ver_added;
+    _ver_deleted = other._ver_deleted;
     if (other._children != nullptr) {
         delete _children;
         _children = new mstd::vector<trie_node>(*other._children);
@@ -191,6 +186,8 @@ trie_node &trie_node::operator=(const trie_node &other) {
 trie_node &trie_node::operator=(trie_node &&other) noexcept {
     _word = other._word;
     _eow = other._eow;
+    _ver_added = other._ver_added;
+    _ver_deleted = other._ver_deleted;
     _children = other._children;
     other._children = nullptr;
     return *this;
@@ -218,16 +215,16 @@ trie_node *root_node::get_child(const std::string &word) {
     return _children.get(word);
 }
 
-bool root_node::has_children() const {
-    return !_children.empty();
-}
-
 size_t root_node::get_children_size() const {
     return _children.get_num_items();
 }
 
 trie_node *root_node::next_branch() {
     return _children.next_branch();
+}
+
+void root_node::reset_branch() {
+    _children.reset_branch();
 }
 
 void root_node::push_children(mstd::stack<trie_node *> *s) {
@@ -268,7 +265,7 @@ static_node *static_node::add_child(std::string &word, bool eow, int index) {
         throw std::runtime_error("Index below zero");
     }
 
-    if (index > _children->size()) {
+    if (index > (int) _children->size()) {
         // Better fail fast than fail safe
         throw std::runtime_error("Index above size (Index: " + std::to_string(index)
                                  + " & Size: " + std::to_string(_children->size()) + ")");
@@ -307,7 +304,7 @@ static_node *static_node::get_child(const std::string &word, int *at) {
         }
     } else {
         //The static_trie is now compressed.
-
+        return nullptr;
     }
 }
 
@@ -409,7 +406,7 @@ void static_node::add_short(const std::string &word, bool eow) {
 
 void static_node::print_shorts() {
     cout << _word << "    ";
-    for (int i = 0; i < _lenofwords->size(); i++){
+    for (int i = 0; i < (int) _lenofwords->size(); i++){
         cout << _lenofwords->get((size_t)i) << " ";
     }
     cout << endl;

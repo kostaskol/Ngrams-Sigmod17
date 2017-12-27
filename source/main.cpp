@@ -89,7 +89,6 @@ int main(int argc, char **argv) {
 
     vector<query> queries(200);
     int version = 1;
-    int query_num = 0;
     thread_pool tp(num_threads);
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
@@ -104,9 +103,10 @@ int main(int argc, char **argv) {
                 queries.push(q);
                 break;
             }
-            case DELETION:
+            case DELETION: {
                 t->delete_ngram(v, version);
                 break;
+            }
             case FINISH: {
                 /*
                  * TODO: Αν κάνουμε και τα add και delete παράλληλα χρειαζόμαστε ένα wait_all
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
                 auto *results = new string[queries.size()];
 
 
-                for (int i = 0; i < queries.size(); i++) {
+                for (int i = 0; i < (int) queries.size(); i++) {
                      tp.add_task(new search_task(t, queries.at(i), i, results));
                 }
                 // Print query results
@@ -130,13 +130,15 @@ int main(int argc, char **argv) {
 
                 if (!compress) {
                     trie_node *next_branch;
+
                     while ((next_branch = t->next_branch()) != nullptr) {
                         // Create tasks to clean up all branches
-//                        tp.add_task(new clean_up_task(t, next_branch));
-                        t->clean_up(next_branch);
+                        // tp.add_task(new clean_up_task(t, next_branch));
+                         t->clean_up(next_branch);
                         /* Haven't tested it. Should work with lambdas as well */
                         // tp.add_task([t, next_branch] { t->clean_up(next_branch); });
                     }
+                    t->reset_branch();
                 }
 
 
@@ -145,8 +147,7 @@ int main(int argc, char **argv) {
                 tp.wait_all();
 
                 delete[] results;
-                version = 1;
-                query_num += queries.size();
+//                version = 1;
                 queries.clear(200);
                 break;
             }
@@ -193,10 +194,10 @@ void print_and_topk(string *results, int size, size_t topk){
 
         int counter = 0;
         bool one_word = false;
-        for (int i = max_freq-1; i >= 0 && counter != topk; i--) {
+        for (int i = (int) max_freq-1; i >= 0 && counter != (int) topk; i--) {
             minHeap heap(array[i]);
             heap.heapSort();
-            for (int j = 0; j < array[i].size() && counter != topk; j++) {
+            for (int j = 0; j < (int) array[i].size() && counter != (int) topk; j++) {
                 counter++;
                 if (one_word) {
                     std::cout << "|";
