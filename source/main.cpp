@@ -89,7 +89,6 @@ int main(int argc, char **argv) {
 
     vector<query> queries(200);
     int version = 1;
-    int batch_num = 0;
     thread_pool tp(num_threads);
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
@@ -134,8 +133,8 @@ int main(int argc, char **argv) {
 
                     while ((next_branch = t->next_branch()) != nullptr) {
                         // Create tasks to clean up all branches
-//                        tp.add_task(new clean_up_task(t, next_branch));
-                        t->clean_up(next_branch);
+                        // tp.add_task(new clean_up_task(t, next_branch));
+                         t->clean_up(next_branch);
                         /* Haven't tested it. Should work with lambdas as well */
                         // tp.add_task([t, next_branch] { t->clean_up(next_branch); });
                     }

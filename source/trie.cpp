@@ -275,10 +275,6 @@ void trie::clean_up(trie_node *top) {
                     //    cout << chain[j]->get_word() << " ";
                     //}
                     //cout << endl;
-                    stringstream ss;
-                    for (int i = 0; i < chain.size(); i++) {
-                        ss << chain[i]->get_word() << " ";
-                    }
                     chain[i - 1]->delete_child(current->get_word());
                     chain.pop_back();
                     
@@ -293,6 +289,7 @@ void trie::clean_up(trie_node *top) {
                     //        + " because it has "
                     //        + std::to_string(current->get_children_size())
                     //        + " children");
+                    chain.clear();
                     break;
                 }
             }
