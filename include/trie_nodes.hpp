@@ -32,15 +32,13 @@ public:
 
     virtual void delete_child(const std::string &w);
 
-    virtual trie_node *get_child(int index);
+    trie_node *get_child(int index);
 
-    virtual trie_node *get_child(const std::string &word, int *at);
+    trie_node *get_child(const std::string &word, int *at);
 
     bool is_end_of_word() const;
 
     const std::string& get_word() const;
-
-    virtual bool has_children() const;
 
     virtual size_t get_children_size() const;
 
@@ -83,11 +81,11 @@ public:
 
     void push_children(mstd::stack<trie_node *> *s) override;
 
-    bool has_children() const override;
-
     size_t get_children_size() const override;
 
     trie_node *next_branch();
+
+    void reset_branch();
 
     bool empty();
 

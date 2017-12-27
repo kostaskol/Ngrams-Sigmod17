@@ -22,12 +22,12 @@ namespace cmd_parser {
                   << "\t--init|-i\t: The trie initialisation file\n"
                   << "\t--query|-q\t: The trie work file\n"
                   << "[Optional Arguments]\n"
-                  << "\t--threads|-t\t: The number of threads to be run in the thread pool\n"
-                  << "\t--help|-t\t: Prints this message and exists the program" << std::endl;
+                  << "\t--threads|-t\t: The number of threads to be run in the thread pool (Default 4)\n"
+                  << "\t--help|-h\t: Prints this message and exits the program" << std::endl;
     }
 
     cmd_args parse(int argc, char **argv) {
-        const std::string short_opts = "i:q:n:";
+        const std::string short_opts = "i:q:t:";
         const option long_opts[] = {
                 {"init", required_argument, nullptr, 'i'},
                 {"query", required_argument, nullptr, 'q'},
