@@ -111,7 +111,7 @@ string trie::search(const vector<string> &ngram, int version) {
                     one_word = true;
                 }
                if (child->is_end_of_word()
-                        && child->get_add_version() < version 
+                        && child->get_add_version() < version
                         && (child->get_del_version() == -1
                             || child->get_del_version() > version)) {
                     if (!bf.check_and_set(ss.str())) {
@@ -140,7 +140,7 @@ string trie::search(const vector<string> &ngram, int version) {
 }
 
 bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
-    trie_node *current = _root; 
+    trie_node *current = _root;
     auto *ch_indexes = new int[(int)ngram.size()];
     auto **parents = new trie_node *[(int)ngram.size()];
 
@@ -346,7 +346,7 @@ std::string static_trie::search(const vector<string> &ngram) {
                             }
                             found_one = true;
                             final_ss << ss.str();
-                        }                    
+                        }
                     }
 
 
