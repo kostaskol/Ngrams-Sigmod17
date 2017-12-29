@@ -21,17 +21,16 @@ public:
     void finish();
 
     void wait_all();
+
+    int get_active();
 private:
     mstd::vector<worker *> _threads;
     work_queue _wq;
     pthread_mutex_t _finished_mtx;
     pthread_cond_t _finished_cond;
-//    pthread_mutex_t _wait_all_mtx;
-//    pthread_cond_t _wait_all_cond;
 
     int _num_finished;
     int _num_assigned;
-//    bool _die;
     
     class _raw_task_ : public task {
     public:

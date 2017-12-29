@@ -6,6 +6,7 @@
 
 using mstd::vector;
 using mstd::logger;
+using mstd::stack;
 using std::string;
 using std::cout; using std::endl;
 
@@ -14,12 +15,22 @@ using std::cout; using std::endl;
  * trie node implementation
  */
 trie_node::trie_node()
-        : _word(""), _eow(false), _ver_added(0), _ver_deleted(-1) {
+        : _word(""), 
+        _eow(false), 
+        _ver_added(0), 
+        _ver_deleted(-1), 
+        _marked_for_del(false) {
+
     _children = nullptr;
 }
 
 trie_node::trie_node(const std::string &word, bool eow, int version)
-        : _word(word), _eow(eow), _ver_added(version), _ver_deleted(-1) {
+        : _word(word), 
+        _eow(eow), 
+        _ver_added(version), 
+        _ver_deleted(-1), 
+        _marked_for_del(false) {
+
     _children = nullptr;
 }
 
@@ -32,6 +43,7 @@ trie_node::trie_node(trie_node &&other) noexcept {
     _children = other._children;
     _ver_added = other._ver_added;
     _ver_deleted = other._ver_deleted;
+    _marked_for_del = other._marked_for_del;
     other._children = nullptr;
 }
 
@@ -145,26 +157,61 @@ int trie_node::get_del_version() {
     return _ver_deleted;
 }
 
-size_t trie_node::get_children_size() const {
-    return _children != nullptr ? _children->size() : 0;
+void trie_node::set_mark_for_del(bool v) {
+    _marked_for_del = v;
 }
 
-void trie_node::push_children(mstd::stack<trie_node *> *s) {
-    if (_children == nullptr) return;
-
-    for (int i = 0; i < _children->size(); i++) {
-        s->push(_children->get_p((size_t) i));
-    }
+bool trie_node::is_marked_for_del() {
+    return _marked_for_del;
 }
 
-void trie_node::push_children(mstd::stack<tuple<trie_node *, int>> *s) {
+
+void trie_node::delete_marked_children() {
     if (_children == nullptr) {
         return;
     }
 
-    for (int i = _children->size() - 1; i >= 0; i--) {
+    for (int i = (int) _children->size() - 1; i >= 0; i--) {
+        if (_children->get((size_t) i).is_marked_for_del()) {
+            this->delete_child(i);
+        }
+    }
+}
+
+size_t trie_node::get_children_size() const {
+    return _children != nullptr ? _children->size() : 0;
+}
+
+void trie_node::push_children(stack<trie_node *> *s) {
+    if (_children == nullptr) return;
+
+    for (int i = 0; i < (int) _children->size(); i++) {
+        s->push(_children->get_p((size_t) i));
+    }
+}
+
+void trie_node::push_children(stack<tuple<trie_node *, int>> *s) {
+    if (_children == nullptr) {
+        return;
+    }
+
+    for (int i = 0; i < (int) _children->size(); i++) {
         tuple<trie_node *, int> t(_children->get_p((size_t) i), i);
         s->push(t);
+    }
+}
+
+void trie_node::push_children(stack<vector<tuple<trie_node *, int>>> *s,
+        vector<tuple<trie_node *, int>> &path) {
+    if (_children == nullptr) {
+        return;
+    }
+
+    for (int i = 0; i < (int) _children->size(); i++) {
+        tuple<trie_node *, int> t(_children->get_p((size_t) i), i);
+        vector<tuple<trie_node *, int>> tmp(path);
+        tmp.push(t);
+        s->push(tmp);
     }
 }
 
@@ -173,6 +220,7 @@ trie_node &trie_node::operator=(const trie_node &other) {
     _eow = other._eow;
     _ver_added = other._ver_added;
     _ver_deleted = other._ver_deleted;
+    _marked_for_del = other._marked_for_del;
     if (other._children != nullptr) {
         delete _children;
         _children = new mstd::vector<trie_node>(*other._children);
@@ -188,6 +236,7 @@ trie_node &trie_node::operator=(trie_node &&other) noexcept {
     _eow = other._eow;
     _ver_added = other._ver_added;
     _ver_deleted = other._ver_deleted;
+    _marked_for_del = other._marked_for_del;
     _children = other._children;
     other._children = nullptr;
     return *this;
@@ -219,12 +268,8 @@ size_t root_node::get_children_size() const {
     return _children.get_num_items();
 }
 
-trie_node *root_node::next_branch() {
-    return _children.next_branch();
-}
-
-void root_node::reset_branch() {
-    _children.reset_branch();
+trie_node **root_node::get_top_branches(int *size) {
+    return _children.get_top_branches(size);
 }
 
 void root_node::push_children(mstd::stack<trie_node *> *s) {

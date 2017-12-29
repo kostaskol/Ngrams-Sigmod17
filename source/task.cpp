@@ -34,8 +34,14 @@ void search_task::run() {
  */
 clean_up_task::clean_up_task(trie *t, trie_node *branch) : _t(t), _branch(branch) { }
 
+clean_up_task::clean_up_task(clean_up_task &&other) noexcept {
+    _t = other._t;
+    _branch = other._branch;
+}
+
 void clean_up_task::run() {
     _t->clean_up(_branch);
+    delete this;
 }
 
 /*
@@ -52,6 +58,7 @@ insert_task::insert_task(insert_task &&other) noexcept {
 
 void insert_task::run() {
     _t->add(_v, _version);
+    delete this;
 }
 
 /*
@@ -68,4 +75,5 @@ deletion_task::deletion_task(deletion_task &&other) noexcept {
 
 void deletion_task::run() {
     _t->delete_ngram(_v, _version);
+    delete this;
 }
