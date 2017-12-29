@@ -78,8 +78,20 @@ int main(int argc, char **argv) {
         if (stop) break;
     }
 
+    thread_pool tp(num_threads);
     if (compress) {
-        (dynamic_cast<static_trie *>(t))->compress();
+        if (parallel) {
+            int size;
+            static_node **branches = (dynamic_cast<static_trie *>(t))->get_top_branches(&size);
+
+            for (int i = size - 1; i >= 0; i--) {
+                tp.add_task(new compress_task((dynamic_cast<static_trie *>(t)), branches[i]));
+            }
+            tp.wait_all();
+        } else {
+            (dynamic_cast<static_trie *>(t))->compress();
+        }
+
     }
     // End initialisation file parsing
 
@@ -90,7 +102,6 @@ int main(int argc, char **argv) {
 
     vector<query> queries(200);
     int version = 1;
-    thread_pool tp(num_threads);
     thread_pool other_pool(1);
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
@@ -133,7 +144,7 @@ int main(int argc, char **argv) {
                 if (!compress) {
                     int size;
                     trie_node **branches = t->get_top_branches(&size);
-                    
+
                     for (int i = size - 1; i >= 0; i--) {
                         tp.add_task(new clean_up_task(t, branches[i]));
                     }

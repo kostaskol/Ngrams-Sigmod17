@@ -38,9 +38,10 @@ public:
 
     void compress();
 
-    void print_root() {
-        _root->print();
-    }
+    void compress(static_node *top);
+
+    static_node **get_top_branches(int *size);
+
 private:
     static_root_node*_root;
 };

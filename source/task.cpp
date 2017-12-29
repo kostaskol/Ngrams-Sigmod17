@@ -19,13 +19,13 @@ void search_task::run() {
     string result;
     if (st == nullptr) {
         // t was a trie
-        result = _t->search(_q.v, _q.version);
+        _results[_index] = _t->search(_q.v, _q.version);
     } else {
         // t was a static trie
-        result = st->search(_q.v);
+        _results[_index] = st->search(_q.v);
     }
 
-    _results[_index] = std::move(result);
+    // _results[_index] = std::move(result);
     delete this;
 }
 
@@ -41,6 +41,16 @@ clean_up_task::clean_up_task(clean_up_task &&other) noexcept {
 
 void clean_up_task::run() {
     _t->clean_up(_branch);
+    delete this;
+}
+
+/*
+ * Compress task implementation
+ */
+compress_task::compress_task(static_trie *st, static_node *branch) : _st(st), _branch(branch) { }
+
+void compress_task::run() {
+    _st->compress(_branch);
     delete this;
 }
 

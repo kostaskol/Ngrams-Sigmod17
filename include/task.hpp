@@ -6,6 +6,7 @@
 #include <string>
 
 class trie;
+class static_trie;
 
 class task {
 public:
@@ -58,6 +59,17 @@ public:
 private:
     trie *_t;
     trie_node *_branch;
+};
+
+class compress_task : public task {
+public:
+    compress_task(static_trie *st, static_node *branch);
+
+    void run() override;
+
+private:
+    static_trie *_st;
+    static_node *_branch;
 };
 
 class insert_task : public task {
