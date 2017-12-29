@@ -27,23 +27,13 @@ public:
 
     size_t get_num_items() const;
 
-    T *next_branch();
-
-    void reset_branch();
+    T **get_top_branches(int *size);
 
     size_t size() const;
 
     void push_to_stack(mstd::stack<T*> *s) const;
 
     bool empty() const;
-
-    void print_table() {
-        for (int i = 0; i < _size + _p; i++) {
-            for (int j = 0; j < _entries[i]->size(); j++) {
-                std::cout << _entries[i]->get(j).get_word() << std::endl;
-            }
-        }
-    }
 private:
     // We do not keep a <current size> variable, since we can always calculate it as the
     // size of the table at the start of each run + p (the next bucket to be split)

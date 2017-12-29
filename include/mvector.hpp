@@ -18,7 +18,9 @@ namespace mstd {
 
         void _enlarge() {
             auto *tmp = new T[_capacity << 1];
-            std::copy(_entries, _entries + _size, tmp);
+            for (size_t i = 0; i < _size; i++) {
+                tmp[i] = std::move(_entries[i]);
+            }
 
             delete[] _entries;
             _entries = tmp;
@@ -86,8 +88,12 @@ namespace mstd {
         }
 
         T &back() {
+            if (_size - 1 < 0) {
+                throw std::out_of_range("Requesting back of empty vector");
+            }
             return _entries[_size - 1];
         }
+
 
         void pop_back() {
             if (_size == 0) {

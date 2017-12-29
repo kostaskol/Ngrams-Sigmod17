@@ -50,6 +50,8 @@ private:
 class clean_up_task : public task {
 public:
     clean_up_task(trie *t, trie_node *branch);
+    clean_up_task(const clean_up_task &other)=delete;
+    clean_up_task(clean_up_task &&other) noexcept;
 
     void run() override;
 

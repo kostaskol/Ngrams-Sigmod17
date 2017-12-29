@@ -69,19 +69,14 @@ void thread_pool::wait_all() {
 
         _num_assigned = 0;
     }
-//    pthread_mutex_lock(&);
-//
-//    if (_finished) {
-//        _finished = false;
-//        pthread_mutex_unlock(&_wait_all_mtx);
-//    } else {
-//        while (!_finished) {
-//            pthread_cond_wait(&_wait_all_cond, &_wait_all_mtx);
-//        }
-//
-//        _finished = false;
-//        pthread_mutex_unlock(&_wait_all_mtx);
-//    }
+}
+
+int thread_pool::get_active() {
+    pthread_mutex_lock(&_finished_mtx);
+    int num_threads = _num_finished;
+    pthread_mutex_unlock(&_finished_mtx);
+
+    return _num_assigned - num_threads;
 }
 
 

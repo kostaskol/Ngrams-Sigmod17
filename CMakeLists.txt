@@ -35,7 +35,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS "-g -O3 -I../include -Iinclude")
+set(CMAKE_CXX_FLAGS "-g -I../include -Iinclude")
 
 set(CMAKE_CXX_STANDARD 11)
 

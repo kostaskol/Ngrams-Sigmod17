@@ -6,13 +6,6 @@
 #include <string>
 
 class trie_node {
-private:
-    std::string _word;
-    bool _eow;
-
-    int _ver_added;
-    int _ver_deleted;
-    mstd::vector<trie_node> *_children;
 public:
     trie_node();
 
@@ -52,9 +45,18 @@ public:
 
     int get_del_version();
 
+    void set_mark_for_del(bool v);
+
+    bool is_marked_for_del();
+
+    void delete_marked_children();
+
     virtual void push_children(mstd::stack<trie_node *> *s);
 
     void push_children(mstd::stack<tuple<trie_node *, int>> *s);
+
+    void push_children(mstd::stack<mstd::vector<tuple<trie_node *, int>>> *s, 
+            mstd::vector<tuple<trie_node *, int>> &path);
 
     trie_node &operator=(const trie_node &other);
 
@@ -62,6 +64,16 @@ public:
     // "Steals" the _children pointer from the other
     // trie_node
     trie_node &operator=(trie_node &&other) noexcept;
+private:
+    std::string _word;
+    bool _eow;
+
+    int _ver_added;
+    int _ver_deleted;
+
+    bool _marked_for_del;
+    mstd::vector<trie_node> *_children;
+    
 };
 
 
@@ -83,9 +95,7 @@ public:
 
     size_t get_children_size() const override;
 
-    trie_node *next_branch();
-
-    void reset_branch();
+    trie_node **get_top_branches(int *size);
 
     bool empty();
 
@@ -172,10 +182,6 @@ public:
     bool empty();
 
     void push_children(mstd::stack<static_node *> *s) override;
-
-    void print() {
-        _children.print_table();
-    }
 private:
     linear_hash<static_node> _children;
 };

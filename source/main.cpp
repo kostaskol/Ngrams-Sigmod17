@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
     string init_file = args.init_file;
     string query_file = args.query_file;
     int num_threads = args.num_threads == -1 ? constants::NUM_THREADS : args.num_threads;
+    bool parallel = args.parallel;
 
     if (init_file.empty()) {
         cerr << "Initialisation file not provided. Exiting" << endl;
@@ -48,7 +49,7 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
-    vector<string> v(100);
+    vector<string> v;
     trie* t;
 
     // Begin initialisation file parsing
@@ -90,13 +91,18 @@ int main(int argc, char **argv) {
     vector<query> queries(200);
     int version = 1;
     thread_pool tp(num_threads);
+    thread_pool other_pool(1);
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
         if (v.size() == 0 && stop) break;
         string s;
         switch (cmd_type) {
             case INSERTION:
-                t->add(v, version);
+                if (parallel) {
+                    other_pool.add_task(new insert_task(t, v, version));
+                } else {
+                    t->add(v, version);
+                }
                 break;
             case QUERY: {
                 query q(v, version);
@@ -104,16 +110,19 @@ int main(int argc, char **argv) {
                 break;
             }
             case DELETION: {
-                t->delete_ngram(v, version);
+                if (parallel) {
+                    other_pool.add_task(new deletion_task(t, v, version));
+                } else {
+                    t->delete_ngram(v, version);
+                }
                 break;
             }
             case FINISH: {
-                /*
-                 * TODO: Αν κάνουμε και τα add και delete παράλληλα χρειαζόμαστε ένα wait_all
-                    tp.wait_all();
-                 */
-                auto *results = new string[queries.size()];
+                if (parallel) {
+                    other_pool.wait_all();
+                }
 
+                auto *results = new string[queries.size()];
 
                 for (int i = 0; i < (int) queries.size(); i++) {
                      tp.add_task(new search_task(t, queries.at(i), i, results));
@@ -121,33 +130,25 @@ int main(int argc, char **argv) {
                 // Print query results
                 tp.wait_all();
 
-//                for (int i = 0; i < queries.size(); i++) {
-//                    cout << results[i] << endl; //                } 
+                if (!compress) {
+                    int size;
+                    trie_node **branches = t->get_top_branches(&size);
+                    
+                    for (int i = size - 1; i >= 0; i--) {
+                        tp.add_task(new clean_up_task(t, branches[i]));
+                    }
+                }
+
                 size_t k = 0;
                 if (v.size() == 1) {
                     k = (size_t) helpers::to_int(v[0]);
                 }
 
-                if (!compress) {
-                    trie_node *next_branch;
-
-                    while ((next_branch = t->next_branch()) != nullptr) {
-                        // Create tasks to clean up all branches
-                        // tp.add_task(new clean_up_task(t, next_branch));
-                         t->clean_up(next_branch);
-                        /* Haven't tested it. Should work with lambdas as well */
-                        // tp.add_task([t, next_branch] { t->clean_up(next_branch); });
-                    }
-                    t->reset_branch();
-                }
-
-
-
                 print_and_topk(results, (int) queries.size(), k);
                 tp.wait_all();
 
                 delete[] results;
-//                version = 1;
+                version = 1;
                 queries.clear(200);
                 break;
             }
@@ -174,7 +175,7 @@ void print_and_topk(string *results, int size, size_t topk){
             std::cout << "-1" << '\n';
         }
         else {
-            std::cout << succ << '\n';
+            cout << succ << '\n';
             if (topk) {                                    // if topk == 0, no topk operation
                 vector<string> answers;
                 helpers::split(succ, answers, '|');

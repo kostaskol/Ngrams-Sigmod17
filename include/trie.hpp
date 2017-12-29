@@ -22,9 +22,7 @@ public:
 
     void clean_up(trie_node *top);
 
-    trie_node *next_branch();
-
-    void reset_branch();
+    trie_node **get_top_branches(int *size);
 private:
     root_node *_root;
 };

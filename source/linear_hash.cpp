@@ -184,52 +184,29 @@ void linear_hash<T>::delete_word(const std::string &word) {
     pthread_mutex_unlock(&_del_mtx);
 }
 
-template <typename T>
-T *linear_hash<T>::next_branch() {
-    if (_current_bucket == _size + _p) {
-        return nullptr;
-    }
-    if (_current_branch >= _entries[_current_bucket]->size()) {
-        _current_branch = 0;
-        while (++_current_bucket < _size + _p) {
-            // Find the next bucket that contains nodes
-           if (_entries[_current_bucket]->size() != 0) {
-               break;
-           } 
-        }
-    }
-
-    // We reached the end of the hash table
-    // so there are no more branches
-    if (_current_bucket == _size + _p) {
-        return nullptr;
-    }
-
-    if (_current_bucket >= _size + _p) {
-        logger::warn("linear_hash::next_branch", "_current_bucket (" 
-                + std::to_string(_current_bucket) + ") greater than _size + _p ("
-                + std::to_string(_size + _p) + ")");
-    }
-
-    if (_current_branch >= _entries[_current_bucket]->size()) {
-        logger::warn("linear_hash::next_branch", "_current_branch (" 
-                + std::to_string(_current_branch) + ") greater than current bucket's size ("
-                + std::to_string(_entries[_current_bucket]->size()) + ")");
-
-    }
-
-    return _entries[_current_bucket]->get_p(_current_branch++); 
-}
-
-template <typename T>
-void linear_hash<T>::reset_branch() {
-    _current_branch = 0;
-    _current_bucket = 0;
-}
 
 template <typename T>
 size_t linear_hash<T>::get_num_items() const {
     return _num_items;
+}
+
+template <typename T>
+T **linear_hash<T>::get_top_branches(int *size) {
+    int current_branch = 0;
+    int current_bucket = 0;
+    *size = _num_items;
+
+    T **ret = new T*[_num_items];
+
+    for (int i = 0; i < (int) _num_items; i++) {
+        while (current_branch >= (int) _entries[current_bucket]->size()) {
+            current_bucket++;
+            current_branch = 0;
+        }
+        ret[i] = _entries[current_bucket]->get_p(current_branch++);
+    }
+
+    return ret;
 }
 
 template <typename T>
@@ -240,8 +217,8 @@ size_t linear_hash<T>::size() const {
 
 template <typename T>
 void linear_hash<T>::push_to_stack(mstd::stack<T *> *s) const {
-    for (int i = 0; i < _size + _p; i++) {
-        for (int j = 0; j < _entries[i]->size(); j++) {
+    for (int i = 0; i < (int) (_size + _p); i++) {
+        for (int j = 0; j < (int) _entries[i]->size(); j++) {
             s->push(_entries[i]->get_p((size_t)j));
         }
     }
@@ -262,7 +239,7 @@ int linear_hash<T>::_hash(const std::string &word) const {
     int c;
 
 
-    while (c = *str++)
+    while ((c = *str++))
         hash = ((hash << 5) + hash) + c;
 
     delete[] cont_str;

@@ -32,46 +32,49 @@ void trie::add(const vector<string> &ngram, int version) {
         trie_node *child;
         int index;
 
-        auto *rn = dynamic_cast<root_node *>(current);
-        if (rn == nullptr) {
-            child = current->get_child(ngram.at((size_t) i), &index);
+        if (current == _root) {
+            child = (reinterpret_cast<root_node *>(current))->get_child(ngram[i]);
         } else {
-            child = rn->get_child(ngram.at((size_t) i));
+            child = current->get_child(ngram[i], &index);
         }
-
-        if (child == nullptr) {
+        
+       if (child == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
-            if (rn == nullptr) {
-                current = current->add_child(ngram.at((size_t) i), false, index, version);
+            if (current == _root) {
+                current = (reinterpret_cast<root_node *>(current))->add_child(ngram[i], false, version);
             } else {
-                current = rn->add_child(ngram.at((size_t) i), false, version);
+                current = current->add_child(ngram[i], false, index, version);
             }
         } else {
-            // Otherwise, follow that child's path
+            // Even if the child was marked for deletion,
+            // since it is now a path to a new ngram, it should not be deleted
+            child->set_mark_for_del(false);
+
             current = child;
         }
     }
+    
 
     std::string &last_word = ngram.get(ngram.size() - 1);
     trie_node *child;
     int index = 0;
-    auto *rn = dynamic_cast<root_node *>(current);
-    if (rn == nullptr) {
-        child = current->get_child(last_word, &index);
-    } else {
-        child = rn->get_child(last_word);
-    }
 
+    if (current == _root) {
+        child = (reinterpret_cast<root_node *>(current))->get_child(last_word);
+    } else {
+        child = current->get_child(last_word, &index);
+    }
     if (child != nullptr) {
-        // If the word already existed in the tree, we simply mark it as the end of the N-Gram
+        // THe word already existed in the trie
         child->set_end_of_word(true);
         child->set_add_version(version);
+        child->set_mark_for_del(false);
     } else {
         // Otherwise we insert it to that node's children
-        if (rn == nullptr) {
-            current->add_child(last_word, true, index, version);
+        if (current == _root) {
+            (reinterpret_cast<root_node *>(current))->add_child(last_word, true, version);
         } else {
-            rn->add_child(last_word, true, version);
+            current->add_child(last_word, true, index, version);
         }
     }
 }
@@ -90,12 +93,12 @@ string trie::search(const vector<string> &ngram, int version) {
     for (size_t i = 0; i < ngram.size(); i++) {
         trie_node *child;
         for (size_t j = i; j < ngram.size(); j++) {
-            auto *rn = dynamic_cast<root_node *>(current);
-            if (rn == nullptr) {
-                child = current->get_child(ngram[j], nullptr);
+            if (current == _root) {
+                child = (reinterpret_cast<root_node *>(current))->get_child(ngram[j]);
             } else {
-                child = rn->get_child(ngram[j]);
+                child = current->get_child(ngram[j], nullptr);
             }
+
             if (child == nullptr) {
                 break;
             }
@@ -107,25 +110,10 @@ string trie::search(const vector<string> &ngram, int version) {
                     ss << ngram.at(j);
                     one_word = true;
                 }
-                if (ss.str() == "the work") {
-                    //logger::debug("trie::search", "Found 'the work'");
-                    //logger::debug("trie::search", "Found ngram"
-                    //        + child->get_word()
-                    //        + "\nAdd version: " 
-                    //        + std::to_string(child->get_add_version())
-                    //        + "\nDel version: "
-                    //        + std::to_string(child->get_del_version())
-                    //        + "\nCurrent version: "
-                    //        + std::to_string(version));
-
-                }
                if (child->is_end_of_word()
                         && child->get_add_version() < version 
                         && (child->get_del_version() == -1
                             || child->get_del_version() > version)) {
-                   //if (child->get_word() == "monitoring") {
-                   //     logger::debug("trie::search", "Adding monitoring to result");
-                   //}
                     if (!bf.check_and_set(ss.str())) {
                         // Ngram did not exist
                         if (found_one) {
@@ -158,13 +146,12 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
 
     for (int i = 0; i < (int) ngram.size(); i++) {
         parents[i] = current;
-        auto *rn = dynamic_cast<root_node *>(current);
-        if (rn == nullptr) {
-            current = current->get_child(ngram.get((size_t) i), &ch_indexes[i]);
+        if (current == _root) {
+            current = (reinterpret_cast<root_node *>(current))->get_child(ngram[i]);
         } else {
-            current = rn->get_child(ngram.get((size_t) i));
-        };
-
+            current = current->get_child(ngram[i], &ch_indexes[i]);
+        }
+        
         if (current == nullptr) {
             // The requested N-gram does not exist on the Trie.
             delete[] ch_indexes;
@@ -176,12 +163,16 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
     if (current->is_end_of_word()) {
         if (current->get_children_size() == 0) {
             // The end_of_word node can be deleted, so its parent will delete him.
-            auto *rn = dynamic_cast<root_node *>(parents[(int) ngram.size() - 1]);
-            if (rn == nullptr) {
-                //
-                parents[(int) ngram.size() - 1]->set_child_del_version(ch_indexes[(int) ngram.size() - 1], version);
-            } else {
-                rn->set_child_del_version(current->get_word(), version);
+            trie_node *tmp = parents[ngram.size() - 1];
+            
+            // While moving up the branch, we mark all nodes for deletion (and the last one that can
+            // be deleted will actually be deleted)
+            current->set_mark_for_del(true);
+
+            if (tmp == _root) {
+                (reinterpret_cast<root_node *>(tmp))->set_child_del_version(current->get_word(), version);
+                        } else {
+                tmp->set_child_del_version(ch_indexes[ngram.size() - 1], version);
             }
         }
         else {
@@ -194,7 +185,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
         }
     }
     else {
-        // The request N-gram does not exist on the Trie.
+        // The requested N-gram does not exist on the Trie.
         delete[] ch_indexes;
         delete[] parents;
         return false;
@@ -211,12 +202,14 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
         }
         else {
             // I do not satisfy any of the above conditions, so I can be deleted.
-            auto *rn = dynamic_cast<root_node *>(parents[i]);
-            if (rn == nullptr) {
-                // Remove child sets version to
-                parents[i]->set_child_del_version(ch_indexes[i], version);
+            trie_node *tmp = parents[i];
+
+            // We mark ourself for deletion
+            current->set_mark_for_del(true);
+            if (tmp == _root) {
+                (reinterpret_cast<root_node *>(tmp))->set_child_del_version(current->get_word(), version);
             } else {
-                rn->set_child_del_version(current->get_word(), version);
+                tmp->set_child_del_version(ch_indexes[i], version);
             }
             current = parents[i];
         }
@@ -228,150 +221,26 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
 }
 
 void trie::clean_up(trie_node *top) {
-    // logger::debug("trie::clean_up", "Cleaning branch " + top->get_word());
-    if (top->get_del_version() != -1 && top->get_children_size() == 0) {
-        // logger::debug("trie::clean_up", "Deleting node " + top->get_word());
-        _root->delete_child(top->get_word());
-        return;
-    }
-
-    vector<trie_node *> chain;
     stack<trie_node *> s;
-
+    
     s.push(top);
 
+    // Perform a DFS search and delete any node marked for deletion
     while (!s.empty()) {
         trie_node *current = s.pop();
-        // logger::debug("trie::clean_up", "Popped " + current->get_word() + " from stack");
+
+        current->delete_marked_children();
         current->push_children(&s);
 
-        chain.push(current);
-        // logger::debug("trie::clean_up", "Pushed " + current->get_word() + " to chain");
-        // If we've reached a leaf node which is an end of word and it HAS been deleted
-        if (current->get_children_size() == 0 
-                && current->is_end_of_word() /* Redundant check? */
-                && current->get_del_version() != -1) {
-            // logger::debug("trie::clean_up", "Found eow " + current->get_word());
-            for (int i = chain.size() - 1; i > 0; i--) {
-                current = chain[i];
-//                logger::debug("trie::clean_up", "Current node (" + current->get_word() + ") has " 
-//                                        + std::to_string(current->get_children_size()) + " children, is " 
-//                                        + (current->is_end_of_word() ? "" : "not") + " an end of word and has "
-//                                        + (current->get_del_version() != -1 ? "" : "not") + " been deleted");
-//
-                // Only delete the current node if it has no children
-                // OR if it does have children, it is not an end of word
-                // OR if it is an end of word, it has been deleted as well
-                if (current->get_children_size() == 0 
-                       && (!current->is_end_of_word() 
-                           || current->get_del_version() != -1)) {
-                                                   
-//                  logger::debug("trie::clean_up", "Deleting node " + current->get_word());
-                    // TODO: Find a better way to keep track of the child indices
-                    // TODO: instead of searching for it again
-                    //logger::debug("trie::clean_up", "Deleting node " + current->get_word());
-                    //logger::debug("trie::clean_up", "chain before deletion");
-                    //for (int j = 0; j < chain.size(); j++) {
-                    //    cout << chain[j]->get_word() << " ";
-                    //}
-                    //cout << endl;
-                    chain[i - 1]->delete_child(current->get_word());
-                    chain.pop_back();
-                    
-                    //logger::debug("trie::clean_up", "chain after deletion:");
-                    //for (int j = 0; j < chain.size(); j++) {
-                    //    cout << chain[j]->get_word() << " ";
-                    //}
-                    //cout << endl;
-                } else {
-                    //logger::debug("trie::clean_up", "Not deleting node "
-                    //        + current->get_word() 
-                    //        + " because it has "
-                    //        + std::to_string(current->get_children_size())
-                    //        + " children");
-                    chain.clear();
-                    break;
-                }
-            }
-        }    }
-
-    //    logger::debug("trie::clean_up", "Queue empty");
-
-    if (!top->is_end_of_word() && top->get_children_size() == 0) {
-        //        logger::debug("trie::clean_up", "Deleting node " + top->get_word());
-        _root->delete_child(top->get_word());
+        current->set_add_version(0);
+        if (current->get_del_version() != -1) {
+            current->set_end_of_word(false);
+        }
     }
-
 }
 
-//void trie::clean_up(trie_node *top) {
-//    // logger::debug("trie::clean_up", "Cleaning branch " + top->get_word());
-//    if (top->get_del_version() != -1 && top->get_children_size() == 0) {
-//        // logger::debug("trie::clean_up", "Deleting node " + top->get_word());
-//        _root->delete_child(top->get_word());
-//        return;
-//    }
-//
-//    vector<tuple<trie_node *, int>> chain;
-//    stack<tuple<trie_node *, int>> s;
-//
-//    tuple<trie_node *, int> t(top, 0);
-//    s.push(t);
-//    //logger::debug("trie::clean_up", "Pushing " + top->get_word() + " to stack");
-//
-//    while (!s.empty()) {
-//        t = s.pop();
-//        trie_node *current = t.a;
-//        // logger::debug("trie::clean_up", "Popped " + current->get_word() + " from stack");
-//        current->push_children(&s);
-//
-//        chain.push(t);
-//        // logger::debug("trie::clean_up", "Pushed " + current->get_word() + " to chain");
-//        if (current->get_children_size() == 0 
-//                && current->is_end_of_word() 
-//                && current->get_del_version() != -1) {
-//            // logger::debug("trie::clean_up", "Found eow " + current->get_word());
-//            for (int i = chain.size() - 1; i > 0; i--) {
-//                tuple<trie_node *, int> tmp = chain[i];
-//                current = tmp.a;
-//                // Only delete the current node if it has no children
-//                // OR if it does have children, it is not an end of word
-//                // OR if it is an end of word, it has been deleted as well
-//                if (current->get_children_size() == 0 
-//                        && (!current->is_end_of_word() 
-//                            || current->get_del_version() != -1)) {
-//                    //                    logger::debug("trie::clean_up", "Current node (" + current->get_word() + ") has " 
-//                    //                            + std::to_string(current->get_children_size()) + " children, is " 
-//                    //                            + (current->is_end_of_word() ? "" : "not") + " an end of word and has "
-//                    //                            + (current->get_del_version() != -1 ? "" : "not") + " been deleted");
-//                    //
-//                    //                    logger::debug("trie::clean_up", "Deleting node " + current->get_word());
-//                    chain[i - 1].a->delete_child(current->get_word());
-//                    chain.pop_back();
-//                }
-//            }
-//        } else {
-//            //           logger::debug("trie::clean_up", current->get_word() + " could not be deleted");
-//        }
-//    }
-//
-//    //    logger::debug("trie::clean_up", "Queue empty");
-//
-//    if (!top->is_end_of_word() && top->get_children_size() == 0) {
-//        //        logger::debug("trie::clean_up", "Deleting node " + top->get_word());
-//        _root->delete_child(top->get_word());
-//    }
-//
-//}
-//
-
-
-trie_node *trie::next_branch() {
-    return _root->next_branch();
-}
-
-void trie::reset_branch() {
-    _root->reset_branch();
+trie_node **trie::get_top_branches(int *size) {
+    return _root->get_top_branches(size);
 }
 
 /*
@@ -393,18 +262,17 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
     for (int i = 0; i < (int) ngram.size() - 1; i++) {
         static_node *child;
         int index;
-        auto *rn = dynamic_cast<static_root_node *>(current);
-        if (rn == nullptr) {
-            child = current->get_child(ngram.at((size_t) i), &index);
+        if (current == _root) {
+            child = (reinterpret_cast<static_root_node *>(current))->get_child(ngram[i]);
         } else {
-            child = rn->get_child(ngram.at((size_t) i));
+            child = current->get_child(ngram[i], &index);
         }
         if (child == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
-            if (rn == nullptr) {
-                current = current->add_child(ngram.at((size_t) i), false, index);
+            if (current == _root) {
+                current = (reinterpret_cast<static_root_node *>(current))->add_child(ngram[i], false);
             } else {
-                current = rn->add_child(ngram.at((size_t) i), false);
+                current = current->add_child(ngram[i], false, index);
             }
         } else {
             // Otherwise, follow that child's path
@@ -415,11 +283,10 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
     std::string &last_word = ngram.get(ngram.size() - 1);
     static_node *child;
     int index = 0;
-    auto *srn = dynamic_cast<static_root_node *>(current);
-    if (srn == nullptr) {
-        child = current->get_child(last_word, &index);
+    if (current == _root) {
+        child = (reinterpret_cast<static_root_node *>(current))->get_child(last_word);
     } else {
-        child = srn->get_child(last_word);
+        child = current->get_child(last_word, &index);
     }
 
     if (child != nullptr) {
@@ -427,10 +294,10 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
         child->set_end_of_word(true);
     } else {
         // Otherwise we insert it to that node's children
-        if (srn == nullptr) {
-            current->add_child(last_word, true, index);
+        if (current == _root) {
+            (reinterpret_cast<static_root_node *>(current))->add_child(last_word, true);
         } else {
-            srn->add_child(last_word, true);
+            current->add_child(last_word, true, index);
         }
     }
 
