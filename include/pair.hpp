@@ -28,7 +28,9 @@ public:
 
     size_t get_freq() { return _freq; }
 
-    void count() { _freq++; }
+    // void count() { _freq++; }
+
+    void count(size_t val) { _freq += val; }
 
     void print() {
         std::cout << _word << " : " << _freq;
