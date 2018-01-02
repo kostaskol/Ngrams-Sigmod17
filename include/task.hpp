@@ -65,6 +65,10 @@ class compress_task : public task {
 public:
     compress_task(static_trie *st, static_node *branch);
 
+    compress_task(const compress_task &other)=delete;
+
+    compress_task(compress_task &&other) noexcept;
+
     void run() override;
 
 private:

@@ -49,6 +49,11 @@ void clean_up_task::run() {
  */
 compress_task::compress_task(static_trie *st, static_node *branch) : _st(st), _branch(branch) { }
 
+compress_task::compress_task(compress_task &&other) noexcept {
+    _st = other._st;
+    _branch = other._branch;
+}
+
 void compress_task::run() {
     _st->compress(_branch);
     delete this;
