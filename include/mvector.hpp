@@ -18,7 +18,9 @@ namespace mstd {
 
         void _enlarge() {
             auto *tmp = new T[_capacity << 1];
-            std::copy(_entries, _entries + _size, tmp);
+            for (size_t i = 0; i < _size; i++) {
+                tmp[i] = std::move(_entries[i]);
+            }
 
             delete[] _entries;
             _entries = tmp;
@@ -75,6 +77,32 @@ namespace mstd {
             }
 
             _entries[_size++] = T(ent);
+        }
+
+        void push(T &&ent) {
+            if (_size + 1 > _capacity) {
+                _enlarge();
+            }
+
+            _entries[_size++] = ent;
+        }
+
+        T &back() {
+            if (_size - 1 < 0) {
+                throw std::out_of_range("Requesting back of empty vector");
+            }
+            return _entries[_size - 1];
+        }
+
+
+        void pop_back() {
+            if (_size == 0) {
+                return;
+            }
+            
+            if (--_size <= (_capacity >> 2)) {
+                _shrink();
+            }
         }
 
         T *m_push(T &ent) {
@@ -167,7 +195,7 @@ namespace mstd {
 
         void set_at(size_t index, const T &ent) {
             if (index < 0 || index >= _size) {
-                throw std::out_of_range("Bad index: " + index);
+                throw std::out_of_range("Bad index: " + std::to_string(index));
             }
 
             _entries[index] = T(ent);
@@ -196,10 +224,10 @@ namespace mstd {
             _size--;
             // If the size of the vector ever becomes 1/4 of its capacity
             // we shrink the vector
-            if (_size <= (_capacity >> 2)) {
-                _shrink();
-            }
-
+//            if (_size <= (_capacity >> 2)) {
+//                _shrink();
+//            }
+//
         }
 
         size_t capacity() {

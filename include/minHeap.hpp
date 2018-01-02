@@ -64,12 +64,12 @@ private:
     bool my_array;  //To determine whether *_array should be deallocated
 public:
 
-    minHeap(pair from[], int size) : _size(size), my_array(true), _heapified(false) {  //Given array will be copied to the class' vector.
+    minHeap(pair from[], int size) : _size(size), _heapified(false), my_array(true) {  //Given array will be copied to the class' vector.
         _array = new vector<pair>(from, size);
         _minHeapify();
     }
 
-    minHeap(mstd::vector<pair> &from) : my_array(false), _heapified(false) {   //Vector pointer will point to the given vector, no copying involved.
+    minHeap(mstd::vector<pair> &from) : _heapified(false), my_array(false) {   //Vector pointer will point to the given vector, no copying involved.
         _size = from.size();
         _array = &from;
         _minHeapify();

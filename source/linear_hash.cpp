@@ -17,27 +17,32 @@ using std::endl;
 using std::cerr;
 
 template <typename T>
-linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size), _num_items(0), _p(0) {
+linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size),
+                                                   _num_items(0),
+                                                   _p(0),
+                                                   _current_branch(0),
+                                                   _current_bucket(0) {
+    pthread_mutex_init(&_del_mtx, nullptr);
     _entries = new vector<T>*[_size];
-    for (int i = 0; i < initial_size; i++) {
+    for (size_t i = 0; i < initial_size; i++) {
         _entries[i] = new vector<T>(constants::LH_MAX_BUCKET_SIZE);
     }
 }
 
 template <typename T>
 linear_hash<T>::~linear_hash() {
-    for (int i = 0; i < _size + _p; i++) {
+    for (size_t i = 0; i < _size + _p; i++) {
         delete _entries[i];
     }
     delete[] _entries;
 }
 
 template <typename T>
-T *linear_hash<T>::insert(string &word, bool eow) {
+T *linear_hash<T>::insert(T &new_node) {
     int hash;
     int inner_index;
     // Use linear_hash::get to check if the entry already exists...
-    T *entry = get(word, &hash, &inner_index);
+    T *entry = get(new_node.get_word(), &hash, &inner_index);
 
     // ...in which case, simply return it
     if (entry != nullptr) return entry;
@@ -58,18 +63,17 @@ T *linear_hash<T>::insert(string &word, bool eow) {
 
         // Rehash each element in tmp_storage to either _p or _size + _p
         if (tmp_storage != nullptr) {
-            for (int i = 0; i < tmp_storage->size(); i++) {
+            for (int i = 0; i < (int) tmp_storage->size(); i++) {
                 string tmp_word = tmp_storage->at(i).get_word();
                 int hash = _hash(tmp_word);
 
                 int index = hash % (2 * _size);
                 int child_index;
-                if (index > _size + _p) {
+                if (index > (int) (_size + _p)) {
                     logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" +
                                                         to_string(_size + _p) + "). Size = " + to_string(_size)
                                                         + "\tHash: " +
-                                                        to_string(hash) + " word = " + tmp_word);
-                }
+                                                        to_string(hash) + " word = " + tmp_word); }
                 if (_entries[index] == nullptr) {
                     logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was "
                                                                                                     "null.Terminating");
@@ -102,8 +106,6 @@ T *linear_hash<T>::insert(string &word, bool eow) {
         index = hash % (2 * _size);
     }
 
-    T new_node(word, eow);
-
     T *ret = nullptr;
 
     vector<T> *v = _entries[index];
@@ -116,16 +118,10 @@ T *linear_hash<T>::insert(string &word, bool eow) {
     } else {
         // Otherwise, we need to search the bucket again
         int child_index;
-        if (!bsearch_children(word, *v, &child_index)) {
+        if (!bsearch_children(new_node.get_word(), *v, &child_index)) {
             // Child does not exist, so we must add it at index <child_index>
             _num_items++;
             ret = v->m_insert_at(child_index, new_node);
-        } else /* TODO: Is this a possibility? */{
-            // Child exists. Simply return it
-            logger::warn("linear_hash::insert", "Found that child exists during insertion and not search",
-                         constants::LOGFILE);
-
-            ret = v->get_p(child_index);
         }
     }
 
@@ -148,7 +144,7 @@ T *linear_hash<T>::get(const std::string &word, int *hash, int *index) const {
     int child_index;
     T *ret = nullptr;
     if (bsearch_children(word, *_entries[mindex], &child_index)) {
-        ret = &_entries[mindex]->at(child_index);
+        ret = &_entries[mindex]->at((size_t) child_index);
     }
     if (index != nullptr) {
         *index = child_index;
@@ -157,8 +153,9 @@ T *linear_hash<T>::get(const std::string &word, int *hash, int *index) const {
     return ret;
 }
 
-template <typename T>
-T *linear_hash<T>::get_static(const std::string &word) const {
+// template <typename T>
+template <>
+static_node *linear_hash<static_node>::get_static(const std::string &word) const {
     int hash = _hash(word);
     size_t index = hash % _size;
     if (index < _p) {
@@ -170,6 +167,8 @@ T *linear_hash<T>::get_static(const std::string &word) const {
 
 template <typename T>
 void linear_hash<T>::delete_word(const std::string &word) {
+
+    pthread_mutex_lock(&_del_mtx);
     int hash = _hash(word);
     size_t index = hash % _size;
     if (index < _p) {
@@ -177,10 +176,37 @@ void linear_hash<T>::delete_word(const std::string &word) {
     }
 
     int child_index;
+
     if (bsearch_children(word, *_entries[index], &child_index)) {
         _entries[index]->remove_at((size_t) child_index);
         _num_items--;
     }
+    pthread_mutex_unlock(&_del_mtx);
+}
+
+
+template <typename T>
+size_t linear_hash<T>::get_num_items() const {
+    return _num_items;
+}
+
+template <typename T>
+T **linear_hash<T>::get_top_branches(int *size) {
+    int current_branch = 0;
+    int current_bucket = 0;
+    *size = _num_items;
+
+    T **ret = new T*[_num_items];
+
+    for (int i = 0; i < (int) _num_items; i++) {
+        while (current_branch >= (int) _entries[current_bucket]->size()) {
+            current_bucket++;
+            current_branch = 0;
+        }
+        ret[i] = _entries[current_bucket]->get_p(current_branch++);
+    }
+
+    return ret;
 }
 
 template <typename T>
@@ -191,8 +217,8 @@ size_t linear_hash<T>::size() const {
 
 template <typename T>
 void linear_hash<T>::push_to_stack(mstd::stack<T *> *s) const {
-    for (int i = 0; i < _size + _p; i++) {
-        for (int j = 0; j < _entries[i]->size(); j++) {
+    for (int i = 0; i < (int) (_size + _p); i++) {
+        for (int j = 0; j < (int) _entries[i]->size(); j++) {
             s->push(_entries[i]->get_p((size_t)j));
         }
     }
@@ -213,7 +239,7 @@ int linear_hash<T>::_hash(const std::string &word) const {
     int c;
 
 
-    while (c = *str++)
+    while ((c = *str++))
         hash = ((hash << 5) + hash) + c;
 
     delete[] cont_str;
@@ -405,7 +431,7 @@ void linear_hash_int::delete_word(const std::string &word) {
 }
 
 size_t linear_hash_int::size() const {
-    return _size;
+    return _size + _p;
 }
 
 void linear_hash_int::print() const {

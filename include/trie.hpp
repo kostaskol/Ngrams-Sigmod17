@@ -5,53 +5,45 @@
 #include "mvector.hpp"
 #include "logger.hpp"
 #include "mqueue.hpp"
-#include "hash_table.hpp"
 #include "trie_nodes.hpp"
 
 
 class trie {
-protected:
-    size_t _num_nodes;
-
-    size_t _num_ngrams;
-
-private:
-    root_node *_root;
-
 public:
     trie();
 
     virtual ~trie();
 
-    virtual void add(const mstd::vector<std::string> &ngram);
+    void add(const mstd::vector<std::string> &ngram, int version = 0);
 
-    virtual void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results);
+    std::string search(const mstd::vector<std::string> &ngram, int version);
 
-    virtual void compress();
+    bool delete_ngram(const mstd::vector<std::string> &ngram, int version);
 
-    bool delete_ngram(const mstd::vector<std::string> &ngram);
+    void clean_up(trie_node *top);
 
-    friend std::ostream &operator<<(std::ostream &out, const trie_node &other);
+    trie_node **get_top_branches(int *size);
+private:
+    root_node *_root;
 };
 
 class static_trie : public trie {
-private:
-//    static_node *_root;
-    static_root_node*_root;
 public:
     static_trie();
-
     ~static_trie() override;
 
-    void add(const mstd::vector<std::string> &ngram) override;
+    void add(const mstd::vector<std::string> &ngram);
 
-    void search(const mstd::vector<std::string> &ngram, mstd::queue<std::string> *results) override;
+    std::string search(const mstd::vector<std::string> &ngram);
 
-    void compress() override;
+    void compress();
 
-    size_t get_num_nodes();
+    void compress(static_node *top);
 
-    size_t get_num_ngrams();
+    static_node **get_top_branches(int *size);
+
+private:
+    static_root_node*_root;
 };
 
 #endif // TRIE

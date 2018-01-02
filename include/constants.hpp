@@ -3,6 +3,11 @@
 
 namespace constants {
     /*
+     * General constants
+     */
+
+    const int NUM_THREADS = 4;
+    /*
      * mstd::logger constants
      */
     const int STDOUT = 0x0;

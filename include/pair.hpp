@@ -1,6 +1,7 @@
 #ifndef PAIR_HPP
 #define PAIR_HPP
 #include <string>
+#include <iostream>
 
 class pair {
 private:
@@ -49,6 +50,16 @@ public:
 //        return *this;
 //    }
 
+};
+
+template <typename T, typename V>
+class tuple {
+public:
+    T a;
+    V b;
+
+    tuple() { }
+    tuple(T a, V b) : a(a), b(b) { }
 };
 
 #endif //PAIR_HPP

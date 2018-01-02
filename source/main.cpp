@@ -1,51 +1,55 @@
 #include "trie.hpp"
 #include "constants.hpp"
 #include "minHeap.hpp"
+#include "task.hpp"
 #include <iostream>
 #include <cmd_parser.hpp>
 #include <parser.hpp>
 #include <unistd.h>
 #include <fstream>
+#include <helpers.hpp>
+#include <thread_pool.hpp>
 
 
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::string;
 using mstd::vector;
 using mstd::logger;
 using std::ifstream;
 
-void print_and_topk(mstd::queue<std::string> *results, size_t topk);
+void print_and_topk(string *results, int size, size_t topk);
 
 int main(int argc, char **argv) {
     // Start command line arguments parsing
-    string legal = " -i <init-file> -q <query-file>";
+
     if (argc < 3) {
-        cout << "Invalid number of arguments. Usage: " << argv[0] << legal << endl;
+        cout << "Invalid number of arguments" << endl;
+        cmd_parser::print_help(argv[0]);
         return 1;
     }
 
-    auto *ht = new mstd::hash_table<string>(3);
-    ht->put("-i", "<b>");
-    ht->put("-q", "<b>");
-    auto *c_parser = new mstd::cmd_parser(true, std::move(legal));
-    c_parser->parse(argc, argv, *ht);
-    delete ht;
+    cmd_parser::cmd_args args = cmd_parser::parse(argc, argv);
 
-    string init_file;
-    string query_file;
-    try {
-        init_file = c_parser->get_string("-i");
-        query_file = c_parser->get_string("-q");
-    } catch (std::runtime_error &e) {
-        logger::error("main", "User has not provided both -i and -q. Exiting..");
-        return -1;
+    string init_file = args.init_file;
+    string query_file = args.query_file;
+    int num_threads = args.num_threads == -1 ? constants::NUM_THREADS : args.num_threads;
+    bool parallel = args.parallel;
+
+    if (init_file.empty()) {
+        cerr << "Initialisation file not provided. Exiting" << endl;
+        cmd_parser::print_help(argv[0]);
+        exit(-1);
     }
 
-    delete c_parser;
-    // End command line arguments parsing
+    if (query_file.empty()) {
+        cerr << "Work file not provided. Exiting" << endl;
+        cmd_parser::print_help(argv[0]);
+        exit(-1);
+    }
 
-    vector<string> v(100);
+    vector<string> v;
     trie* t;
 
     // Begin initialisation file parsing
@@ -64,12 +68,30 @@ int main(int argc, char **argv) {
     while (true) {
         stop = init_parser.next_init(&v);
         if (v.size() == 0 && stop) break;
-        t->add(v);
+        if (compress) {
+            (dynamic_cast<static_trie *>(t))->add(v);
+        } else {
+            t->add(v);
+        }
+
         v.clear(100);
         if (stop) break;
     }
+
+    thread_pool tp(num_threads);
     if (compress) {
-        t->compress();
+        if (parallel) {
+            int size;
+            static_node **branches = (dynamic_cast<static_trie *>(t))->get_top_branches(&size);
+
+            for (int i = size - 1; i >= 0; i--) {
+                tp.add_task(new compress_task((dynamic_cast<static_trie *>(t)), branches[i]));
+            }
+            tp.wait_all();
+        } else {
+            (dynamic_cast<static_trie *>(t))->compress();
+        }
+
     }
     // End initialisation file parsing
 
@@ -78,52 +100,93 @@ int main(int argc, char **argv) {
 
     int cmd_type;
 
-    mstd::queue<std::string> results;
+    vector<query> queries(200);
+    int version = 1;
+    thread_pool other_pool(1);
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
         if (v.size() == 0 && stop) break;
         string s;
         switch (cmd_type) {
             case INSERTION:
-                t->add(v);
+                if (parallel) {
+                    other_pool.add_task(new insert_task(t, v, version));
+                } else {
+                    t->add(v, version);
+                }
                 break;
-            case QUERY:
-                t->search(v,&results);
+            case QUERY: {
+                query q(v, version);
+                queries.push(q);
                 break;
-            case DELETION:
-                t->delete_ngram(v);
+            }
+            case DELETION: {
+                if (parallel) {
+                    other_pool.add_task(new deletion_task(t, v, version));
+                } else {
+                    t->delete_ngram(v, version);
+                }
                 break;
+            }
             case FINISH: {
+                if (parallel) {
+                    other_pool.wait_all();
+                }
+
+                auto *results = new string[queries.size()];
+
+                for (int i = 0; i < (int) queries.size(); i++) {
+                     tp.add_task(new search_task(t, queries.at(i), i, results));
+                }
                 // Print query results
+                tp.wait_all();
+
+                if (!compress) {
+                    int size;
+                    trie_node **branches = t->get_top_branches(&size);
+
+                    for (int i = size - 1; i >= 0; i--) {
+                        tp.add_task(new clean_up_task(t, branches[i]));
+                    }
+                }
+
                 size_t k = 0;
                 if (v.size() == 1) {
-                    k = helpers::to_int(v[0]);
+                    k = (size_t) helpers::to_int(v[0]);
                 }
-                print_and_topk(&results, k);
+
+                print_and_topk(results, (int) queries.size(), k);
+                tp.wait_all();
+
+                delete[] results;
+                version = 1;
+                queries.clear(200);
                 break;
             }
         default:
             break;
         }
-        if (stop) break;
+        version++;
         v.clear(100);
+        if (stop) break;
     }
-    results.clear();
+
+    tp.finish();
     // End query file parsing
     delete t;
 }
 
-void print_and_topk(mstd::queue<std::string> *results, size_t topk){
-    string succ = "";
+void print_and_topk(string *results, int size, size_t topk){
+    string succ;
     linear_hash_int hashmap;
 
-    while(!results->empty()){
-        succ = results->pop();
+    for (int i = 0; i < size; i++) {
+        succ = results[i];
         if (succ == "$$END$$" || succ == "$$EMPTY$$") {
             std::cout << "-1" << '\n';
         }
-        else{
-            std::cout << succ << '\n';
+        else {
+            cout << succ << '\n';
             if (topk) {                                    // if topk == 0, no topk operation
                 vector<string> answers;
                 helpers::split(succ, answers, '|');
@@ -143,10 +206,10 @@ void print_and_topk(mstd::queue<std::string> *results, size_t topk){
 
         int counter = 0;
         bool one_word = false;
-        for (int i = max_freq-1; i >= 0 && counter != topk; i--) {
+        for (int i = (int) max_freq-1; i >= 0 && counter != (int) topk; i--) {
             minHeap heap(array[i]);
             heap.heapSort();
-            for (int j = 0; j < array[i].size() && counter != topk; j++) {
+            for (int j = 0; j < (int) array[i].size() && counter != (int) topk; j++) {
                 counter++;
                 if (one_word) {
                     std::cout << "|";

@@ -1,101 +1,72 @@
 #ifndef TRIES_CMD_PARSER_H
 #define TRIES_CMD_PARSER_H
 
-
 #include <string>
-#include "hash_table.hpp"
-#include "helpers.hpp"
+#include <iostream>
+#include <getopt.h>
 
-#define UNKNOWN_ARG 1
-#define WRONG_FORMAT 2
-#define WRONG_INPUT 3
-#define SUCCESS 4
+namespace cmd_parser {
+    struct cmd_args {
+        std::string init_file;
+        std::string query_file;
+        int num_threads;
+        bool parallel;
 
+        cmd_args() : init_file(""), query_file(""), num_threads(-1), parallel(false) { }
 
-/*
- * Simple command line arguments parser. Expects an mstd::hash_table object
- * with entries in the form of: "argument-name" => "<u(nary)/b(inary)>"
- * and parses the command line arguments trying to match them
- */
-
-namespace mstd {
-    class cmd_parser {
-    private:
-        mstd::hash_table<std::string> _args;
-        mstd::vector<std::string> _flags;
-        bool _auto_msg;
-        std::string _legal;
-        void _exit(const std::string &&exec_name, int err_type) {
-            switch (err_type) {
-                case UNKNOWN_ARG:
-                    std::cout << "Unknown arguments found. Usage: " << exec_name << _legal << std::endl;
-                    exit(-1);
-                case WRONG_FORMAT:
-                    std::cout << "Wrong usage found. Usage: " << exec_name << _legal << std::endl;
-                    exit(-1);
-                case WRONG_INPUT:
-                    std::cerr << "Our input was wrong" << std::endl;
-                    exit(-1);
-            }
-        }
-    public:
-        explicit cmd_parser(bool auto_msg = false, std::string &&legal = "")
-                : _args(5), _flags(3), _auto_msg(auto_msg), _legal(legal) {}
-
-        ~cmd_parser() = default;
-
-        int parse(int argc, char **argv, mstd::hash_table<std::string> &ht, bool allow_unknown = false) {
-            for (int i = 1; i < argc; i++) {
-                std::string s = argv[i];
-                std::string type;
-                bool known = true;
-                try {
-                    type = ht.get(s);
-                } catch (std::runtime_error &e) {
-                    known = false;
-                }
-
-                if (!known && !allow_unknown) {
-                    if (_auto_msg) {
-                        _exit(std::string(argv[0]), UNKNOWN_ARG);
-                    }
-                    std::cout << "Unknown key: " << s << std::endl;
-                    return UNKNOWN_ARG;
-                }
-
-                if (type == "<u>") {
-                    _flags.add(s);
-                } else if (type == "<b>") {
-                    if (i + 1 >= argc) {
-                        if (_auto_msg) {
-                            _exit(std::string(argv[0]), WRONG_FORMAT);
-                        }
-                        return WRONG_FORMAT;
-                    } else {
-                        _args.put(s, argv[++i]);
-                    }
-                } else {
-                    if (_auto_msg) {
-                        _exit(std::string(argv[0]), WRONG_INPUT);
-                    }
-                    return WRONG_INPUT;
-                }
-            }
-            _flags.shrink_to_size();
-            return SUCCESS;
-        }
-
-        std::string get_string(const std::string &key) const {
-            return _args.get(key);
-        }
-
-        int get_int(const std::string &key) {
-            return helpers::to_int(_args.get(key));
-        }
-
-        bool is_set(const std::string &key) {
-            return _flags.in(key);
-        }
+        cmd_args &operator=(const cmd_args &other)=default;
     };
+
+    void print_help(const char *name) {
+        std::cout << "Printing help for " << name << "\n"
+                  << "[Required Arguments]\n"
+                  << "\t--init|-i\t: The trie initialisation file\n"
+                  << "\t--query|-q\t: The trie work file\n"
+                  << "[Optional Arguments]\n"
+                  << "\t--threads|-t\t: The number of threads to be run in the thread pool (Default 4)\n"
+                  << "\t--parallel|-p\t: [Flag] Specifies that the adds and deletes should run in parallel to the "
+                  << "file parsing\n"
+                  << "\t--help|-h\t: Prints this message and exits the program" << std::endl;
+    }
+
+    cmd_args parse(int argc, char **argv) {
+        const std::string short_opts = "i:q:t:p";
+        const option long_opts[] = {
+                {"init", required_argument, nullptr, 'i'},
+                {"query", required_argument, nullptr, 'q'},
+                {"threads", required_argument, nullptr, 't'},
+                {"parallel", no_argument, nullptr, 'p'},
+                {"help", no_argument, nullptr, 'h'}
+        };
+
+        cmd_args args;
+
+        int c,
+            index;
+        while ((c = getopt_long(argc, argv, short_opts.c_str(), long_opts, &index)) != -1) {
+            switch (c) {
+                case 'i':
+                    args.init_file = optarg;
+                    break;
+                case 'q':
+                    args.query_file = optarg;
+                    break;
+                case 't': {
+                    char *endptr;
+                    args.num_threads = (int) strtol(optarg, &endptr, 10);
+                    break;
+                }
+                case 'p':
+                    args.parallel = true;
+                    break;
+                case 'h':
+                case '?':
+                    print_help(argv[0]);
+                    exit(-1);
+            }
+        }
+        return args;
+    }
 }
+
 #endif //TRIES_CMD_PARSER_H

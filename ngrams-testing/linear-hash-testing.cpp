@@ -83,9 +83,8 @@ TEST_F(LinearHashTest, FalsePositiveTest) {
 /*
  * Easy -> 50k words
  * Medium -> 120k words
- * Hard -> 260k words
+ * Hard -> ~260k words
  */
-
 TEST_F(LinearHashTest, BigFileEasyTest) {
     ifstream in("../ngrams-testing/test-input/linear-hash-input/big_file.correct");
     
@@ -177,14 +176,11 @@ TEST_F(LinearHashTest, BasicDeletionTest) {
     
     lh.delete_word(s);
     
-    trie_node *tmp = lh.get(s);
-    
-    EXPECT_EQ(tmp, nullptr);    
+    EXPECT_EQ(lh.get(s), nullptr);
 
     s = "world";
     
-    tmp = lh.get(s);
-    EXPECT_NE(tmp, nullptr);
+    EXPECT_NE(lh.get(s), nullptr);
 }
 
 TEST_F(LinearHashTest, MultipleDeletionTest) {

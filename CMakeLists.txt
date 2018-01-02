@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 
 # Download and unpack googletest at configure time
 configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -35,7 +35,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS "-g -std=c++0x -O3 -I../include -Iinclude")
+set(CMAKE_CXX_FLAGS "-g -I../include -Iinclude")
+
+set(CMAKE_CXX_STANDARD 11)
+
+find_package(Threads)
 
 set(SOURCE_FILES
         source/main.cpp
@@ -58,7 +62,12 @@ set(SOURCE_FILES
         include/trie_nodes.hpp source/trie_nodes.cpp
         include/pair.hpp
         include/minHeap.hpp
-        )
+        include/thread.hpp source/thread.cpp
+        include/task.hpp source/task.cpp
+        include/thread_pool.hpp source/thread_pool.cpp
+        include/worker.hpp source/worker.cpp
+        include/work_queue.hpp source/work_queue.cpp
+        source/task.cpp)
 
 set(TEST_SOURCE
         ngrams-testing/basic_tests.cpp
@@ -66,7 +75,6 @@ set(TEST_SOURCE
         ngrams-testing/parser-testing.cpp
         ngrams-testing/cmd-parser-testing.cpp
         ngrams-testing/trie-testing.cpp
-        ngrams-testing/trie-compress-testing.cpp
         ngrams-testing/queue-testing.cpp
         ngrams-testing/stack-testing.cpp
         ngrams-testing/linear-hash-testing.cpp
@@ -82,9 +90,17 @@ set(TEST_SOURCE
         source/logger.cpp
         source/bloom_filter.cpp
         source/bit_vector.cpp
+        include/thread.hpp source/thread.cpp
+        include/task.hpp
+        include/thread_pool.hpp source/thread_pool.cpp
+        include/worker.hpp source/worker.cpp
+        include/work_queue.hpp source/work_queue.cpp
         )
 
 add_executable(ngrams ${SOURCE_FILES})
+target_link_libraries(ngrams ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(basic_tests ${TEST_SOURCE})
 target_link_libraries(basic_tests gtest)
+target_link_libraries(basic_tests ${CMAKE_THREAD_LIBS_INIT})
+
