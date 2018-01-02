@@ -284,7 +284,7 @@ linear_hash_int::~linear_hash_int() {
     delete[] _entries;
 }
 
-pair *linear_hash_int::insert(string &word, size_t counted = 1) {
+pair *linear_hash_int::insert(string &word, size_t counted) {
     int hash;
     int inner_index;
     size_t tmp;
