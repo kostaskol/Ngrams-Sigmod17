@@ -7,7 +7,7 @@
 #include <parser.hpp>
 #include <unistd.h>
 #include <fstream>
-#include <helpers.hpp>
+// #include <helpers.hpp>
 #include <thread_pool.hpp>
 
 
@@ -19,7 +19,7 @@ using mstd::vector;
 using mstd::logger;
 using std::ifstream;
 
-void print_and_topk(string *results, int size, size_t topk);
+void print_and_topk(string *results, int size, size_t topk, int num_threads, thread_pool *tp);
 
 int main(int argc, char **argv) {
     // Start command line arguments parsing
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
                     k = (size_t) helpers::to_int(v[0]);
                 }
 
-                print_and_topk(results, (int) queries.size(), k);
+                print_and_topk(results, (int) queries.size(), k, num_threads, &tp);
                 tp.wait_all();
 
                 delete[] results;
@@ -176,9 +176,9 @@ int main(int argc, char **argv) {
     delete t;
 }
 
-void print_and_topk(string *results, int size, size_t topk){
+void print_and_topk(string *results, int size, size_t topk, int num_threads, thread_pool *tp){
     string succ;
-    linear_hash_int hashmap;
+    linear_hash_int *hashmap;
 
     for (int i = 0; i < size; i++) {
         succ = results[i];
@@ -187,22 +187,27 @@ void print_and_topk(string *results, int size, size_t topk){
         }
         else {
             cout << succ << '\n';
-            if (topk) {                                    // if topk == 0, no topk operation
-                vector<string> answers;
-                helpers::split(succ, answers, '|');
-                for (size_t i = 0; i < answers.size(); i++) {
-                    hashmap.insert(answers[i]);
-                }
-            }
         }
     }
-    if ((topk > 0) && (!hashmap.empty())) {  //gia na sigoureutoume oti den brhke mono -1 stis apanthseis
+
+    if (topk) {
+        hashmap = new linear_hash_int[num_threads];
+        for (size_t i = 0; i < num_threads; i++) {
+            tp->add_task(new topk_task(results, size, &hashmap[i], i, num_threads));
+        }
+        tp->wait_all();
+
+        for (size_t i = 1; i < num_threads; i++) {
+            hashmap[i].merge(hashmap[0]);
+        }
+    }
+    if ((topk > 0) && (!hashmap[0].empty())) {  //gia na sigoureutoume oti den brhke mono -1 stis apanthseis
         std::cout << "Top: ";
 
-        size_t max_freq = hashmap.get_max();
+        size_t max_freq = hashmap[0].get_max();
         vector<pair> *array = new vector<pair>[max_freq];
 
-        hashmap.fill_with_items(array);
+        hashmap[0].fill_with_items(array);
 
         int counter = 0;
         bool one_word = false;
@@ -221,6 +226,7 @@ void print_and_topk(string *results, int size, size_t topk){
         std::cout << '\n';
 
         delete[] array;
+        delete[] hashmap;
     }
 
 }
