@@ -63,7 +63,7 @@ public:
 
     ~linear_hash_int();
 
-    pair *insert(std::string &word);
+    pair *insert(std::string &word, size_t counted = 1);
 
     pair *get(const std::string &word, int *hash = nullptr, int *index = nullptr) const;
 
@@ -80,6 +80,9 @@ public:
     size_t get_max() const;
 
     void fill_with_items(mstd::vector<pair> *array);
+
+    void merge(linear_hash_int &merged);
+
 private:
     size_t _size;
     size_t _num_items;

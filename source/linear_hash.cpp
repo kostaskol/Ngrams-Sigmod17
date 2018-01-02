@@ -284,7 +284,7 @@ linear_hash_int::~linear_hash_int() {
     delete[] _entries;
 }
 
-pair *linear_hash_int::insert(string &word) {
+pair *linear_hash_int::insert(string &word, size_t counted = 1) {
     int hash;
     int inner_index;
     size_t tmp;
@@ -292,7 +292,7 @@ pair *linear_hash_int::insert(string &word) {
     pair *entry = get(word, &hash, &inner_index);
 
     if (entry != nullptr) {
-        entry->count();
+        entry->count(counted);
         if ((tmp = entry->get_freq()) > _max) {
             _max = tmp;
         }
@@ -368,7 +368,7 @@ pair *linear_hash_int::insert(string &word) {
     if (!split) {
         // If the bucket hasn't split
         // We can use the vector's index provided by linear_hash::get
-        pair new_node(word); //New pair of <word,1>
+        pair new_node(word,counted); //New pair of <word,counted>
         ret = v->m_insert_at(inner_index, new_node);
         _num_items++;
     } else {
@@ -376,12 +376,12 @@ pair *linear_hash_int::insert(string &word) {
         int child_index;
         if (!bsearch_children(word, *v, &child_index)) {
             // Child does not exist, so we must add it at index <child_index>
-            pair new_node(word); //New pair of <word,1>
+            pair new_node(word,counted); //New pair of <word,counted>
             ret = v->m_insert_at(child_index, new_node);
             _num_items++;
         } else /* TODO: Is this a possibility? */{
             // Child exists. Increase frequency counter and return child.
-            _entries[index]->at(child_index).count();
+            _entries[index]->at(child_index).count(counted);
             ret = v->get_p(child_index);
         }
     }
@@ -481,12 +481,20 @@ size_t linear_hash_int::get_max() const {
 }
 
 void linear_hash_int::fill_with_items(mstd::vector<pair> *array){
-    for (size_t i = 0; i < _size + _p; i++) {
+    for (size_t i = 0; i < size(); i++) {
         for (size_t j = 0; j < _entries[i]->size(); j++) {
 
             pair *temp = _entries[i]->at_p(j);
             size_t freq = temp->get_freq();
             array[freq-1].m_push(*temp);
+        }
+    }
+}
+
+void linear_hash_int::merge(linear_hash_int &merged){
+    for (size_t i = 0; i < size(); i++) {
+        for (size_t j = 0; j < _entries[i]->size(); j++) {
+            merged.insert(_entries[i]->at_p(j)->get_word(), _entries[i]->at_p(j)->get_freq());
         }
     }
 }
