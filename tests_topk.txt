@@ -1,54 +1,118 @@
+@@ -1,54 +0,0 @@
 Small Dynamic parallel
-	0:01.29 real
+  0:01.29 real
 ---------------------------------------
 
 Medium Dynamic parallel
-	0:32.17 real
+  0:32.17 real
 ---------------------------------------
 
 Large Dynamic parallel
-	1:48.54 real
+  1:48.54 real
 ---------------------------------------
 
 ------------------------------------------------------------------------------
 
 Small Dynamic
-	0:01.28 real
+  0:01.28 real
 ---------------------------------------
 
 Medium Dynamic
-	0:32.15 real
+  0:32.15 real
 ---------------------------------------
 
 Large Dynamic
-	1:52.55 real
+  1:52.55 real
 ---------------------------------------
 
 ------------------------------------------------------------------------------
 
 Small Static parallel
-	0:01.32 real
+  0:01.32 real
 ---------------------------------------
 
 Medium Static parallel
-	0:33.60 real
+  0:33.60 real
 ---------------------------------------
 
 Large Static parallel
-	0:44.27 real
+  0:44.27 real
 ---------------------------------------
 
 ------------------------------------------------------------------------------
 
 Small Static
-	0:01.34 real
+  0:01.34 real
 ---------------------------------------
 
 Medium Static
-	0:33.41 real
+  0:33.41 real
 ---------------------------------------
 
 Large Static
-	0:47.49 real
+  0:47.49 real
 ---------------------------------------
 
+File contents are unchanged.
+2 file changes in working directory
+View changes
+commit:18a87c
+WIP on topk_parallel: Auto stash before revert of "Adding tests.sh to run all tests (first argument for output file). tests_topk.txt has the topk parallel implementation"
+
+Unknown
+authored1/3/2018 @ 2:57 AM
+parent:f26715
+2 deleted
+Name
+
+Path
+
+Tree
+
+View all files
+tests.sh
+tests_topk.txt
+File History: tests_topk.txt
+index on topk_parallel: f267153 Adding tests.sh to run all tests (first argument for output file). tests_topk.txt has the topk parallel implementation
+3 minutes ago by Unknown
+18a87c
+DELETED tests_topk.txt
+Adding tests.sh to run all tests (first argument for output file). tests_topk.txt has the topk parallel implementation
+8 minutes ago by Giannis Argyros
+f26715
+ADDED tests_topk.txt
+End of History
+Diff View
+File View
+
+Show blame details
+ 1:52.55 real
+---------------------------------------
+
+------------------------------------------------------------------------------
+
+Small Static parallel
+ 0:01.32 real
+---------------------------------------
+
+Medium Static parallel
+ 0:33.60 real
+---------------------------------------
+
+Large Static parallel
+ 0:44.27 real
+---------------------------------------
+
+------------------------------------------------------------------------------
+
+Small Static
+ 0:01.34 real
+---------------------------------------
+
+Medium Static
+ 0:33.41 real
+---------------------------------------
+
+Large Static
+ 0:47.49 real
+---------------------------------------
