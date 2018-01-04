@@ -1,7 +1,0 @@
-.gitignore
-build/*
-CmakeLists.txt.in
-input
-output
-debug
-googletest
