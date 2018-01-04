@@ -1,4 +1,8 @@
 #!/bin/bash
+cd build
+make ngrams
+cd ..
+
 echo "Getting the average execution time after 10 runs for each dataset without parallel implementation of topk" > $1
 echo " "
 echo "-----Small Dynamic-----" >> $1
