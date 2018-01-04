@@ -15,7 +15,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-bloom_filter::bloom_filter(size_t size, int k) : _size(size), _bv(size), _k(k) {
+bloom_filter::bloom_filter(size_t size, int k) : _bv(size), _size(size), _k(k) {
     _results = new size_t[k];
 }
 

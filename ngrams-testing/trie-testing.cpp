@@ -13,71 +13,63 @@ class TrieTesting : public ::testing::Test {
 public:
     trie t;
     vector<string> v;
-    queue<string> results;
     TrieTesting() {};
 };
 
 TEST_F(TrieTesting, findAtEmpty){
     string ret;
-    helpers::split("This is a test",v,' ');
-    t.search(v,&results);
-    ASSERT_EQ(results.size(), 1);
-    ret = results.pop();
-    ASSERT_EQ(ret, "$$EMPTY$$");
+    helpers::split("This is a test", v, ' ');
+    string result = t.search(v, 1);
+    ASSERT_EQ(result, "$$EMPTY$$");
 }
 
 TEST_F(TrieTesting, findNonPresent){
     string ret;
-    helpers::split("This is a test",v,' ');
+    helpers::split("This is a test", v, ' ');
     t.add(v);
     v.clear();
-    helpers::split("This is another test",v,' ');
-    t.search(v,&results);
-    ret = results.pop();
-    ASSERT_EQ(ret, "$$END$$");
+    helpers::split("This is another test", v, ' ');
+    string result = t.search(v, 1);
+    ASSERT_EQ(result, "$$END$$");
 }
 
 TEST_F(TrieTesting, findOne){
-    string ret;
-    helpers::split("This is a test",v,' ');
+    helpers::split("This is a test", v, ' ');
     t.add(v);
     v.clear();
-    helpers::split("That is another test",v,' ');
-    t.add(v);
-    t.search(v,&results);
-    ret = results.pop();
-    ASSERT_EQ(ret, "That is another test");
+    helpers::split("That is another test", v, ' ');
+    t.add(v, 1);
+    string result = t.search(v, 2);
+    ASSERT_EQ(result, "That is another test");
 }
 
 TEST_F(TrieTesting, searchAlreadyFound){
-    string ret;
-    cmd_parser p("../ngrams-testing/input/medium.input");
+    parser p("../ngrams-testing/input/medium.input");
     bool stop = false;
     vector<string> v;
+    int version = 0;
     while (!stop) {
         stop = p.next_init(&v);
         if (v.size() == 0) continue;
-        t.add(v);
+        t.add(v, version++);
         v.clear();
     }
-    helpers::split("this is a this is a fast car and something else",v,' ');
-    t.search(v,&results);
-    EXPECT_EQ(results.size(), 1) << "More than one final answers";
-    ret = results.pop();
-    ASSERT_EQ(ret, "this is a|this is a fast car");
+    helpers::split("this is a this is a fast car and something else", v, ' ');
+    string result = t.search(v, version);
+    ASSERT_EQ(result, "this is a|this is a fast car");
 }
 
 TEST_F(TrieTesting, deleteFromEmpty) {
     string str = "a b";
     helpers::split(str, v, ' ');
-    EXPECT_EQ(t.delete_ngram(v), false);
+    EXPECT_EQ(t.delete_ngram(v, 1), false);
 }
 
 TEST_F(TrieTesting, deleteSimple) {
     string str = "a b";
     helpers::split(str, v, ' ');
     t.add(v);
-    EXPECT_EQ(t.delete_ngram(v), true);
+    EXPECT_EQ(t.delete_ngram(v, 2), true);
 }
 
 TEST_F(TrieTesting, deleteMedium) {
@@ -87,7 +79,7 @@ TEST_F(TrieTesting, deleteMedium) {
     t.add(v1);
     helpers::split(str2, v2, ' ');
     t.add(v2);
-    EXPECT_EQ(t.delete_ngram(v1), true);
+    EXPECT_EQ(t.delete_ngram(v1, 1), true);
 }
 
 TEST_F(TrieTesting, deleteHard) {
@@ -107,17 +99,7 @@ TEST_F(TrieTesting, deleteHard) {
     t.add(v2);
     t.add(v3);
 
-    EXPECT_EQ(t.delete_ngram(v1), true);
-    EXPECT_EQ(t.delete_ngram(v2), true);
-    EXPECT_EQ(t.delete_ngram(v3), true);
-    EXPECT_EQ(t.delete_ngram(v4), false);
-}
-
-TEST_F(TrieTesting, deleteDouble) {
-    vector<string> v;
-    string str = "a a";
-    helpers::split(str, v, ' ');
-    t.add(v);
-    EXPECT_EQ(t.delete_ngram(v), true);
-    EXPECT_EQ(t.delete_ngram(v), false);
+    EXPECT_EQ(t.delete_ngram(v1, 1), true);
+    EXPECT_EQ(t.delete_ngram(v2, 2), true);
+    EXPECT_EQ(t.delete_ngram(v4, 3), false);
 }

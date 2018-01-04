@@ -25,11 +25,14 @@ TEST_F(LinearHashTest, SearchEmptyTest) {
 
 TEST_F(LinearHashTest, InsertAndGetTest) {
     string s = "some";
-    lh.insert(s, false);
+    trie_node t(s, false);
+    lh.insert(t);
     s = "test";
-    lh.insert(s, false);
+    t = trie_node(s, false);
+    lh.insert(t);
     s = "ngram";
-    lh.insert(s, false);
+    t = trie_node(s, false);
+    lh.insert(t);
     
     trie_node *tmp = lh.get("some");
     EXPECT_NE(tmp, nullptr);
@@ -49,7 +52,8 @@ TEST_F(LinearHashTest, SizeIncTest) {
     string wrong_strs[] = { "These", "Words", "Certainly", "Do", "Not", "Exist", "Because", "They", "Are", "Capitalized" };
     
     for (string s : strs) {
-        lh.insert(s, false);
+        trie_node t(s, false);
+        lh.insert(t);
     }
     
     for (string s : strs) {
@@ -67,7 +71,8 @@ TEST_F(LinearHashTest, SizeIncTest) {
 TEST_F(LinearHashTest, FalsePositiveTest) {
     string strs[] = { "Some", "Values", "For", "Initialization" };
     for (auto s : strs) {
-        lh.insert(s, false);
+        trie_node t(s, false);
+        lh.insert(t);
     }
     
     ifstream wrong_in("../ngrams-testing/test-input/linear-hash-input/big_file.wrong");
@@ -90,7 +95,8 @@ TEST_F(LinearHashTest, BigFileEasyTest) {
     
     string s;
     for (int i = 0; i < 50000 && std::getline(in, s); i++) {
-        lh.insert(s, false);
+        trie_node t(s, false);
+        lh.insert(t);
     }
     
     in.clear();
@@ -109,7 +115,8 @@ TEST_F(LinearHashTest, BigFileMediumTest) {
     
     string s;
     for (int i = 0; i < 120000 && std::getline(in, s); i++) {
-        lh.insert(s, false);
+        trie_node t(s, false);
+        lh.insert(t);
     }
     
     in.clear();
@@ -128,7 +135,8 @@ TEST_F(LinearHashTest, BigFileHardTest) {
     
     string s;
     while (std::getline(in, s)) {
-        lh.insert(s, false);
+        trie_node t(s, false);
+        lh.insert(t);
     }
     
     in.clear();
@@ -148,7 +156,8 @@ TEST_F(LinearHashTest, BigFileHardFalsePositiveTest) {
     
     string s;
     while (std::getline(correct_in, s)) {
-        lh.insert(s, false);
+        trie_node t(s, false);
+        lh.insert(t);
     }
     
     while (std::getline(wrong_in, s)) {
@@ -166,11 +175,12 @@ TEST_F(LinearHashTest, DeleteEmptyTest) {
 
 TEST_F(LinearHashTest, BasicDeletionTest) {
     string s = "hello";
-    lh.insert(s, false);
+    trie_node t(s, false);
+    lh.insert(t);
     
     s = "world";
-    
-    lh.insert(s, false);
+    t = trie_node(s, false); 
+    lh.insert(t);
     
     s = "hello";
     
@@ -189,7 +199,8 @@ TEST_F(LinearHashTest, MultipleDeletionTest) {
     string s;
     
     while (std::getline(in, s)) {
-        lh.insert(s, false);
+        trie_node t(s, false);
+        lh.insert(t);
     }
     
     in.clear();

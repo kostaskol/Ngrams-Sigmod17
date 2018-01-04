@@ -37,10 +37,6 @@ public:
     std::string search(const mstd::vector<std::string> &ngram);
 
     void compress();
-
-    void print_root() {
-        _root->print();
-    }
 private:
     static_root_node*_root;
 };

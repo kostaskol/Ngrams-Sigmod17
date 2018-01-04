@@ -30,7 +30,7 @@ namespace cmd_parser {
     }
 
     cmd_args parse(int argc, char **argv) {
-        const std::string short_opts = "i:q:t:";
+        const std::string short_opts = "i:q:t:p";
         const option long_opts[] = {
                 {"init", required_argument, nullptr, 'i'},
                 {"query", required_argument, nullptr, 'q'},

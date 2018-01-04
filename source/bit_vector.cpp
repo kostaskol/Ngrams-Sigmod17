@@ -19,7 +19,7 @@ bit_vector::bit_vector(size_t size) {
 bit_vector::bit_vector(const bit_vector &other) {
     size_t actual = other._size >> 3;
     _entries = new byte[actual];
-    for (int i = 0;i < actual; i++) {
+    for (size_t i = 0;i < actual; i++) {
         _entries[i] = other._entries[i];
     }
     _size = other._size;
@@ -39,7 +39,7 @@ bool bit_vector::_test(byte b, byte offset) {
 }
 
 void bit_vector::set(size_t index) {
-    if (index >= _size || index < 0) {
+    if (index >= _size) {
         std::stringstream ss("The requested index (");
         ss << index << ") was out of range";
         throw std::out_of_range(ss.str());
@@ -50,7 +50,7 @@ void bit_vector::set(size_t index) {
 }
 
 bool bit_vector::check(size_t index) {
-    if (index >= _size || index < 0) {
+    if (index >= _size) {
         throw std::out_of_range("The requested index (" + std::to_string(index) + ") was out of range");
     }
     size_t byte_index = index / 8;
@@ -65,7 +65,7 @@ bool bit_vector::check(size_t index) {
  * Returns false if bit was not set (and sets it)
  */
 bool bit_vector::check_and_set(size_t index) {
-    if (index >= _size || index < 0) {
+    if (index >= _size) {
         throw std::out_of_range("The requested index (" + std::to_string(index) + ") was out of range");
     }
 
@@ -86,8 +86,9 @@ bit_vector &bit_vector::operator=(const bit_vector &other) {
     delete[] _entries;
     size_t actual = other._size >> 3;
     _entries = new byte[actual];
-    for (int i = 0; i < actual; i++) {
+    for (size_t i = 0; i < actual; i++) {
         _entries[i] = other._entries[i];
     }
     _size = other._size;
+    return *this;
 }
