@@ -37,6 +37,11 @@ public:
     std::string search(const mstd::vector<std::string> &ngram);
 
     void compress();
+
+    void compress(static_node *top);
+
+    static_node **get_top_branches(int *size);
+
 private:
     static_root_node*_root;
 };

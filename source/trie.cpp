@@ -37,7 +37,7 @@ void trie::add(const vector<string> &ngram, int version) {
         } else {
             child = current->get_child(ngram[i], &index);
         }
-        
+
        if (child == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
             if (current == _root) {
@@ -53,7 +53,7 @@ void trie::add(const vector<string> &ngram, int version) {
             current = child;
         }
     }
-    
+
 
     std::string &last_word = ngram.get(ngram.size() - 1);
     trie_node *child;
@@ -111,7 +111,7 @@ string trie::search(const vector<string> &ngram, int version) {
                     one_word = true;
                 }
                if (child->is_end_of_word()
-                        && child->get_add_version() < version 
+                        && child->get_add_version() < version
                         && (child->get_del_version() == -1
                             || child->get_del_version() > version)) {
                     if (!bf.check_and_set(ss.str())) {
@@ -140,7 +140,7 @@ string trie::search(const vector<string> &ngram, int version) {
 }
 
 bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
-    trie_node *current = _root; 
+    trie_node *current = _root;
     auto *ch_indexes = new int[(int)ngram.size()];
     auto **parents = new trie_node *[(int)ngram.size()];
 
@@ -151,7 +151,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
         } else {
             current = current->get_child(ngram[i], &ch_indexes[i]);
         }
-        
+
         if (current == nullptr) {
             // The requested N-gram does not exist on the Trie.
             delete[] ch_indexes;
@@ -164,14 +164,14 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
         if (current->get_children_size() == 0) {
             // The end_of_word node can be deleted, so its parent will delete him.
             trie_node *tmp = parents[ngram.size() - 1];
-            
+
             // While moving up the branch, we mark all nodes for deletion (and the last one that can
             // be deleted will actually be deleted)
             current->set_mark_for_del(true);
 
             if (tmp == _root) {
                 (reinterpret_cast<root_node *>(tmp))->set_child_del_version(current->get_word(), version);
-                        } else {
+            } else {
                 tmp->set_child_del_version(ch_indexes[ngram.size() - 1], version);
             }
         }
@@ -222,7 +222,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
 
 void trie::clean_up(trie_node *top) {
     stack<trie_node *> s;
-    
+
     s.push(top);
 
     // Perform a DFS search and delete any node marked for deletion
@@ -346,7 +346,7 @@ std::string static_trie::search(const vector<string> &ngram) {
                             }
                             found_one = true;
                             final_ss << ss.str();
-                        }                    
+                        }
                     }
 
 
@@ -410,11 +410,11 @@ void static_trie::compress() {
     if (_root->empty()) return; //Empty static trie
 
     _root->push_children(&s);
+
     while (!s.empty()) {
         current = s.pop();
         if (current->get_st_children_p() == nullptr) {
             current->add_short(current->get_word(), current->is_end_of_word());
-            //            current->print_shorts();
             continue;
         }
         ss << current->get_word();
@@ -429,7 +429,38 @@ void static_trie::compress() {
         current->set_word(ss.str());
         ss.str("");
         ss.clear();
-        //        current->print_shorts();
         current->push_children(&s);
     }
+}
+/* Compress for compress_task  */
+void static_trie::compress(static_node *top) {
+    static_node *current, *child;
+    stack<static_node *> s;
+    std::stringstream ss;
+
+    s.push(top);
+    while (!s.empty()) {
+        current = s.pop();
+        if (current->get_st_children_p() == nullptr) {
+            current->add_short(current->get_word(), current->is_end_of_word());
+            continue;
+        }
+        ss << current->get_word();
+        current->add_short(current->get_word(), current->is_end_of_word());
+
+        while (current->get_children_size() == 1) {
+            child = current->get_child(0);
+            ss << child->get_word();
+            current->add_short(child->get_word(), child->is_end_of_word());
+            current->steal_children(child->get_st_children_p());
+        }
+        current->set_word(ss.str());
+        ss.str("");
+        ss.clear();
+        current->push_children(&s);
+    }
+}
+
+static_node **static_trie::get_top_branches(int *size) {
+    return _root->get_top_branches(size);
 }

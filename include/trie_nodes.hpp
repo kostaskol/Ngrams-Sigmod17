@@ -55,7 +55,7 @@ public:
 
     void push_children(mstd::stack<tuple<trie_node *, int>> *s);
 
-    void push_children(mstd::stack<mstd::vector<tuple<trie_node *, int>>> *s, 
+    void push_children(mstd::stack<mstd::vector<tuple<trie_node *, int>>> *s,
             mstd::vector<tuple<trie_node *, int>> &path);
 
     trie_node &operator=(const trie_node &other);
@@ -73,7 +73,7 @@ private:
 
     bool _marked_for_del;
     mstd::vector<trie_node> *_children;
-    
+
 };
 
 
@@ -180,6 +180,8 @@ public:
     bool has_children() const override;
 
     bool empty();
+
+    static_node **get_top_branches(int *size);
 
     void push_children(mstd::stack<static_node *> *s) override;
 private:

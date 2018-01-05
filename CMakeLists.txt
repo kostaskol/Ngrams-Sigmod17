@@ -81,6 +81,7 @@ set(TEST_SOURCE
         ngrams-testing/bloom-filter-testing.cpp
         ngrams-testing/bit-vector-testing.cpp
         ngrams-testing/trie-node-testing.cpp
+        ngrams-testing/minHeap-testing.cpp
         ngrams-testing/thread-testing.cpp
         ngrams-testing/thread-pool-testing.cpp
         include/mqueue.hpp

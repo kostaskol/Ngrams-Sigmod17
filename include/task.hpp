@@ -4,8 +4,10 @@
 #include "mvector.hpp"
 #include "trie_nodes.hpp"
 #include <string>
+#include "helpers.hpp"
 
 class trie;
+class static_trie;
 
 class task {
 public:
@@ -60,6 +62,17 @@ private:
     trie_node *_branch;
 };
 
+class compress_task : public task {
+public:
+    compress_task(static_trie *st, static_node *branch);
+
+    void run() override;
+
+private:
+    static_trie *_st;
+    static_node *_branch;
+};
+
 class insert_task : public task {
 public:
     insert_task(trie *t, mstd::vector<std::string> &v, int version);
@@ -90,6 +103,24 @@ private:
     trie *_t;
     mstd::vector<std::string> _v;
     int _version;
+};
+
+class topk_task : public task {
+public:
+    topk_task(std::string *results, int res_size, linear_hash_int *hashmap, int id, int threads);
+
+    topk_task(const topk_task &other)=delete;
+
+    topk_task(topk_task &&other) noexcept;
+
+    void run() override;
+
+private:
+    std::string *_results;
+    int _res_size;
+    linear_hash_int *_hashmap;
+    int _id;
+    int _threads;
 };
 
 #endif // TASK_H

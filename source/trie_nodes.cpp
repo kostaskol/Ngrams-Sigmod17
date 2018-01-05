@@ -15,20 +15,20 @@ using std::cout; using std::endl;
  * trie node implementation
  */
 trie_node::trie_node()
-        : _word(""), 
-        _eow(false), 
-        _ver_added(0), 
-        _ver_deleted(-1), 
+        : _word(""),
+        _eow(false),
+        _ver_added(0),
+        _ver_deleted(-1),
         _marked_for_del(false) {
 
     _children = nullptr;
 }
 
 trie_node::trie_node(const std::string &word, bool eow, int version)
-        : _word(word), 
-        _eow(eow), 
-        _ver_added(version), 
-        _ver_deleted(-1), 
+        : _word(word),
+        _eow(eow),
+        _ver_added(version),
+        _ver_deleted(-1),
         _marked_for_del(false) {
 
     _children = nullptr;
@@ -510,6 +510,10 @@ bool static_root_node::has_children() const {
 
 bool static_root_node::empty() {
     return _children.empty();
+}
+
+static_node **static_root_node::get_top_branches(int *size) {
+    return _children.get_top_branches(size);
 }
 
 void static_root_node::push_children(mstd::stack<static_node *> *s) {

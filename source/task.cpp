@@ -19,13 +19,13 @@ void search_task::run() {
     string result;
     if (st == nullptr) {
         // t was a trie
-        result = _t->search(_q.v, _q.version);
+        _results[_index] = _t->search(_q.v, _q.version);
     } else {
         // t was a static trie
-        result = st->search(_q.v);
+        _results[_index] = st->search(_q.v);
     }
 
-    _results[_index] = std::move(result);
+    // _results[_index] = std::move(result);
     delete this;
 }
 
@@ -41,6 +41,16 @@ clean_up_task::clean_up_task(clean_up_task &&other) noexcept {
 
 void clean_up_task::run() {
     _t->clean_up(_branch);
+    delete this;
+}
+
+/*
+ * Compress task implementation
+ */
+compress_task::compress_task(static_trie *st, static_node *branch) : _st(st), _branch(branch) { }
+
+void compress_task::run() {
+    _st->compress(_branch);
     delete this;
 }
 
@@ -75,5 +85,42 @@ deletion_task::deletion_task(deletion_task &&other) noexcept {
 
 void deletion_task::run() {
     _t->delete_ngram(_v, _version);
+    delete this;
+}
+
+/*
+ * TopK task implementation
+ */
+
+topk_task::topk_task(string *results, int res_size, linear_hash_int *hashmap, int id, int threads) : _results(results), _res_size(res_size), _hashmap(hashmap), _id(id), _threads(threads) { }
+
+topk_task::topk_task(topk_task &&other) noexcept {
+    _results = other._results;
+    _res_size = other._res_size;
+    _hashmap = other._hashmap;
+    _id = other._id;
+    _threads = other._threads;
+}
+
+void topk_task::run() {
+    int start, end;
+
+    start = _id*(_res_size / _threads);
+
+    if ( (_res_size % _threads > 0) && (_id == _threads - 1) ) {
+        end = start + _res_size / _threads + _res_size % _threads;
+    }
+    else {
+        end = start + _res_size / _threads;
+    }
+
+    for (size_t i = start; i < end; i++) {
+        vector<string> answers;
+        helpers::split(_results[i], answers, '|');
+        for (size_t j = 0; j < answers.size(); j++) {
+            _hashmap->insert(answers[j]);
+        }
+    }
+
     delete this;
 }
