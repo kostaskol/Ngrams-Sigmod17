@@ -67,10 +67,6 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
         trie_node *child;
         for (size_t j = i; j < ngram.size(); j++) {
             if ((child = current->get_child(ngram.at(j),nullptr)) == nullptr) {
-                ss.str("");
-                ss.clear();
-                one_word = false;
-                current = _root;
                 break;
             }
             else{
@@ -99,6 +95,10 @@ void trie::search(const vector<string> &ngram, mstd::queue<std::string> *results
                 current = child;
             }
         }
+        ss.str("");
+        ss.clear();
+        one_word = false;
+        current = _root;
     }
     if (!found_one) {
         results->push("$$END$$");
