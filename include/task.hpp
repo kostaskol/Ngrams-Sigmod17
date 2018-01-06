@@ -52,8 +52,6 @@ private:
 class clean_up_task : public task {
 public:
     clean_up_task(trie *t, trie_node *branch);
-    clean_up_task(const clean_up_task &other)=delete;
-    clean_up_task(clean_up_task &&other) noexcept;
 
     void run() override;
 
@@ -77,10 +75,6 @@ class insert_task : public task {
 public:
     insert_task(trie *t, mstd::vector<std::string> &v, int version);
 
-    insert_task(const insert_task &other)=delete;
-
-    insert_task(insert_task &&other) noexcept;
-
     void run() override;
 
 private:
@@ -93,10 +87,6 @@ class deletion_task : public task {
 public:
     deletion_task(trie *t, mstd::vector<std::string> &v, int version);
 
-    deletion_task(const deletion_task &other)=delete;
-
-    deletion_task(deletion_task &&other) noexcept;
-
     void run() override;
 
 private:
@@ -108,10 +98,6 @@ private:
 class topk_task : public task {
 public:
     topk_task(std::string *results, int res_size, linear_hash_int *hashmap, int id, int threads);
-
-    topk_task(const topk_task &other)=delete;
-
-    topk_task(topk_task &&other) noexcept;
 
     void run() override;
 

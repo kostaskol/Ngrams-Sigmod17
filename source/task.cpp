@@ -34,11 +34,6 @@ void search_task::run() {
  */
 clean_up_task::clean_up_task(trie *t, trie_node *branch) : _t(t), _branch(branch) { }
 
-clean_up_task::clean_up_task(clean_up_task &&other) noexcept {
-    _t = other._t;
-    _branch = other._branch;
-}
-
 void clean_up_task::run() {
     _t->clean_up(_branch);
     delete this;
@@ -60,12 +55,6 @@ void compress_task::run() {
 
 insert_task::insert_task(trie *t, vector<string> &v, int version) : _t(t), _v(std::move(v)), _version(version) { }
 
-insert_task::insert_task(insert_task &&other) noexcept {
-    _t = other._t;
-    _v = std::move(other._v);
-    _version = other._version;
-}
-
 void insert_task::run() {
     _t->add(_v, _version);
     delete this;
@@ -77,12 +66,6 @@ void insert_task::run() {
 
 deletion_task::deletion_task(trie *t, vector<string> &v, int version) : _t(t), _v(std::move(v)), _version(version) { }
 
-deletion_task::deletion_task(deletion_task &&other) noexcept {
-    _t = other._t;
-    _v = std::move(other._v);
-    _version = other._version;
-}
-
 void deletion_task::run() {
     _t->delete_ngram(_v, _version);
     delete this;
@@ -93,14 +76,6 @@ void deletion_task::run() {
  */
 
 topk_task::topk_task(string *results, int res_size, linear_hash_int *hashmap, int id, int threads) : _results(results), _res_size(res_size), _hashmap(hashmap), _id(id), _threads(threads) { }
-
-topk_task::topk_task(topk_task &&other) noexcept {
-    _results = other._results;
-    _res_size = other._res_size;
-    _hashmap = other._hashmap;
-    _id = other._id;
-    _threads = other._threads;
-}
 
 void topk_task::run() {
     int start, end;

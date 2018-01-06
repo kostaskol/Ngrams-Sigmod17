@@ -19,7 +19,7 @@ using mstd::vector;
 using mstd::logger;
 using std::ifstream;
 
-void print_and_topk(string *results, int size, size_t topk, int num_threads, thread_pool *tp);
+void print_and_topk(string *results, int size, size_t topk, int num_threads, thread_pool *tp, bool parallel);
 
 int main(int argc, char **argv) {
     // Start command line arguments parsing
@@ -141,9 +141,10 @@ int main(int argc, char **argv) {
                 // Print query results
                 tp.wait_all();
 
+                trie_node **branches;
                 if (!compress) {
                     int size;
-                    trie_node **branches = t->get_top_branches(&size);
+                    branches = t->get_top_branches(&size);
 
                     for (int i = size - 1; i >= 0; i--) {
                         tp.add_task(new clean_up_task(t, branches[i]));
@@ -158,9 +159,11 @@ int main(int argc, char **argv) {
                     k = (size_t) helpers::to_int(v[0]);
                 }
 
-                print_and_topk(results, (int) queries.size(), k, num_threads, &tp);
-                tp.wait_all();
+                print_and_topk(results, (int) queries.size(), k, num_threads, &tp, parallel);
 
+                if (!compress) {
+                    delete[] branches;
+                }
                 delete[] results;
                 version = 1;
                 queries.clear(200);
@@ -179,9 +182,14 @@ int main(int argc, char **argv) {
     delete t;
 }
 
-void print_and_topk(string *results, int size, size_t topk, int num_threads, thread_pool *tp){
+void print_and_topk(string *results, int size, size_t topk, int num_threads, thread_pool *tp, bool parallel){
     string succ;
     linear_hash_int *hashmap;
+    bool found = false;
+
+    if (topk && !parallel) {
+        hashmap = new linear_hash_int;
+    }
 
     for (int i = 0; i < size; i++) {
         succ = results[i];
@@ -189,28 +197,37 @@ void print_and_topk(string *results, int size, size_t topk, int num_threads, thr
             std::cout << "-1" << '\n';
         }
         else {
+            found = true;
             cout << succ << '\n';
+            if (topk && !parallel) {
+                vector<string> answers;
+                helpers::split(succ, answers, '|');
+                for (size_t i = 0; i < answers.size(); i++) {
+                    hashmap->insert(answers[i]);
+                }
+            }
         }
     }
 
-    if (topk) {
-        hashmap = new linear_hash_int[num_threads];
-        for (size_t i = 0; i < num_threads; i++) {
-            tp->add_task(new topk_task(results, size, &hashmap[i], i, num_threads));
-        }
-        tp->wait_all();
+    if (topk && found) {     //gia na sigoureutoume oti den brhke mono -1 stis apanthseis
+        if (parallel) {
+            hashmap = new linear_hash_int[num_threads];
+            for (size_t i = 0; i < num_threads; i++) {
+                tp->add_task(new topk_task(results, size, &hashmap[i], i, num_threads));
+            }
+            tp->wait_all();
 
-        for (size_t i = 1; i < num_threads; i++) {
-            hashmap[i].merge(hashmap[0]);
+            for (size_t i = 1; i < num_threads; i++) {
+                hashmap[i].merge(*hashmap);
+            }
         }
-    }
-    if ((topk > 0) && (!hashmap[0].empty())) {  //gia na sigoureutoume oti den brhke mono -1 stis apanthseis
+
         std::cout << "Top: ";
 
-        size_t max_freq = hashmap[0].get_max();
+        size_t max_freq = hashmap->get_max();
         vector<pair> *array = new vector<pair>[max_freq];
 
-        hashmap[0].fill_with_items(array);
+        hashmap->fill_with_items(array);
 
         int counter = 0;
         bool one_word = false;
@@ -229,7 +246,13 @@ void print_and_topk(string *results, int size, size_t topk, int num_threads, thr
         std::cout << '\n';
 
         delete[] array;
-        delete[] hashmap;
+        
+        if (parallel) {
+            delete[] hashmap;
+        }
+        else{
+            delete hashmap;
+        }
     }
 
 }

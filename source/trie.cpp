@@ -33,7 +33,7 @@ void trie::add(const vector<string> &ngram, int version) {
         int index;
 
         if (current == _root) {
-            child = (reinterpret_cast<root_node *>(current))->get_child(ngram[i]);
+            child = (dynamic_cast<root_node *>(current))->get_child(ngram[i]);
         } else {
             child = current->get_child(ngram[i], &index);
         }
@@ -41,7 +41,7 @@ void trie::add(const vector<string> &ngram, int version) {
        if (child == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
             if (current == _root) {
-                current = (reinterpret_cast<root_node *>(current))->add_child(ngram[i], false, version);
+                current = (dynamic_cast<root_node *>(current))->add_child(ngram[i], false, version);
             } else {
                 current = current->add_child(ngram[i], false, index, version);
             }
@@ -60,7 +60,7 @@ void trie::add(const vector<string> &ngram, int version) {
     int index = 0;
 
     if (current == _root) {
-        child = (reinterpret_cast<root_node *>(current))->get_child(last_word);
+        child = (dynamic_cast<root_node *>(current))->get_child(last_word);
     } else {
         child = current->get_child(last_word, &index);
     }
@@ -72,7 +72,7 @@ void trie::add(const vector<string> &ngram, int version) {
     } else {
         // Otherwise we insert it to that node's children
         if (current == _root) {
-            (reinterpret_cast<root_node *>(current))->add_child(last_word, true, version);
+            (dynamic_cast<root_node *>(current))->add_child(last_word, true, version);
         } else {
             current->add_child(last_word, true, index, version);
         }
@@ -94,7 +94,7 @@ string trie::search(const vector<string> &ngram, int version) {
         trie_node *child;
         for (size_t j = i; j < ngram.size(); j++) {
             if (current == _root) {
-                child = (reinterpret_cast<root_node *>(current))->get_child(ngram[j]);
+                child = (dynamic_cast<root_node *>(current))->get_child(ngram[j]);
             } else {
                 child = current->get_child(ngram[j], nullptr);
             }
@@ -147,7 +147,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
     for (int i = 0; i < (int) ngram.size(); i++) {
         parents[i] = current;
         if (current == _root) {
-            current = (reinterpret_cast<root_node *>(current))->get_child(ngram[i]);
+            current = (dynamic_cast<root_node *>(current))->get_child(ngram[i]);
         } else {
             current = current->get_child(ngram[i], &ch_indexes[i]);
         }
@@ -170,7 +170,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
             current->set_mark_for_del(true);
 
             if (tmp == _root) {
-                (reinterpret_cast<root_node *>(tmp))->set_child_del_version(current->get_word(), version);
+                (dynamic_cast<root_node *>(tmp))->set_child_del_version(current->get_word(), version);
             } else {
                 tmp->set_child_del_version(ch_indexes[ngram.size() - 1], version);
             }
@@ -207,7 +207,7 @@ bool trie::delete_ngram(const mstd::vector<std::string> &ngram, int version) {
             // We mark ourself for deletion
             current->set_mark_for_del(true);
             if (tmp == _root) {
-                (reinterpret_cast<root_node *>(tmp))->set_child_del_version(current->get_word(), version);
+                (dynamic_cast<root_node *>(tmp))->set_child_del_version(current->get_word(), version);
             } else {
                 tmp->set_child_del_version(ch_indexes[i], version);
             }
@@ -263,14 +263,14 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
         static_node *child;
         int index;
         if (current == _root) {
-            child = (reinterpret_cast<static_root_node *>(current))->get_child(ngram[i]);
+            child = (dynamic_cast<static_root_node *>(current))->get_child(ngram[i]);
         } else {
             child = current->get_child(ngram[i], &index);
         }
         if (child == nullptr) {
             // If the current trie_node doesn't already contain that child, add it (not as an end of word)
             if (current == _root) {
-                current = (reinterpret_cast<static_root_node *>(current))->add_child(ngram[i], false);
+                current = (dynamic_cast<static_root_node *>(current))->add_child(ngram[i], false);
             } else {
                 current = current->add_child(ngram[i], false, index);
             }
@@ -284,7 +284,7 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
     static_node *child;
     int index = 0;
     if (current == _root) {
-        child = (reinterpret_cast<static_root_node *>(current))->get_child(last_word);
+        child = (dynamic_cast<static_root_node *>(current))->get_child(last_word);
     } else {
         child = current->get_child(last_word, &index);
     }
@@ -295,7 +295,7 @@ void static_trie::add(const mstd::vector<std::string> &ngram) {
     } else {
         // Otherwise we insert it to that node's children
         if (current == _root) {
-            (reinterpret_cast<static_root_node *>(current))->add_child(last_word, true);
+            (dynamic_cast<static_root_node *>(current))->add_child(last_word, true);
         } else {
             current->add_child(last_word, true, index);
         }

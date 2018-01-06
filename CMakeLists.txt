@@ -105,4 +105,3 @@ target_link_libraries(ngrams ${CMAKE_THREAD_LIBS_INIT})
 add_executable(basic_tests ${TEST_SOURCE})
 target_link_libraries(basic_tests gtest)
 target_link_libraries(basic_tests ${CMAKE_THREAD_LIBS_INIT})
-

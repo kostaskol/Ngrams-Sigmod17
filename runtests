@@ -1,0 +1,33 @@
+#!/bin/bash
+cd build
+make ngrams
+cd ..
+
+echo "Getting the average execution time after 10 runs for each dataset without parallel implementation of topk" > $1
+echo " "
+echo "-----Small Dynamic-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $smallD/small_dynamic.init -q $smallD/small_dynamic.work > /dev/null 2>>$1
+echo "-----Small Dynamic with -p option-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $smallD/small_dynamic.init -q $smallD/small_dynamic.work -p > /dev/null 2>>$1
+echo "-----Medium Dynamic-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $mediumD/medium_dynamic.init -q $mediumD/medium_dynamic.work > /dev/null 2>>$1
+echo "-----Medium Dynamic with -p option-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $mediumD/medium_dynamic.init -q $mediumD/medium_dynamic.work -p > /dev/null 2>>$1
+echo "-----Large Dynamic-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $largeD/large_dynamic.init -q $largeD/large_dynamic.work > /dev/null 2>>$1
+echo "-----Large Dynamic with -p option-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $largeD/large_dynamic.init -q $largeD/large_dynamic.work -p > /dev/null 2>>$1
+echo " "
+echo "-----Small Static-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $smallS/small_static.init -q $smallS/small_static.work > /dev/null 2>>$1
+echo "-----Small Static with -p option-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $smallS/small_static.init -q $smallS/small_static.work -p > /dev/null 2>>$1
+echo "-----Medium Static-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $mediumS/medium_static.init -q $mediumS/medium_static.work > /dev/null 2>>$1
+echo "-----Medium Static with -p option-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $mediumS/medium_static.init -q $mediumS/medium_static.work -p > /dev/null 2>>$1
+echo "-----Large Static-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $largeS/large_static.init -q $largeS/large_static.work > /dev/null 2>>$1
+echo "-----Large Static with -p option-----" >> $1
+perf stat -r 10 -e task-clock -B build/ngrams -i $largeS/large_static.init -q $largeS/large_static.work -p > /dev/null 2>>$1
+echo "Finished counting the average execution time :)"
