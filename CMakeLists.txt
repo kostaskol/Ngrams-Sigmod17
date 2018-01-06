@@ -70,6 +70,7 @@ set(SOURCE_FILES
         source/task.cpp)
 
 set(TEST_SOURCE
+        ngrams-testing/minHeap-testing.cpp
         ngrams-testing/basic_tests.cpp
         ngrams-testing/vector-testing.cpp
         ngrams-testing/parser-testing.cpp
@@ -81,7 +82,8 @@ set(TEST_SOURCE
         ngrams-testing/bloom-filter-testing.cpp
         ngrams-testing/bit-vector-testing.cpp
         ngrams-testing/trie-node-testing.cpp
-        ngrams-testing/minHeap-testing.cpp
+        ngrams-testing/thread-testing.cpp
+        ngrams-testing/thread-pool-testing.cpp
         include/mqueue.hpp
         source/parser.cpp
         source/trie.cpp
