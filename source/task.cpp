@@ -87,3 +87,40 @@ void deletion_task::run() {
     _t->delete_ngram(_v, _version);
     delete this;
 }
+
+/*
+ * TopK task implementation
+ */
+
+topk_task::topk_task(string *results, int res_size, linear_hash_int *hashmap, int id, int threads) : _results(results), _res_size(res_size), _hashmap(hashmap), _id(id), _threads(threads) { }
+
+topk_task::topk_task(topk_task &&other) noexcept {
+    _results = other._results;
+    _res_size = other._res_size;
+    _hashmap = other._hashmap;
+    _id = other._id;
+    _threads = other._threads;
+}
+
+void topk_task::run() {
+    int start, end;
+
+    start = _id*(_res_size / _threads);
+
+    if ( (_res_size % _threads > 0) && (_id == _threads - 1) ) {
+        end = start + _res_size / _threads + _res_size % _threads;
+    }
+    else {
+        end = start + _res_size / _threads;
+    }
+
+    for (size_t i = start; i < end; i++) {
+        vector<string> answers;
+        helpers::split(_results[i], answers, '|');
+        for (size_t j = 0; j < answers.size(); j++) {
+            _hashmap->insert(answers[j]);
+        }
+    }
+
+    delete this;
+}

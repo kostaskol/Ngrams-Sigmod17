@@ -1,6 +1,5 @@
 #include "linear_hash.hpp"
 #include "binary_search.hpp"
-#include "logger.hpp"
 #include "helpers.hpp"
 #include <iostream>
 #include <cstring>
@@ -8,13 +7,11 @@
 
 
 using mstd::vector;
-using mstd::logger;
 using std::string;
 using std::to_string;
 using std::stringstream;
 using std::cout;
 using std::endl;
-using std::cerr;
 
 template <typename T>
 linear_hash<T>::linear_hash(size_t initial_size) : _size(initial_size),
@@ -69,21 +66,9 @@ T *linear_hash<T>::insert(T &new_node) {
 
                 int index = hash % (2 * _size);
                 int child_index;
-                if (index > (int) (_size + _p)) {
-                    logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" +
-                                                        to_string(_size + _p) + "). Size = " + to_string(_size)
-                                                        + "\tHash: " +
-                                                        to_string(hash) + " word = " + tmp_word); }
-                if (_entries[index] == nullptr) {
-                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was "
-                                                                                                    "null.Terminating");
-                    exit(-1);
-                }
+
                 if (!bsearch_children(tmp_word, *_entries[index], &child_index)) {
                     _entries[index]->m_insert_at(child_index, tmp_storage->at(i));
-                } else {
-                    // Sanity check
-                    logger::error("linear_hash::insert", "Entry already existed within bucket after bucket split");
                 }
             }
 
@@ -168,7 +153,6 @@ static_node *linear_hash<static_node>::get_static(const std::string &word) const
 template <typename T>
 void linear_hash<T>::delete_word(const std::string &word) {
 
-    pthread_mutex_lock(&_del_mtx);
     int hash = _hash(word);
     size_t index = hash % _size;
     if (index < _p) {
@@ -177,6 +161,7 @@ void linear_hash<T>::delete_word(const std::string &word) {
 
     int child_index;
 
+    pthread_mutex_lock(&_del_mtx);
     if (bsearch_children(word, *_entries[index], &child_index)) {
         _entries[index]->remove_at((size_t) child_index);
         _num_items--;
@@ -284,7 +269,7 @@ linear_hash_int::~linear_hash_int() {
     delete[] _entries;
 }
 
-pair *linear_hash_int::insert(string &word) {
+pair *linear_hash_int::insert(string &word, size_t counted) {
     int hash;
     int inner_index;
     size_t tmp;
@@ -292,7 +277,7 @@ pair *linear_hash_int::insert(string &word) {
     pair *entry = get(word, &hash, &inner_index);
 
     if (entry != nullptr) {
-        entry->count();
+        entry->count(counted);
         if ((tmp = entry->get_freq()) > _max) {
             _max = tmp;
         }
@@ -322,19 +307,9 @@ pair *linear_hash_int::insert(string &word) {
 
                 int index = hash % (2 * _size);
                 int child_index;
-                if (index > _size + _p) {
-                    logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" + to_string(_size + _p) + "). Size = " + to_string(_size) + "\tHash: " + to_string(hash) + " word = " + tmp_word);
-                }
-                if (_entries[index] == nullptr) {
-                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was null. Terminating");
-                    exit(-1);
-                }
+
                 if (!bsearch_children(tmp_word, *_entries[index], &child_index)) {
                     _entries[index]->m_insert_at(child_index, tmp_storage->at(i));
-                } else {
-                    // Sanity check
-                    logger::error("linear_hash::insert", "Entry already existed within bucket after bucket split");
-//                     cerr << "linear_hash::insert : Entry already existed within bucket right after bucket split!" << endl;
                 }
             }
 
@@ -368,7 +343,7 @@ pair *linear_hash_int::insert(string &word) {
     if (!split) {
         // If the bucket hasn't split
         // We can use the vector's index provided by linear_hash::get
-        pair new_node(word); //New pair of <word,1>
+        pair new_node(word,counted); //New pair of <word,counted>
         ret = v->m_insert_at(inner_index, new_node);
         _num_items++;
     } else {
@@ -376,13 +351,9 @@ pair *linear_hash_int::insert(string &word) {
         int child_index;
         if (!bsearch_children(word, *v, &child_index)) {
             // Child does not exist, so we must add it at index <child_index>
-            pair new_node(word); //New pair of <word,1>
+            pair new_node(word,counted); //New pair of <word,counted>
             ret = v->m_insert_at(child_index, new_node);
             _num_items++;
-        } else /* TODO: Is this a possibility? */{
-            // Child exists. Increase frequency counter and return child.
-            _entries[index]->at(child_index).count();
-            ret = v->get_p(child_index);
         }
     }
 
@@ -481,12 +452,20 @@ size_t linear_hash_int::get_max() const {
 }
 
 void linear_hash_int::fill_with_items(mstd::vector<pair> *array){
-    for (size_t i = 0; i < _size + _p; i++) {
+    for (size_t i = 0; i < size(); i++) {
         for (size_t j = 0; j < _entries[i]->size(); j++) {
 
             pair *temp = _entries[i]->at_p(j);
             size_t freq = temp->get_freq();
             array[freq-1].m_push(*temp);
+        }
+    }
+}
+
+void linear_hash_int::merge(linear_hash_int &merged){
+    for (size_t i = 0; i < size(); i++) {
+        for (size_t j = 0; j < _entries[i]->size(); j++) {
+            merged.insert(_entries[i]->at_p(j)->get_word(), _entries[i]->at_p(j)->get_freq());
         }
     }
 }
