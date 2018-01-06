@@ -148,6 +148,9 @@ int main(int argc, char **argv) {
                     for (int i = size - 1; i >= 0; i--) {
                         tp.add_task(new clean_up_task(t, branches[i]));
                     }
+
+                    tp.wait_all();
+                    delete[] branches;
                 }
 
                 size_t k = 0;

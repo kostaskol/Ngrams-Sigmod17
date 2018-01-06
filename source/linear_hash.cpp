@@ -69,21 +69,8 @@ T *linear_hash<T>::insert(T &new_node) {
 
                 int index = hash % (2 * _size);
                 int child_index;
-                if (index > (int) (_size + _p)) {
-                    logger::warn("linear_hash::insert", "index (" + to_string(index) + ") > current size (" +
-                                                        to_string(_size + _p) + "). Size = " + to_string(_size)
-                                                        + "\tHash: " +
-                                                        to_string(hash) + " word = " + tmp_word); }
-                if (_entries[index] == nullptr) {
-                    logger::error("linear_hash::insert", "_entries[" + std::to_string(index) + "] was "
-                                                                                                    "null.Terminating");
-                    exit(-1);
-                }
                 if (!bsearch_children(tmp_word, *_entries[index], &child_index)) {
                     _entries[index]->m_insert_at(child_index, tmp_storage->at(i));
-                } else {
-                    // Sanity check
-                    logger::error("linear_hash::insert", "Entry already existed within bucket after bucket split");
                 }
             }
 
