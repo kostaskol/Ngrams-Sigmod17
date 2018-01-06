@@ -4,6 +4,7 @@
 #include "mvector.hpp"
 #include "trie_nodes.hpp"
 #include <string>
+#include "helpers.hpp"
 
 class trie;
 class static_trie;
@@ -51,8 +52,6 @@ private:
 class clean_up_task : public task {
 public:
     clean_up_task(trie *t, trie_node *branch);
-    clean_up_task(const clean_up_task &other)=delete;
-    clean_up_task(clean_up_task &&other) noexcept;
 
     void run() override;
 
@@ -76,10 +75,6 @@ class insert_task : public task {
 public:
     insert_task(trie *t, mstd::vector<std::string> &v, int version);
 
-    insert_task(const insert_task &other)=delete;
-
-    insert_task(insert_task &&other) noexcept;
-
     void run() override;
 
 private:
@@ -92,16 +87,26 @@ class deletion_task : public task {
 public:
     deletion_task(trie *t, mstd::vector<std::string> &v, int version);
 
-    deletion_task(const deletion_task &other)=delete;
-
-    deletion_task(deletion_task &&other) noexcept;
-
     void run() override;
 
 private:
     trie *_t;
     mstd::vector<std::string> _v;
     int _version;
+};
+
+class topk_task : public task {
+public:
+    topk_task(std::string *results, int res_size, linear_hash_int *hashmap, int id, int threads);
+
+    void run() override;
+
+private:
+    std::string *_results;
+    int _res_size;
+    linear_hash_int *_hashmap;
+    int _id;
+    int _threads;
 };
 
 #endif // TASK_H
