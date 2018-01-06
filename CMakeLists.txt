@@ -35,7 +35,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ".")
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_CXX_FLAGS "-g -I../include -Iinclude")
+set(CMAKE_CXX_FLAGS "-g -O3 -I../include -Iinclude")
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -103,4 +103,3 @@ target_link_libraries(ngrams ${CMAKE_THREAD_LIBS_INIT})
 add_executable(basic_tests ${TEST_SOURCE})
 target_link_libraries(basic_tests gtest)
 target_link_libraries(basic_tests ${CMAKE_THREAD_LIBS_INIT})
-
