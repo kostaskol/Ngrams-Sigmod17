@@ -11,8 +11,9 @@ namespace cmd_parser {
         std::string query_file;
         int num_threads;
         bool parallel;
+        bool clean_up;
 
-        cmd_args() : init_file(""), query_file(""), num_threads(-1), parallel(false) { }
+        cmd_args() : init_file(""), query_file(""), num_threads(-1), parallel(false), clean_up(false) { }
 
         cmd_args &operator=(const cmd_args &other)=default;
     };
@@ -26,16 +27,18 @@ namespace cmd_parser {
                   << "\t--threads|-t\t: The number of threads to be run in the thread pool (Default 4)\n"
                   << "\t--parallel|-p\t: [Flag] Specifies that the adds and deletes should run in parallel to the "
                   << "file parsing\n"
+                  << "\t--clean_up|-c\t: [Flag] Specifies that the trie should be cleaned up after each batch"
                   << "\t--help|-h\t: Prints this message and exits the program" << std::endl;
     }
 
     cmd_args parse(int argc, char **argv) {
-        const std::string short_opts = "i:q:t:p";
+        const std::string short_opts = "i:q:t:pc";
         const option long_opts[] = {
                 {"init", required_argument, nullptr, 'i'},
                 {"query", required_argument, nullptr, 'q'},
                 {"threads", required_argument, nullptr, 't'},
                 {"parallel", no_argument, nullptr, 'p'},
+                {"clean_up", no_argument, nullptr, 'c'},
                 {"help", no_argument, nullptr, 'h'}
         };
 
@@ -58,6 +61,9 @@ namespace cmd_parser {
                 }
                 case 'p':
                     args.parallel = true;
+                    break;
+                case 'c':
+                    args.clean_up = true;
                     break;
                 case 'h':
                 case '?':

@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
     string query_file = args.query_file;
     int num_threads = args.num_threads == -1 ? constants::NUM_THREADS : args.num_threads;
     bool parallel = args.parallel;
+    bool clean_up = args.clean_up;
 
     if (init_file.empty()) {
         cerr << "Initialisation file not provided. Exiting" << endl;
@@ -141,18 +142,20 @@ int main(int argc, char **argv) {
                 // Print query results
                 tp.wait_all();
 
-                trie_node **branches;
-                if (!compress) {
-                    int size;
-                    branches = t->get_top_branches(&size);
-
-                    for (int i = size - 1; i >= 0; i--) {
-                        tp.add_task(new clean_up_task(t, branches[i]));
+                if (clean_up) {
+                    if (!compress) {
+                        trie_node **branches;
+                        int size;
+                        branches = t->get_top_branches(&size);
+    
+                        for (int i = size - 1; i >= 0; i--) {
+                            tp.add_task(new clean_up_task(t, branches[i]));
+                        }
+    
+                        tp.wait_all();
+                        delete[] branches;
                     }
-
-                    tp.wait_all();
-                    delete[] branches;
-                }
+                }   
 
                 size_t k = 0;
                 if (v.size() == 1) {
@@ -161,11 +164,8 @@ int main(int argc, char **argv) {
 
                 print_and_topk(results, (int) queries.size(), k, num_threads, &tp, parallel);
 
-                if (!compress) {
-                    delete[] branches;
-                }
                 delete[] results;
-                version = 1;
+                // version = 1;
                 queries.clear(200);
                 break;
             }
