@@ -107,7 +107,6 @@ int main(int argc, char **argv) {
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
         if (v.size() == 0 && stop) break;
-        // string s;
         switch (cmd_type) {
             case INSERTION:
                 if (parallel) {
@@ -142,11 +141,10 @@ int main(int argc, char **argv) {
                 // Print query results
                 tp.wait_all();
 
-                trie_node **branches;
                 if (clean_up) {
                     if (!compress) {
                         int size;
-                        branches = t->get_top_branches(&size);
+                        trie_node **branches = t->get_top_branches(&size);
 
                         for (int i = size - 1; i >= 0; i--) {
                             tp.add_task(new clean_up_task(t, branches[i]));
