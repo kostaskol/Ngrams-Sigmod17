@@ -1,3 +1,4 @@
+
 #include "parser.hpp"
 #include "mvector.hpp"
 #include <string>
@@ -8,7 +9,7 @@ using std::string;
 
 class ParserTest : public testing::Test {
 public:
-    cmd_parser p;
+    parser p;
     vector<string> outp;
     ParserTest() : p("../ngrams-testing/input/parser-tests.txt"){}
 };
