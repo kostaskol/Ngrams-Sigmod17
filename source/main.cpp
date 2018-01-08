@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
     string query_file = args.query_file;
     int num_threads = args.num_threads == -1 ? constants::NUM_THREADS : args.num_threads;
     bool parallel = args.parallel;
+    bool clean_up = args.clean_up;
 
     if (init_file.empty()) {
         cerr << "Initialisation file not provided. Exiting" << endl;
@@ -106,7 +107,7 @@ int main(int argc, char **argv) {
     while (true) {
         stop = query_parser.next_command(&v, &cmd_type);
         if (v.size() == 0 && stop) break;
-        string s;
+        // string s;
         switch (cmd_type) {
             case INSERTION:
                 if (parallel) {
@@ -142,14 +143,17 @@ int main(int argc, char **argv) {
                 tp.wait_all();
 
                 trie_node **branches;
-                if (!compress) {
-                    int size;
-                    branches = t->get_top_branches(&size);
+                if (clean_up) {
+                    if (!compress) {
+                        int size;
+                        branches = t->get_top_branches(&size);
 
-                    for (int i = size - 1; i >= 0; i--) {
-                        tp.add_task(new clean_up_task(t, branches[i]));
+                        for (int i = size - 1; i >= 0; i--) {
+                            tp.add_task(new clean_up_task(t, branches[i]));
+                        }
+                        tp.wait_all();
+                        delete[] branches;
                     }
-                    tp.wait_all();
                 }
 
                 size_t k = 0;
@@ -159,11 +163,8 @@ int main(int argc, char **argv) {
 
                 print_and_topk(results, (int) queries.size(), k, num_threads, &tp, parallel);
 
-                if (!compress) {
-                    delete[] branches;
-                }
                 delete[] results;
-                version = 1;
+                // version = 1;
                 queries.clear(200);
                 break;
             }
@@ -244,7 +245,7 @@ void print_and_topk(string *results, int size, size_t topk, int num_threads, thr
         std::cout << '\n';
 
         delete[] array;
-        
+
         if (parallel) {
             delete[] hashmap;
         }
