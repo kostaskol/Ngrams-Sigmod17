@@ -27,7 +27,7 @@ namespace cmd_parser {
                   << "\t--threads|-t\t: The number of threads to be run in the thread pool (Default 4)\n"
                   << "\t--parallel|-p\t: [Flag] Specifies that the adds and deletes should run in parallel to the "
                   << "file parsing\n"
-                  << "\t--clean_up|-c\t: [Flag] Specifies that the trie should be cleaned up after each batch"
+                  << "\t--clean-up|-c\t: [Flag] Specifies that the trie should be cleaned up after each batch"
                   << "\t--help|-h\t: Prints this message and exits the program" << std::endl;
     }
 
@@ -38,7 +38,7 @@ namespace cmd_parser {
                 {"query", required_argument, nullptr, 'q'},
                 {"threads", required_argument, nullptr, 't'},
                 {"parallel", no_argument, nullptr, 'p'},
-                {"clean_up", no_argument, nullptr, 'c'},
+                {"clean-up", no_argument, nullptr, 'c'},
                 {"help", no_argument, nullptr, 'h'}
         };
 
